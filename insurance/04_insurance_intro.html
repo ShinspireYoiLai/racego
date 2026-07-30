@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>保險介紹頁 - RaceGo 競賽咖</title>
+<style>
+  :root{
+    --teal:#14b8a6; --teal-dark:#0d9488; --orange:#f97316; --orange-dark:#ea580c;
+    --navy:#1e293b; --bg:#f5f7f9; --text:#1f2937; --text-light:#6b7280; --border:#e5e7eb;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;background:var(--bg);color:var(--text);}
+  a{text-decoration:none;color:inherit;}
+
+  header{background:#fff;border-bottom:1px solid var(--border);padding:14px 40px;display:flex;align-items:center;justify-content:space-between;}
+  .logo{display:flex;align-items:center;gap:8px;font-weight:800;font-size:20px;}
+  .logo .badge{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--orange),var(--teal));display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;}
+  .logo .r{color:var(--orange);} .logo .go{color:var(--teal);}
+  nav{display:flex;align-items:center;gap:28px;font-size:14px;color:#374151;}
+  .header-right{display:flex;align-items:center;gap:14px;}
+  .icon-btn{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--text-light);}
+  .btn-outline-teal{border:1.5px solid var(--teal);color:var(--teal-dark);padding:8px 16px;border-radius:20px;font-size:14px;font-weight:600;}
+  .avatar-pill{display:flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:20px;padding:4px 12px 4px 4px;font-size:13px;}
+  .avatar{width:26px;height:26px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;}
+
+  .breadcrumb{max-width:900px;margin:18px auto 0;padding:0 20px;font-size:12.5px;color:var(--text-light);}
+  .breadcrumb b{color:var(--teal-dark);}
+
+  .wrap{max-width:900px;margin:0 auto;padding:20px 20px 40px;}
+
+  /* hero */
+  .hero{background:linear-gradient(120deg,#0d9488,#14b8a6 60%,#5eead4);border-radius:16px;padding:40px 44px;color:#fff;margin-bottom:24px;display:flex;justify-content:space-between;align-items:center;gap:20px;}
+  .hero h1{font-size:26px;margin:0 0 8px;}
+  .hero p{margin:0;font-size:14px;opacity:.95;}
+  .hero .badge-event{display:inline-block;background:rgba(255,255,255,.2);padding:4px 12px;border-radius:14px;font-size:12px;margin-bottom:10px;}
+  .hero .shield{font-size:64px;opacity:.9;}
+
+  .card{background:#fff;border-radius:14px;box-shadow:0 1px 3px rgba(0,0,0,.06);padding:30px 36px;margin-bottom:22px;}
+  .section-title{font-size:17px;font-weight:800;margin:0 0 18px;display:flex;align-items:center;gap:8px;}
+
+  /* benefits grid */
+  .benefits{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+  .benefit{text-align:center;padding:18px 10px;border:1px solid var(--border);border-radius:10px;}
+  .benefit .ic{font-size:26px;margin-bottom:8px;}
+  .benefit .t{font-weight:700;font-size:13.5px;margin-bottom:4px;}
+  .benefit .d{font-size:12px;color:var(--text-light);line-height:1.5;}
+
+  /* legal notice */
+  .legal-title{font-weight:700;font-size:14.5px;margin-bottom:10px;}
+  .legal-box{max-height:260px;overflow-y:auto;background:#f9fafb;border:1px solid var(--border);border-radius:10px;padding:16px 20px;font-size:12.5px;line-height:1.8;color:#374151;margin-bottom:16px;}
+  .legal-box p{margin:0 0 12px;}
+  .legal-box p:last-child{margin-bottom:0;}
+  .legal-box b{color:#111827;}
+
+  /* consent + cta */
+  .consent-box{background:#f9fafb;border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:18px;}
+  .consent-row{display:flex;align-items:flex-start;gap:10px;font-size:13.5px;line-height:1.7;}
+  .consent-row input{width:18px;height:18px;margin-top:2px;accent-color:var(--teal);flex-shrink:0;}
+  .consent-row a{color:var(--teal-dark);font-weight:700;text-decoration:underline;}
+
+  .cta-wrap{text-align:center;}
+  .cta-btn{display:inline-block;background:#d1d5db;color:#fff;padding:15px 60px;border-radius:10px;font-weight:800;font-size:15.5px;transition:.2s;cursor:not-allowed;border:none;}
+  .cta-btn.active{background:var(--orange);cursor:pointer;box-shadow:0 4px 14px rgba(249,115,22,.35);}
+  .cta-sub{font-size:12px;color:var(--text-light);margin-top:10px;}
+
+  footer{background:var(--navy);color:#cbd5e1;margin-top:40px;padding:26px 20px 18px;text-align:center;font-size:13px;}
+  footer .links{display:flex;justify-content:center;gap:24px;margin-bottom:12px;}
+  footer .brand-line{margin-top:8px;color:#94a3b8;font-size:12.5px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <span class="badge">R</span>
+    <span><span class="r">Race</span><span class="go">Go</span></span>
+    <span style="font-weight:600;color:#374151;font-size:16px;">競賽咖</span>
+  </div>
+  <nav>
+    <span>賽事搜尋</span>
+    <span>消息中心 ▾</span>
+    <span>幫助中心 ▾</span>
+  </nav>
+  <div class="header-right">
+    <span class="icon-btn">🔍</span>
+    <span class="btn-outline-teal">建立賽事</span>
+    <span class="avatar-pill"><span class="avatar">Y</span> yoi</span>
+  </div>
+</header>
+
+<div class="breadcrumb">我的報名 ／ 7/3測試比賽 ／ <b>賽事保障方案</b></div>
+
+<div class="wrap">
+
+  <div class="hero">
+    <div>
+      <div class="badge-event">7/3測試比賽・組別一</div>
+      <h1>賽事專屬保障方案</h1>
+      <p>已自動帶入您的會員與報名資料，1 分鐘完成試算與投保</p>
+    </div>
+    <div class="shield">🛡️</div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">✨ 投保好處</div>
+    <div class="benefits">
+      <div class="benefit"><div class="ic">⚡</div><div class="t">資料自動帶入</div><div class="d">免重填會員與賽事資訊，節省時間</div></div>
+      <div class="benefit"><div class="ic">🩹</div><div class="t">意外風險轉嫁</div><div class="d">賽事期間意外傷害有保障</div></div>
+      <div class="benefit"><div class="ic">💸</div><div class="t">保費親民</div><div class="d">單次投保最低 199 元起</div></div>
+      <div class="benefit"><div class="ic">📱</div><div class="t">線上快速投保</div><div class="d">全程線上完成，最快 3 分鐘</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">🔒 資料授權同意</div>
+    <div class="legal-title">個人資料提供第三方告知聲明</div>
+    <div class="legal-box">
+      <p>為提供您運動保險相關服務，競賽咖（RaceGo）將依您的同意，把下列個人資料提供予合作之保險經紀公司「羅賓斯保險經紀人股份有限公司」，由其協助辦理保險試算、投保及後續理賠相關服務。請詳閱以下說明：</p>
+      <p><b>一、提供之資料項目</b><br>姓名、身分證字號、出生年月日、聯絡電話、電子郵件信箱；若透過賽事報名相關頁面進入，另包含您本次報名之賽事名稱與活動舉辦日期。</p>
+      <p><b>二、提供之目的</b><br>供羅賓斯保險經紀人股份有限公司進行運動保險保費試算、投保作業、要保書處理及理賠相關服務，不作其他用途。</p>
+      <p><b>三、資料接收對象</b><br>羅賓斯保險經紀人股份有限公司（及其配合之承保保險公司）。</p>
+      <p><b>四、您的權利</b><br>您得依個人資料保護法第 3 條規定，向競賽咖或羅賓斯保險經紀人股份有限公司行使查詢、複製、補充、更正、停止蒐集處理利用或刪除個人資料等權利。若您拒絕提供或撤回同意，將無法使用本平台之運動保險投保或查詢服務，但不影響您使用競賽咖其他既有服務之權益。</p>
+      <p><b>五、資料傳輸方式</b><br>前述資料係透過羅賓斯保險經紀人股份有限公司提供之線上系統（嵌入頁面）直接處理，競賽咖不留存您填寫於該系統內之詳細投保資料。</p>
+    </div>
+    <div class="consent-box">
+      <label class="consent-row">
+        <input type="checkbox" id="agreeBox" onchange="toggleCta()">
+        <span>我已閱讀並同意將本人個人資料依上述聲明提供予「羅賓斯保險經紀人股份有限公司」，供投保與保費試算使用。</span>
+      </label>
+    </div>
+    <div class="cta-wrap">
+      <a class="cta-btn" id="ctaBtn" href="05_insurance_application_robins.html">開始試算並投保 →</a>
+      <div class="cta-sub">下一步將進入羅賓斯投保流程（共 7 步驟）</div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <div class="links"><span>會員條款</span><span>隱私政策</span><span>聯絡我們</span></div>
+  <div>© 2026 新競雲智能股份有限公司. All rights reserved. ｜ 統一編號：60507061</div>
+  <div class="brand-line">讓你簡單辦比賽－RaceGo 競賽咖</div>
+</footer>
+
+<script>
+  function toggleCta(){
+    const box = document.getElementById('agreeBox');
+    const btn = document.getElementById('ctaBtn');
+    if(box.checked){ btn.classList.add('active'); }
+    else{ btn.classList.remove('active'); }
+  }
+  document.getElementById('ctaBtn').addEventListener('click', function(e){
+    if(!document.getElementById('agreeBox').checked){ e.preventDefault(); }
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>報名完成頁 - RaceGo 競賽咖</title>
+<style>
+  :root{
+    --teal:#14b8a6; --teal-dark:#0d9488; --orange:#f97316; --orange-dark:#ea580c;
+    --navy:#1e293b; --bg:#f5f7f9; --text:#1f2937; --text-light:#6b7280;
+    --border:#e5e7eb; --green-bg:#ecfdf5;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;background:var(--bg);color:var(--text);}
+  a{text-decoration:none;color:inherit;}
+
+  /* header */
+  header{background:#fff;border-bottom:1px solid var(--border);padding:14px 40px;display:flex;align-items:center;justify-content:space-between;}
+  .logo{display:flex;align-items:center;gap:8px;font-weight:800;font-size:20px;}
+  .logo .badge{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--orange),var(--teal));display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;}
+  .logo .r{color:var(--orange);} .logo .go{color:var(--teal);}
+  nav{display:flex;align-items:center;gap:28px;font-size:14px;color:#374151;}
+  nav .navitem{cursor:pointer;}
+  .header-right{display:flex;align-items:center;gap:14px;}
+  .icon-btn{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--text-light);}
+  .btn-outline-teal{border:1.5px solid var(--teal);color:var(--teal-dark);padding:8px 16px;border-radius:20px;font-size:14px;font-weight:600;}
+  .avatar-pill{display:flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:20px;padding:4px 12px 4px 4px;font-size:13px;}
+  .avatar{width:26px;height:26px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;}
+
+  .wrap{max-width:1100px;margin:32px auto;padding:0 20px;}
+
+  /* progress steps */
+  .steps{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:28px;}
+  .step{display:flex;flex-direction:column;align-items:center;gap:6px;width:120px;}
+  .circle{width:34px;height:34px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;}
+  .circle.done{background:var(--teal);}
+  .step-label{font-size:13px;color:var(--teal-dark);font-weight:600;}
+  .step-line{width:90px;height:2px;background:var(--teal);margin-bottom:26px;}
+
+  /* main card */
+  .card{background:#fff;border-radius:14px;box-shadow:0 1px 3px rgba(0,0,0,.06);padding:48px 60px;text-align:center;}
+  .success-icon{width:74px;height:74px;border-radius:50%;background:var(--teal);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;}
+  .success-icon svg{width:36px;height:36px;}
+  h1.title{font-size:26px;margin:0 0 8px;color:#111827;}
+  .subtitle{color:var(--text-light);font-size:14px;margin-bottom:24px;}
+  .order-box{display:inline-block;border:1.5px solid var(--orange);border-radius:10px;padding:14px 40px;margin-bottom:28px;}
+  .order-box .lbl{font-size:12px;color:var(--text-light);margin-bottom:4px;}
+  .order-box .no{font-size:22px;font-weight:800;color:var(--orange-dark);}
+
+  .info-table{text-align:left;border-top:1px solid var(--border);margin-bottom:20px;}
+  .info-row{display:flex;justify-content:space-between;padding:14px 4px;border-bottom:1px solid var(--border);font-size:14px;}
+  .info-row .lbl{color:var(--text-light);}
+  .info-row .val{font-weight:600;}
+  .info-row .val.orange{color:var(--orange-dark);}
+  .info-row .val.teal{color:var(--teal-dark);}
+
+  .next-box{background:var(--green-bg);border-left:4px solid var(--orange);border-radius:6px;padding:16px 20px;text-align:left;margin-bottom:28px;}
+  .next-box .h{font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+  .next-box ul{margin:0;padding:0;list-style:none;font-size:14px;color:#374151;}
+  .next-box li{margin-bottom:6px;display:flex;gap:6px;}
+  .next-box li::before{content:"✓";color:var(--teal-dark);font-weight:700;}
+
+  .btn-row{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;}
+  .btn{padding:12px 22px;border-radius:8px;font-weight:700;font-size:14px;display:flex;align-items:center;gap:6px;cursor:pointer;}
+  .btn-teal{background:var(--teal);color:#fff;}
+  .btn-white{background:#fff;border:1px solid var(--border);color:#374151;}
+  .btn-orange{background:var(--orange);color:#fff;}
+
+  /* insurance CTA + promo section */
+  .promo-section{background:#fff;border-radius:14px;box-shadow:0 1px 3px rgba(0,0,0,.06);margin-top:24px;padding:28px 40px;}
+  .promo-title{text-align:center;color:var(--teal-dark);font-weight:700;font-size:16px;margin-bottom:18px;}
+  .promo-item{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid #f0f2f4;gap:16px;}
+  .promo-item:last-child{border-bottom:none;}
+  .promo-left{display:flex;align-items:center;gap:14px;}
+  .promo-icon{width:44px;height:44px;border-radius:8px;background:#f3f4f6;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+  .promo-name{font-weight:700;font-size:14px;}
+  .promo-desc{font-size:12.5px;color:var(--text-light);margin-top:2px;}
+  .mini-btn{background:var(--teal);color:#fff;padding:8px 18px;border-radius:6px;font-size:13px;font-weight:700;white-space:nowrap;}
+
+  /* highlighted insurance CTA (station-internal, replaces plain ad card) */
+  .promo-item.insure{background:linear-gradient(90deg,#effaf8,#fff);border:1.5px solid var(--teal);border-radius:10px;padding:16px 20px;margin-top:4px;}
+  .badge-inhouse{display:inline-block;background:var(--teal);color:#fff;font-size:10.5px;padding:2px 8px;border-radius:10px;margin-bottom:4px;font-weight:700;}
+  .mini-btn.orange{background:var(--orange);}
+  .ad-note{text-align:right;font-size:11px;color:#9ca3af;margin-top:8px;}
+
+  footer{background:var(--navy);color:#cbd5e1;margin-top:40px;padding:26px 20px 18px;text-align:center;font-size:13px;}
+  footer .links{display:flex;justify-content:center;gap:24px;margin-bottom:12px;}
+  footer .brand-line{margin-top:8px;color:#94a3b8;font-size:12.5px;}
+
+  .annot{position:relative;}
+  .tag{position:absolute;top:-10px;right:-10px;background:#111827;color:#fff;font-size:10px;padding:2px 8px;border-radius:10px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <span class="badge">R</span>
+    <span><span class="r">Race</span><span class="go">Go</span></span>
+    <span style="font-weight:600;color:#374151;font-size:16px;">競賽咖</span>
+  </div>
+  <nav>
+    <span class="navitem">賽事搜尋</span>
+    <span class="navitem">消息中心 ▾</span>
+    <span class="navitem">幫助中心 ▾</span>
+  </nav>
+  <div class="header-right">
+    <span class="icon-btn">🔍</span>
+    <span class="btn-outline-teal">建立賽事</span>
+    <span class="avatar-pill"><span class="avatar">Y</span> yoi<br></span>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="steps">
+    <div class="step"><div class="circle done">✓</div><div class="step-label">填寫資料</div></div>
+    <div class="step-line"></div>
+    <div class="step"><div class="circle done">✓</div><div class="step-label">確認付款</div></div>
+    <div class="step-line"></div>
+    <div class="step"><div class="circle done">3</div><div class="step-label">完成報名</div></div>
+  </div>
+
+  <div class="card">
+    <div class="success-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><path d="M4 12l5 5L20 6"/></svg>
+    </div>
+    <h1 class="title">報名成功！</h1>
+    <div class="subtitle">恭喜您已成功完成報名，請留意後續通知。</div>
+
+    <div class="order-box">
+      <div class="lbl">訂單編號</div>
+      <div class="no">RG260730134254732</div>
+    </div>
+
+    <div class="info-table">
+      <div class="info-row"><span class="lbl">賽事名稱</span><span class="val">7/3測試比賽</span></div>
+      <div class="info-row"><span class="lbl">報名組別</span><span class="val">組別一</span></div>
+      <div class="info-row"><span class="lbl">報名金額</span><span class="val orange">NT$ 0</span></div>
+      <div class="info-row"><span class="lbl">報名狀態</span><span class="val teal">報名成功，等待主辦單位核准參賽</span></div>
+    </div>
+
+    <div class="next-box">
+      <div class="h">💡 下一步</div>
+      <ul>
+        <li>主辦單位審核通過後將自動完成報名</li>
+        <li>可至「我的報名」查看最新報名狀態</li>
+        <li>有任何疑問請至「聯絡客服」</li>
+      </ul>
+    </div>
+
+    <div class="btn-row">
+      <div class="btn btn-teal">☰ 查看我的報名</div>
+      <div class="btn btn-white">🏆 查看賽事詳情</div>
+      <div class="btn btn-orange">🔍 瀏覽更多賽事</div>
+    </div>
+  </div>
+
+  <div class="promo-section">
+    <div class="promo-title">報名完成！為你的賽程做好準備</div>
+
+    <!-- station-internal insurance entry point -> links to 保險介紹頁 -->
+    <div class="promo-item">
+      <div class="promo-left">
+        <div class="promo-icon">🛡️</div>
+        <div>
+          <div class="promo-name">運動加保｜賽事專屬意外險</div>
+          <div class="promo-desc">單次投保，最低199起。</div>
+        </div>
+      </div>
+      <a href="04_insurance_intro.html" class="mini-btn">立即投保</a>
+    </div>
+
+    <div class="promo-item">
+      <div class="promo-left">
+        <div class="promo-icon">🏨</div>
+        <div>
+          <div class="promo-name">klook｜賽前住宿優惠</div>
+          <div class="promo-desc">比賽地點周邊飯店、民宿一站搜尋，早鳥優惠限時搶訂。</div>
+        </div>
+      </div>
+      <div class="mini-btn">立即訂房</div>
+    </div>
+
+    <div class="promo-item">
+      <div class="promo-left">
+        <div class="promo-icon">✈️</div>
+        <div>
+          <div class="promo-name">Trip.com｜交通住宿一站搞定</div>
+          <div class="promo-desc">機票、高鐵、租車一次搞定，把握賽事機會順遊當地景點。</div>
+        </div>
+      </div>
+      <div class="mini-btn">規劃行程</div>
+    </div>
+
+    <div class="ad-note">以上為合作廣告</div>
+  </div>
+
+</div>
+
+<footer>
+  <div class="links"><span>會員條款</span><span>隱私政策</span><span>聯絡我們</span></div>
+  <div>© 2026 新競雲智能股份有限公司. All rights reserved. ｜ 統一編號：60507061</div>
+  <div class="brand-line">讓你簡單辦比賽－RaceGo 競賽咖</div>
+</footer>
+
+</body>
+</html>

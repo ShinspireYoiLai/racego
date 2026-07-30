@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>報名完成通知信 - RaceGo 競賽咖</title>
+<style>
+  body{margin:0;background:#eef1f4;font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;color:#1f2937;padding:30px 0;}
+  .preview-bar{max-width:600px;margin:0 auto 10px;font-size:12px;color:#6b7280;padding:0 6px;}
+  .email{max-width:600px;margin:0 auto;background:#ffffff;border-radius:10px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.08);}
+  .topband{height:6px;background:linear-gradient(90deg,#f97316,#14b8a6);}
+  .header{padding:22px 30px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #f0f2f4;}
+  .logo-badge{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,#f97316,#14b8a6);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;}
+  .logo-text{font-weight:800;font-size:16px;}
+  .logo-text .r{color:#f97316;} .logo-text .go{color:#14b8a6;}
+  .body{padding:34px 30px 10px;}
+  .icon-circle{width:56px;height:56px;border-radius:50%;background:#ecfdf5;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:26px;}
+  h1{font-size:20px;text-align:center;margin:0 0 6px;color:#111827;}
+  .lead{text-align:center;font-size:14px;color:#6b7280;margin-bottom:26px;}
+  .greeting{font-size:14px;margin-bottom:16px;}
+  .card{border:1px solid #e5e7eb;border-radius:8px;padding:16px 20px;margin-bottom:22px;}
+  .row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid #f0f2f4;font-size:13.5px;}
+  .row:last-child{border-bottom:none;}
+  .row .lbl{color:#6b7280;}
+  .row .val{font-weight:700;}
+  .row .val.teal{color:#0d9488;}
+  .row .val.orange{color:#ea580c;}
+  .cta-wrap{text-align:center;margin:26px 0;}
+  .cta-btn{display:inline-block;background:#14b8a6;color:#fff !important;padding:13px 34px;border-radius:8px;font-weight:700;font-size:14.5px;}
+  .insure-box{background:#effaf8;border:1.5px solid #14b8a6;border-radius:10px;padding:18px 20px;margin:0 0 26px;}
+  .insure-box .badge{display:inline-block;background:#14b8a6;color:#fff;font-size:10.5px;padding:2px 8px;border-radius:10px;font-weight:700;margin-bottom:8px;}
+  .insure-title{font-weight:700;font-size:14.5px;margin-bottom:4px;}
+  .insure-desc{font-size:13px;color:#4b5563;margin-bottom:14px;line-height:1.6;}
+  .insure-cta{display:inline-block;background:#f97316;color:#fff !important;padding:10px 22px;border-radius:7px;font-weight:700;font-size:13.5px;}
+  .notice{font-size:12px;color:#9ca3af;text-align:center;line-height:1.7;padding:0 20px 26px;}
+  .footer{background:#1e293b;color:#94a3b8;text-align:center;padding:20px;font-size:12px;}
+  .footer .links span{margin:0 8px;color:#cbd5e1;}
+</style>
+</head>
+<body>
+<div class="preview-bar">寄件人：RaceGo 競賽咖 &lt;no-reply@racego.tw&gt;　主旨：【RaceGo】您的報名已完成 - 7/3測試比賽</div>
+<div class="email">
+  <div class="topband"></div>
+  <div class="header">
+    <div class="logo-badge">R</div>
+    <div class="logo-text"><span class="r">Race</span><span class="go">Go</span> 競賽咖</div>
+  </div>
+
+  <div class="body">
+    <div class="icon-circle">✅</div>
+    <h1>報名完成通知</h1>
+    <div class="lead">您的賽事報名已送出，請留意後續審核進度</div>
+
+    <div class="greeting">Yoi 您好，</div>
+    <div class="greeting" style="margin-top:-10px;color:#4b5563;font-size:13.5px;">感謝您報名以下賽事，我們已收到您的報名資料，詳情如下：</div>
+
+    <div class="card">
+      <div class="row"><span class="lbl">訂單編號</span><span class="val">RG260730134254732</span></div>
+      <div class="row"><span class="lbl">賽事名稱</span><span class="val">7/3測試比賽</span></div>
+      <div class="row"><span class="lbl">報名組別</span><span class="val">組別一</span></div>
+      <div class="row"><span class="lbl">報名金額</span><span class="val orange">NT$ 0</span></div>
+      <div class="row"><span class="lbl">報名狀態</span><span class="val teal">報名成功，等待主辦單位核准參賽</span></div>
+    </div>
+
+    <div class="cta-wrap">
+      <a href="#" class="cta-btn">查看我的報名 →</a>
+    </div>
+
+    <!-- 站內投保入口：自動帶入會員 + 該場活動資訊 → 保險介紹頁 -->
+    <div class="insure-box">
+      <span class="badge">RaceGo 保障方案</span>
+      <div class="insure-title">🛡️ 賽事專屬意外險｜由羅賓森提供</div>
+      <div class="insure-desc">已為您帶入本次賽事與會員資料，1 分鐘完成試算，單次投保最低 199 起，讓您安心迎接賽事。</div>
+      <a href="04_insurance_intro.html" class="insure-cta">立即為賽事投保 →</a>
+    </div>
+
+    <div class="notice">
+      主辦單位審核通過後將寄送「審核通過通知信」，若有任何問題，歡迎至幫助中心與客服聯繫。
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="links"><span>會員條款</span><span>隱私政策</span><span>聯絡我們</span></div>
+    <div style="margin-top:10px;">© 2026 新競雲智能股份有限公司. All rights reserved.　統一編號：60507061</div>
+  </div>
+</div>
+</body>
+</html>

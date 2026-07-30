@@ -1,0 +1,2121 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>特定活動綜合保險 · 線上投保 [Wireframe]</title>
+<style>
+/* ============================================================
+   UI THEME — RaceGo brand colors (#00C4A0 teal)
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:      #ffffff;
+  --surface: #f5f5f5;
+  --border:  #e5e7eb;
+  --border-light: #f3f4f6;
+  --ink:     #1f2937;
+  --muted:   #6b7280;
+  --accent:  #00C4A0;
+  --accent-dark: #00A080;
+  --accent-light: #e6faf6;
+  --danger:  #ef4444;
+  --selected-bg: #e6faf6;
+}
+
+html, body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, 'Noto Sans TC', Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* ── APP WRAPPER ── */
+.app { max-width: 960px; margin: 0 auto; padding: 24px 20px 80px; }
+
+/* ── TOPBAR ── */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 20px;
+  border: none;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  background: var(--ink);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+.brand { display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 700; color: #fff; }
+.brand-mark {
+  width: 32px; height: 32px;
+  border: none;
+  border-radius: 8px;
+  display: grid; place-items: center;
+  font-size: 14px; font-weight: 700;
+  background: var(--accent);
+  color: #fff;
+}
+.brand-meta { display: flex; flex-direction: column; }
+.brand-meta small { font-size: 10px; color: rgba(255,255,255,0.55); letter-spacing: 1px; }
+.topbar-right { font-size: 11px; color: rgba(255,255,255,0.55); letter-spacing: 1px; }
+.topbar-right .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); margin-right: 4px; vertical-align: middle; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+
+/* ── STEPPER ── */
+.stepper {
+  display: flex; gap: 0;
+  margin-bottom: 24px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--bg);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.step-btn {
+  flex: 1;
+  display: flex; flex-direction: column; gap: 2px;
+  padding: 12px 10px;
+  background: var(--bg); border: none;
+  border-right: 1px solid var(--border-light);
+  cursor: pointer; text-align: left;
+  font-family: inherit;
+  transition: background 0.15s;
+}
+.step-btn:last-child { border-right: none; }
+.step-btn:hover { background: var(--surface); }
+.step-btn.active { background: var(--accent-light); }
+.step-btn.done { background: #f0fdf9; }
+.step-btn .step-icon { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+.step-btn .step-num { display: none; }
+.step-btn .step-emoji {
+  width: 22px; height: 22px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  display: grid; place-items: center;
+  font-size: 12px;
+  background: var(--bg);
+}
+.step-btn.active .step-emoji { background: var(--accent); color: white; border-color: var(--accent); }
+.step-btn.done .step-emoji { background: var(--accent-dark); color: white; border-color: var(--accent-dark); }
+.step-btn.active .step-name { color: var(--accent-dark); }
+.step-btn .step-name { font-size: 12px; font-weight: 700; }
+.step-btn .step-desc { display: none; }
+
+/* ── PAGES ── */
+.page { display: none; }
+.page.active { display: block; }
+
+.page-header { margin-bottom: 20px; padding-bottom: 14px; border-bottom: 2px solid var(--border-light); }
+.page-tag { display: none; }
+.page-title { font-size: 22px; font-weight: 700; margin-top: 8px; }
+.page-title .underline { border-bottom: 3px solid var(--accent); padding-bottom: 2px; }
+.page-subtitle { margin-top: 6px; color: var(--muted); font-size: 13px; }
+
+/* ── BLOCK ── */
+.block {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+  background: var(--bg);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+.block-header {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 18px;
+}
+.block-badge { display: none; }
+.block-title { font-size: 16px; font-weight: 700; }
+
+/* ── FORM ── */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 16px; }
+.form-grid.cols-1 { grid-template-columns: 1fr; }
+@media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
+
+.form-field { display: flex; flex-direction: column; gap: 6px; }
+.form-field.full { grid-column: 1 / -1; }
+
+.form-label { font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+.form-label .req { color: var(--danger); font-size: 11px; }
+.form-label .lock {
+  margin-left: auto; font-size: 10px; color: var(--muted);
+  border: 1px solid var(--border-light);
+  padding: 1px 6px; border-radius: 2px;
+}
+
+.form-input, .form-select, .form-textarea {
+  width: 100%; padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-family: inherit; font-size: 13px;
+  background: var(--bg); color: var(--ink);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(0,196,160,0.15);
+  background: var(--bg);
+}
+.form-input::placeholder, .form-textarea::placeholder { color: var(--muted); }
+.form-input.is-locked, .form-select.is-locked {
+  background: var(--surface); color: var(--muted);
+  cursor: not-allowed; border-style: dashed;
+}
+.form-input.is-filled { background: #f9f9f9; }
+
+.form-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+  background-repeat: no-repeat; background-position: right 10px center;
+  padding-right: 30px;
+}
+.form-textarea { resize: vertical; min-height: 72px; }
+
+/* ── RADIO GROUP ── */
+.radio-group { display: flex; flex-wrap: wrap; gap: 8px; }
+.radio-pill {
+  position: relative;
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px;
+  border: 1px solid var(--border);
+  border-radius: 20px; cursor: pointer;
+  font-size: 13px; font-weight: 500;
+  background: var(--bg);
+  user-select: none;
+  transition: all 0.15s;
+}
+.radio-pill input { position: absolute; opacity: 0; pointer-events: none; }
+.radio-pill::before {
+  content: ''; width: 14px; height: 14px;
+  border: 1.5px solid var(--border); border-radius: 50%;
+  background: var(--bg); flex-shrink: 0;
+  transition: border-color 0.15s;
+}
+.radio-pill:hover { background: var(--accent-light); border-color: var(--accent); }
+.radio-pill.checked { background: var(--accent-light); border-color: var(--accent); color: var(--accent-dark); font-weight: 600; }
+.radio-pill.checked::before { border: 4px solid var(--accent); }
+
+/* ── CHECKBOX ── */
+.check-pill {
+  position: relative;
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 7px 14px;
+  border: 1px solid var(--border);
+  border-radius: 20px; cursor: pointer;
+  font-size: 13px; font-weight: 500;
+  background: var(--bg);
+  user-select: none;
+  transition: all 0.15s;
+}
+.check-pill input { position: absolute; opacity: 0; pointer-events: none; }
+.check-pill::before {
+  content: ''; width: 14px; height: 14px;
+  border: 1.5px solid var(--border); border-radius: 4px;
+  background: var(--bg); flex-shrink: 0;
+  transition: all 0.15s;
+}
+.check-pill:hover { background: var(--accent-light); border-color: var(--accent); }
+.check-pill.checked { background: var(--accent-light); border-color: var(--accent); color: var(--accent-dark); font-weight: 600; }
+.check-pill.checked::before {
+  background: var(--accent); border-color: var(--accent);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><polyline points='20 6 9 17 4 12'/></svg>");
+  background-repeat: no-repeat; background-position: center;
+}
+
+/* ── DATE GROUP ── */
+.date-group { display: flex; gap: 6px; flex-wrap: wrap; }
+.date-group select { flex: 1; min-width: 72px; }
+
+/* ── CONDITIONAL ── */
+.conditional { max-height: 0; opacity: 0; overflow: hidden; transition: all 0.25s ease; }
+.conditional.show { max-height: 180px; opacity: 1; margin-top: 8px; }
+.conditional-inner {
+  padding: 12px 14px;
+  border: 1.5px dashed var(--accent);
+  border-radius: 8px;
+  background: var(--accent-light);
+}
+.conditional-inner > label { font-size: 11px; font-weight: 600; display: block; margin-bottom: 6px; color: var(--accent-dark); }
+
+/* ── BUTTONS ── */
+.btn {
+  font-family: inherit; font-weight: 600; font-size: 13px;
+  padding: 10px 22px; border-radius: 8px;
+  border: 1.5px solid transparent; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px;
+  transition: all 0.2s;
+}
+.btn-primary { background: var(--accent); color: white; border-color: var(--accent); }
+.btn-primary:hover { background: var(--accent-dark); border-color: var(--accent-dark); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,196,160,0.3); }
+.btn-ghost { background: var(--bg); color: var(--ink); border-color: var(--border); }
+.btn-ghost:hover { background: var(--surface); border-color: var(--border); }
+.btn-dark { background: var(--ink); color: white; border-color: var(--ink); }
+.btn-dark:hover { background: #374151; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+
+.page-actions { display: flex; gap: 10px; justify-content: space-between; flex-wrap: wrap; margin-top: 24px; }
+
+/* ── CONSENT ── */
+.consent { max-height: 440px; overflow-y: auto; padding-right: 8px; margin-bottom: 16px; }
+.consent::-webkit-scrollbar { width: 6px; }
+.consent::-webkit-scrollbar-track { background: var(--surface); border-radius: 4px; }
+.consent::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; opacity: 0.5; }
+.consent p {
+  margin-bottom: 10px; line-height: 1.75; font-size: 13px;
+  padding-left: 12px; border-left: 2px solid var(--border-light);
+}
+.consent p.heading { border-left-color: var(--accent); font-weight: 700; }
+.consent-confirm {
+  padding: 14px 16px;
+  border: 1.5px solid var(--accent);
+  border-radius: 10px;
+  background: var(--accent-light);
+  display: flex; align-items: center; gap: 10px;
+}
+
+/* ── PLAN CARDS ── */
+.plans-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+.plan-card {
+  border: 2px solid var(--border);
+  border-radius: 12px; padding: 20px;
+  background: var(--bg); cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+.plan-card:hover { border-color: var(--accent); box-shadow: 0 4px 16px rgba(0,196,160,0.15); transform: translateY(-2px); }
+.plan-card.selected { border-color: var(--accent); background: var(--accent-light); box-shadow: 0 4px 16px rgba(0,196,160,0.2); }
+.plan-tag { font-size: 10px; color: var(--muted); letter-spacing: 1px; display: block; margin-bottom: 10px; }
+.plan-tag-on { display: none; font-size: 10px; font-weight: 700; color: var(--accent-dark); margin-bottom: 10px; }
+.plan-card.selected .plan-tag { display: none; }
+.plan-card.selected .plan-tag-on { display: block; }
+.plan-name { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+.plan-company { font-size: 11px; color: var(--muted); margin-bottom: 12px; }
+.plan-price {
+  display: flex; align-items: baseline; gap: 4px;
+  padding-bottom: 12px; margin-bottom: 12px;
+  border-bottom: 1px solid var(--border-light);
+}
+.plan-price .num { font-size: 28px; font-weight: 700; color: var(--accent-dark); }
+.plan-price .unit { font-size: 12px; color: var(--muted); }
+.plan-feature-list { list-style: none; margin-bottom: 16px; }
+.plan-feature-list li { padding: 4px 0; font-size: 12px; display: flex; gap: 6px; }
+.plan-feature-list li::before { content: '✓'; color: var(--accent); font-weight: 700; }
+.plan-select-btn {
+  width: 100%; padding: 8px;
+  border: 1.5px solid var(--border); border-radius: 8px;
+  background: var(--bg); font-family: inherit; font-size: 12px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s;
+}
+.plan-select-btn:hover, .plan-card.selected .plan-select-btn { background: var(--accent); color: white; border-color: var(--accent); }
+
+/* ── ROSTER ── */
+.roster-list { display: flex; flex-direction: column; gap: 12px; }
+.roster-item {
+  border: 1px solid var(--border);
+  border-radius: 10px; padding: 16px;
+  background: var(--surface);
+}
+.roster-item-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 14px; padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-light); gap: 8px;
+}
+.roster-name { font-size: 14px; font-weight: 700; }
+.roster-name .auto-tag { font-size: 10px; color: var(--muted); margin-left: 6px; border: 1px solid var(--border); padding: 1px 6px; border-radius: 20px; }
+.roster-remove {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 6px; padding: 3px 10px;
+  font-size: 11px; cursor: pointer; transition: all 0.15s;
+}
+.roster-remove:hover { background: var(--danger); color: white; border-color: var(--danger); }
+.add-roster {
+  width: 100%; padding: 12px;
+  border: 2px dashed var(--accent); border-radius: 10px;
+  background: var(--bg); font-family: inherit; font-size: 13px; font-weight: 600;
+  cursor: pointer; margin-top: 12px; color: var(--accent-dark);
+  transition: all 0.15s;
+}
+.add-roster:hover { background: var(--accent-light); }
+
+/* ── SUMMARY (confirm page) ── */
+.summary {
+  border: 1.5px solid var(--border); border-radius: 4px;
+  padding: 20px; margin-bottom: 16px;
+  background: var(--surface);
+}
+.summary h3 { font-size: 16px; font-weight: 700; margin-bottom: 10px; }
+
+/* ── FOOTER ── */
+.footer { text-align: center; margin-top: 40px; padding: 20px; color: var(--muted); font-size: 11px; letter-spacing: 1px; border-top: 1px solid var(--border-light); }
+.footer::before { content: ''; display: block; width: 40px; height: 3px; background: var(--accent); border-radius: 2px; margin: 0 auto 16px; }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: 24px; right: 24px;
+  background: var(--ink); color: white;
+  padding: 12px 20px; border-radius: 10px;
+  font-size: 13px; font-weight: 600;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  z-index: 100; opacity: 0; transform: translateY(12px);
+  pointer-events: none; transition: all 0.25s;
+  max-width: 320px;
+  border-left: 4px solid var(--accent);
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+
+/* ── COUNTRY PICKER ── */
+.nat-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.country-pick-btn {
+  flex: 1; min-width: 140px; max-width: 240px;
+  padding: 9px 12px; border: 1px dashed var(--border); border-radius: 8px;
+  background: var(--surface); font-family: inherit; font-size: 13px;
+  cursor: not-allowed; text-align: left; color: var(--muted);
+}
+.country-pick-btn:not(:disabled) { background: var(--bg); border-style: solid; color: var(--ink); cursor: pointer; }
+.country-pick-btn:not(:disabled):hover { border-color: var(--accent); background: var(--accent-light); }
+.country-pick-btn.selected { background: var(--accent-light); border-style: solid; border-color: var(--accent); color: var(--accent-dark); }
+
+.country-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+  z-index: 9999; display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(2px);
+}
+.country-box {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 16px; width: 380px; max-width: 90vw;
+  display: flex; flex-direction: column; max-height: 65vh;
+  box-shadow: 0 20px 48px rgba(0,0,0,0.2);
+}
+.country-box-header {
+  padding: 16px 20px 14px; border-bottom: 1px solid var(--border-light);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.country-box-header strong { font-size: 14px; font-weight: 700; }
+.country-close { background: var(--surface); color: var(--muted); border: 1px solid var(--border); border-radius: 8px; padding: 4px 12px; font-family: inherit; font-size: 12px; cursor: pointer; transition: all 0.15s; }
+.country-close:hover { background: var(--danger); color: #fff; border-color: var(--danger); }
+.country-search {
+  margin: 10px 14px; padding: 9px 12px;
+  border: 1px solid var(--border); border-radius: 8px;
+  font-family: inherit; font-size: 13px; outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.country-search:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,196,160,0.15); }
+.country-list { overflow-y: auto; padding: 0 8px 12px; flex: 1; }
+.country-item { padding: 9px 12px; border-radius: 8px; cursor: pointer; font-size: 13px; transition: background 0.1s; }
+.country-item:hover { background: var(--surface); }
+.country-item.active { background: var(--accent-light); color: var(--accent-dark); font-weight: 700; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 600px) {
+  .app { padding: 16px 12px 60px; }
+  .stepper { flex-direction: column; }
+  .step-btn { border-right: none; border-bottom: 1px solid var(--border-light); }
+  .step-btn:last-child { border-bottom: none; }
+  .block { padding: 16px; }
+}
+
+/* ── BADGE (hidden in styled version) ── */
+.wf-badge { display: none; }
+
+/* ── LANDING PAGE ── */
+#landing { display: block; }
+#main-flow { display: none; }
+
+.landing-hero {
+  border: none;
+  border-radius: 16px;
+  padding: 40px 32px 32px;
+  margin-bottom: 20px;
+  background: linear-gradient(135deg, var(--ink) 0%, #374151 100%);
+  color: #fff;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+}
+.landing-hero-label { font-size: 11px; color: var(--accent); letter-spacing: 2px; margin-bottom: 12px; font-weight: 700; }
+.landing-hero-title { font-size: 30px; font-weight: 700; margin-bottom: 10px; color: #fff; }
+.landing-hero-desc { font-size: 14px; color: rgba(255,255,255,0.7); line-height: 1.8; max-width: 560px; }
+
+.landing-section-title {
+  font-size: 13px; font-weight: 700;
+  letter-spacing: 0.5px; margin-bottom: 12px;
+  padding-bottom: 8px; border-bottom: 1px solid var(--border-light);
+  display: flex; align-items: center; gap: 6px;
+}
+.landing-section-title::before { content: ''; display: inline-block; width: 3px; height: 14px; background: var(--accent); border-radius: 2px; }
+
+/* 保障項目表格 */
+.coverage-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.coverage-table th, .coverage-table td {
+  border: 1px solid var(--border-light);
+  padding: 8px 12px; text-align: left;
+}
+.coverage-table thead th { background: var(--surface); font-weight: 700; font-size: 11px; color: var(--muted); }
+.coverage-table tbody tr:nth-child(even) { background: #fafafa; }
+.coverage-table td.plan-price-cell { font-weight: 700; }
+.coverage-table td.row-label { color: var(--muted); font-size: 11px; }
+
+/* 方案卡（說明頁用，簡化版） */
+.landing-plans { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+@media (max-width: 680px) { .landing-plans { grid-template-columns: 1fr 1fr; } }
+
+.landing-plan-card {
+  border: 1.5px solid var(--border-light);
+  border-radius: 4px; padding: 16px;
+  background: var(--bg);
+}
+.landing-plan-card .lp-tag { font-size: 10px; color: var(--muted); letter-spacing: 1px; display: block; margin-bottom: 6px; }
+.landing-plan-card .lp-name { font-size: 14px; font-weight: 700; margin-bottom: 10px; }
+.landing-plan-card .lp-price { font-size: 20px; font-weight: 700; margin-bottom: 2px; }
+.landing-plan-card .lp-price-sub { font-size: 11px; color: var(--muted); margin-bottom: 12px; }
+.landing-plan-card ul { list-style: none; }
+.landing-plan-card ul li { font-size: 11px; padding: 3px 0; color: var(--muted); display: flex; gap: 4px; }
+.landing-plan-card ul li::before { content: '–'; }
+
+/* 投保入口按鈕 */
+.entry-section {
+  border: 1px solid var(--border);
+  border-radius: 12px; padding: 24px 28px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+.entry-section-title { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+.entry-section-desc { font-size: 12px; color: var(--muted); margin-bottom: 20px; margin-top: 10px; line-height: 1.6; }
+.entry-options { display: flex; gap: 14px; flex-wrap: wrap; }
+
+.entry-card {
+  flex: 1; min-width: 200px;
+  border: 2px solid var(--border);
+  border-radius: 12px; padding: 20px;
+  cursor: pointer; background: var(--bg);
+  transition: all 0.2s;
+  text-align: left;
+}
+.entry-card:hover { border-color: var(--accent); box-shadow: 0 4px 16px rgba(0,196,160,0.15); transform: translateY(-2px); }
+.entry-card.primary { border-color: var(--accent); }
+.entry-card.primary:hover { background: var(--accent-light); }
+.entry-card.disabled { cursor: default; opacity: 0.45; }
+.entry-card .ec-icon {
+  width: 40px; height: 40px;
+  border: none; border-radius: 10px;
+  display: grid; place-items: center;
+  font-size: 18px; margin-bottom: 12px;
+  background: var(--accent-light);
+}
+.entry-card.primary .ec-icon { background: var(--accent); }
+.entry-card .ec-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+.entry-card .ec-desc { font-size: 12px; color: var(--muted); line-height: 1.6; }
+.entry-card .ec-badge {
+  display: inline-block; margin-top: 10px;
+  font-size: 11px; border: 1.5px solid var(--border);
+  padding: 3px 10px; border-radius: 20px; color: var(--muted); font-weight: 600;
+}
+.entry-card.primary .ec-badge { border-color: var(--accent); color: var(--accent-dark); background: var(--accent-light); }
+
+/* 注意事項 */
+.landing-notes { border: 1.5px solid var(--accent); border-radius: 10px; padding: 16px 20px; background: var(--accent-light); }
+.landing-notes ul { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.landing-notes ul li { font-size: 12px; color: var(--ink); display: flex; gap: 8px; }
+.landing-notes ul li::before { content: '!'; font-weight: 700; color: var(--accent-dark); flex-shrink: 0; }
+</style>
+</head>
+<body>
+
+<span class="wf-badge">Wireframe</span>
+
+<!-- ============================================================
+     說明頁（Landing）
+     ============================================================ -->
+<div class="app" id="landing">
+
+  <!-- Hero -->
+  <div class="landing-hero">
+    <div class="landing-hero-label">特定活動綜合保險</div>
+    <div class="landing-hero-title">活動保障，隨時啟動</div>
+    <div class="landing-hero-desc">
+      無論是路跑、自行車、露營或健行，本保險提供您在活動期間的意外身故、失能及醫療保障，讓您專注享受每一次出發。
+    </div>
+  </div>
+
+  <!-- 保障說明 -->
+  <div class="block">
+    <div class="block-header">
+      <span class="block-title">險種說明</span>
+    </div>
+
+    <div class="landing-section-title" style="margin-bottom:14px">適用活動類型</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px">
+      <span style="border:1.5px solid var(--accent);border-radius:20px;padding:5px 16px;font-size:12px;background:var(--accent-light);color:var(--accent-dark);font-weight:600">露營</span>
+      <span style="border:1.5px solid var(--accent);border-radius:20px;padding:5px 16px;font-size:12px;background:var(--accent-light);color:var(--accent-dark);font-weight:600">自行車</span>
+      <span style="border:1.5px solid var(--accent);border-radius:20px;padding:5px 16px;font-size:12px;background:var(--accent-light);color:var(--accent-dark);font-weight:600">路跑</span>
+      <span style="border:1.5px solid var(--accent);border-radius:20px;padding:5px 16px;font-size:12px;background:var(--accent-light);color:var(--accent-dark);font-weight:600">健行</span>
+      <span style="border:1.5px solid var(--accent);border-radius:20px;padding:5px 16px;font-size:12px;background:var(--accent-light);color:var(--accent-dark);font-weight:600">其他第2類活動</span>
+    </div>
+
+
+    <div class="landing-section-title" style="margin-bottom:12px">投保須知</div>
+    <div class="landing-notes">
+      <ul>
+        <li>被保險人須為年滿 15 歲、未滿 75 歲之自然人</li>
+        <li>活動期間以 24 小時為一計算單位，最長可投保 30 天</li>
+        <li>多人投保時，所有被保險人適用相同計畫方案</li>
+        <li>繳費方式限信用卡，核保完成後保單以電子或紙本方式寄送</li>
+        <li>詳細保障內容與除外責任請參閱保單條款</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 投保入口 -->
+  <div class="entry-section">
+    <div class="block-title">選擇投保方式</div>
+    <div class="entry-section-desc">請選擇此次投保的人數類型。多人投保適用於社團、隊伍或組織一次為多位成員投保；單人投保適用於個人參加活動。</div>
+    <div class="entry-options">
+      <div class="entry-card primary" onclick="enterFlow('multi')">
+        <div class="ec-icon">👥</div>
+        <div class="ec-title">多人投保</div>
+        <div class="ec-desc">2 人以上，適合社團、隊伍或組織統一投保，一次填寫名冊，費用合併計算。</div>
+        <span class="ec-badge">開始投保 →</span>
+      </div>
+      <div class="entry-card disabled" title="功能建置中">
+        <div class="ec-icon">👤</div>
+        <div class="ec-title">單人投保</div>
+        <div class="ec-desc">個人參加活動，快速填寫個人資料即可完成投保流程。</div>
+        <span class="ec-badge">功能建置中</span>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    特定活動綜合保險 · 您的運動，由我守護
+  </footer>
+</div>
+
+<!-- ============================================================
+     主流程（投保表單）
+     ============================================================ -->
+<div class="app" id="main-flow">
+
+  <nav class="stepper" id="stepper"></nav>
+  <main id="pages"></main>
+
+  <footer class="footer">
+    特定活動綜合保險 · 您的運動，由我守護
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+function enterFlow(type) {
+  if (type !== 'multi') return;
+  document.getElementById('landing').style.display = 'none';
+  document.getElementById('main-flow').style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// 說明頁時鐘
+function tickLanding() {
+  const el = document.getElementById('landingTime');
+  if (el) el.textContent = 'LIVE · ' + new Date().toLocaleTimeString('zh-TW', { hour12: false });
+}
+tickLanding(); setInterval(tickLanding, 1000);
+</script>
+
+<script>
+const COUNTRIES = ['日本','韓國','中國大陸','美國','英國','澳洲','加拿大','法國','德國','義大利','西班牙','荷蘭','比利時','瑞士','瑞典','挪威','丹麥','芬蘭','奧地利','葡萄牙','希臘','波蘭','捷克','匈牙利','俄羅斯','烏克蘭','印度','巴基斯坦','孟加拉','越南','泰國','印尼','馬來西亞','菲律賓','新加坡','緬甸','柬埔寨','斯里蘭卡','尼泊爾','蒙古','哈薩克','以色列','土耳其','沙烏地阿拉伯','阿拉伯聯合大公國','伊朗','伊拉克','埃及','南非','奈及利亞','衣索比亞','肯亞','阿根廷','巴西','智利','哥倫比亞','墨西哥','秘魯','委內瑞拉','紐西蘭','帛琉','馬紹爾群島','吐瓦魯','諾魯','薩摩亞','東加','斐濟','其他'];
+
+function openCountryPicker(currentVal, onSelect) {
+  const overlay = document.createElement('div');
+  overlay.className = 'country-overlay';
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+
+  const box = document.createElement('div');
+  box.className = 'country-box';
+
+  const header = document.createElement('div');
+  header.className = 'country-box-header';
+  const title = document.createElement('strong');
+  title.textContent = '選擇國家／地區';
+  const closeBtn = document.createElement('button');
+  closeBtn.className = 'country-close';
+  closeBtn.textContent = '✕ 關閉';
+  closeBtn.addEventListener('click', () => overlay.remove());
+  header.appendChild(title);
+  header.appendChild(closeBtn);
+
+  const searchInput = document.createElement('input');
+  searchInput.className = 'country-search';
+  searchInput.placeholder = '搜尋國家...';
+  searchInput.type = 'text';
+
+  const list = document.createElement('div');
+  list.className = 'country-list';
+
+  const renderList = (filter = '') => {
+    list.innerHTML = '';
+    COUNTRIES.filter(c => c.includes(filter)).forEach(c => {
+      const item = document.createElement('div');
+      item.className = 'country-item' + (c === currentVal ? ' active' : '');
+      item.textContent = c;
+      item.addEventListener('click', () => { onSelect(c); overlay.remove(); });
+      list.appendChild(item);
+    });
+  };
+
+  searchInput.addEventListener('input', () => renderList(searchInput.value.trim()));
+  renderList();
+
+  box.appendChild(header);
+  box.appendChild(searchInput);
+  box.appendChild(list);
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+  setTimeout(() => searchInput.focus(), 50);
+}
+
+const STAGES = [{"name": "試算資料填寫", "icon": "1", "tag": "STEP 01", "desc": "活動與要保人資訊"}, {"name": "選擇方案", "icon": "2", "tag": "STEP 02", "desc": "比較計畫一到二"}, {"name": "要/被保險人資料", "icon": "3", "tag": "STEP 03", "desc": "要保人與被保險人"}, {"name": "問卷填寫", "icon": "4", "tag": "STEP 04", "desc": "KYC 問卷"}, {"name": "資料確認", "icon": "5", "tag": "STEP 05", "desc": "確認與費用總覽"}, {"name": "信用卡簽帳", "icon": "6", "tag": "STEP 06", "desc": "信用卡授權"}];
+const PLANS = [{"name": "計畫一", "company": "富邦產險", "premium": 199, "color": "white", "age": "15 以上，未滿 80 歲", "features": ["特定活動死亡及失能保險 100 萬", "特定活動醫療保險（實支實付型）10 萬", "特定活動緊急救援費用保險 50 萬"]}, {"name": "計畫二", "company": "富邦產險", "premium": 299, "color": "white", "age": "15 以上，未滿 75 歲", "features": ["特定活動死亡及失能保險 200 萬", "特定活動醫療保險（實支實付型）10 萬", "特定活動緊急救援費用保險 50 萬"]}];
+const CONSENT_PARAGRAPHS = ["依據個人資料保護法（以下稱個資法）第八條及第九條規定，向 台端告知下列事項，請 台端詳閱：", "一、蒐集之目的：辦理財產保險(093)、人身保險(001)、行銷(040)及其他合於營業登記項目或組織章程所定之業務(181)。", "二、蒐集之個人資料類別：包括但不限於姓名、身分證統一編號、聯絡方式、航班編號、護照號碼、航空公司會員卡號、本網站瀏覽或查詢時伺服器自行產生的相關紀錄（包括但不限於您使用設備的IP位址、使用的瀏覽器、使用時間、瀏覽及點選資料紀錄等）等，詳如要保書、理賠申請書或相關業務申請書內容。", "三、個人資料之來源（個人資料非由當事人提供間接蒐集之情形適用）：", "(一)要保人/被保險人/受益人", "(二)司法警憲機關、委託協助處理理賠之公證人或機構", "(三)當事人之法定代理人、輔助人", "(四)各醫療院所", "(五)與第三人共同行銷、交互運用客戶資料、合作推廣等關係、或於本公司各項業務內所委託往來之第三人。", "(六)經當事人同意授權之同一金融控股公司所屬銀行子公司之網路銀行帳戶", "四、個人資料利用之期間、對象、地區及方式：", "(一)期間：因執行業務所必須及依法令規定應為保存之期間。", "(二)對象：本(分)公司及本公司海外分支機構、中華民國產物保險商業同業公會、中華民國人壽保險商業同業公會、財團法人保險事業發展中心、財團法人保險安定基金、財團法人住宅地震保險基金、財團法人汽車交通事故特別補償基金、財團法人保險犯罪防制中心、財團法人金融消費評議中心、財團法人金融聯合徵信中心、財團法人聯合信用卡中心、台灣票據交換所、財金資訊公司、關貿網路股份有限公司、中央健康保險局、業務委外機構、與本公司有再保業務往來之公司、依法有調查權機關或金融監理機關、與本公司旅遊綜合險有合作往來之業者及其平台(包含台端搭乘或預定搭乘之航空公司、或導轉至本公司投保之特定業者旅遊平台)。", "(三)地區：上述對象所在之地區。", "(四)方式：合於法令規定之利用方式。", "五、依據個資法第三條規定，台端就本公司保有 台端之個人資料得行使之權利及方式：", "(一)得向本公司行使之權利：", "1.向本公司查詢、請求閱覽或請求製給複製本。", "2.向本公司請求補充或更正。", "3.向本公司請求停止蒐集、處理或利用及請求刪除。", "(二)行使權利之方式：書面或其他日後可供證明之方式。", "六、台端不提供個人資料所致權益之影響：", "台端若未能提供相關個人資料時，本公司將可能延後或無法進行必要之審核及處理作業，因此可能婉謝承保、遲延或無法提供 台端完善的保險服務。"];
+</script>
+<script>
+// ============================================================
+// 全域狀態
+// ============================================================
+const STATE = {
+  current: 0,
+  done: new Set(),
+  applicantType: '自然人',
+  insuredCount: '1人',
+  insuredTotal: 1,
+  selectedPlan: null,
+  quote: {
+    natural: { name: '', phone: '', birth_y: '', birth_m: '', birth_d: '', nat: '本國籍', nat_other: '', id: '' },
+    legal:   { c_name: '', c_tax: '', c_reg: '本國', c_reg_other: '', c_owner: '', c_phone: '' }
+  },
+  applicantDetail: { addr: '', job: '一般職業', nat: '本國籍' },
+  mainInsured: { name: '', id: '', plan: '計畫一' }
+};
+
+// ============================================================
+// 共用工具
+// ============================================================
+function el(tag, attrs = {}, children = []) {
+  const e = document.createElement(tag);
+  Object.entries(attrs).forEach(([k, v]) => {
+    if (k === 'class') e.className = v;
+    else if (k === 'html') e.innerHTML = v;
+    else if (k.startsWith('on') && typeof v === 'function') e[k] = v;
+    else if (v !== undefined && v !== null) e.setAttribute(k, v);
+  });
+  (Array.isArray(children) ? children : [children]).forEach(c => {
+    if (c === null || c === undefined) return;
+    if (typeof c === 'string') e.appendChild(document.createTextNode(c));
+    else e.appendChild(c);
+  });
+  return e;
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._h);
+  t._h = setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+// ============================================================
+// 表單元件工廠
+// ============================================================
+function makeInput(name, placeholder = '請輸入', type = 'text', value = '') {
+  return el('input', { class: 'form-input', name, type, placeholder, value });
+}
+
+function makeSelect(name, options, placeholder = '請選擇', value = '') {
+  const sel = el('select', { class: 'form-select', name });
+  sel.appendChild(el('option', { value: '' }, placeholder));
+  options.forEach(o => {
+    const opt = el('option', { value: o }, o);
+    if (o === value) opt.setAttribute('selected', 'selected');
+    sel.appendChild(opt);
+  });
+  if (value) sel.value = value;
+  return sel;
+}
+
+function makeRadio(name, options, defaultVal = '') {
+  const wrap = el('div', { class: 'radio-group', 'data-name': name });
+  options.forEach(opt => {
+    const pill = el('label', { class: 'radio-pill' + (opt === defaultVal ? ' checked' : '') });
+    const input = el('input', { type: 'radio', name, value: opt });
+    if (opt === defaultVal) input.checked = true;
+    pill.appendChild(input);
+    pill.appendChild(document.createTextNode(opt));
+    pill.addEventListener('click', e => {
+      e.preventDefault();
+      wrap.querySelectorAll('.radio-pill').forEach(p => p.classList.remove('checked'));
+      pill.classList.add('checked');
+      input.checked = true;
+      const ev = new Event('change', { bubbles: true });
+      wrap.dispatchEvent(ev);
+    });
+    wrap.appendChild(pill);
+  });
+  wrap.getValue = () => {
+    const checked = wrap.querySelector('input[type="radio"]:checked');
+    return checked ? checked.value : '';
+  };
+  return wrap;
+}
+
+function makeCheckbox(name, label, defaultChecked = false) {
+  const pill = el('label', { class: 'check-pill' + (defaultChecked ? ' checked' : '') });
+  const input = el('input', { type: 'checkbox', name });
+  if (defaultChecked) input.checked = true;
+  pill.appendChild(input);
+  pill.appendChild(document.createTextNode(label));
+  pill.addEventListener('click', e => {
+    e.preventDefault();
+    input.checked = !input.checked;
+    pill.classList.toggle('checked', input.checked);
+    pill.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+  return pill;
+}
+
+function makeCheckboxGroup(name, options, defaults = []) {
+  const wrap = el('div', { class: 'radio-group', 'data-name': name });
+  options.forEach(opt => wrap.appendChild(makeCheckbox(name, opt, defaults.includes(opt))));
+  return wrap;
+}
+
+function makeDate(name, hasTime = false, defaults = {}) {
+  const wrap = el('div', { class: 'date-group', 'data-name': name });
+  const years = [];
+  const cy = new Date().getFullYear();
+  for (let y = cy + 2; y >= cy - 80; y--) years.push(String(y));
+  wrap.appendChild(makeSelect(name + '_y', years, '年', defaults.y || ''));
+  wrap.appendChild(makeSelect(name + '_m', Array.from({length: 12}, (_, i) => String(i + 1)), '月', defaults.m || ''));
+  wrap.appendChild(makeSelect(name + '_d', Array.from({length: 31}, (_, i) => String(i + 1)), '日', defaults.d || ''));
+  if (hasTime) {
+    wrap.appendChild(makeSelect(name + '_h', Array.from({length: 24}, (_, i) => String(i).padStart(2, '0')), '時', defaults.h || ''));
+  }
+  return wrap;
+}
+
+function field(label, inputEl, opts = {}) {
+  const wrap = el('div', { class: 'form-field' + (opts.full ? ' full' : '') });
+  const lbl = el('label', { class: 'form-label' }, label);
+  if (opts.required) lbl.appendChild(el('span', { class: 'req' }, '＊'));
+  if (opts.lockedLabel) lbl.appendChild(el('span', { class: 'lock' }, opts.lockedLabel));
+  wrap.appendChild(lbl);
+  wrap.appendChild(inputEl);
+  return wrap;
+}
+
+function withConditional(parentField, triggerRadio, triggerValue, condLabel, condInputName, condInputPlaceholder = '請說明') {
+  const condWrap = el('div', { class: 'conditional' });
+  const inner = el('div', { class: 'conditional-inner' });
+  inner.appendChild(el('label', {}, condLabel));
+  inner.appendChild(makeInput(condInputName, condInputPlaceholder));
+  condWrap.appendChild(inner);
+  parentField.appendChild(condWrap);
+
+  const sync = () => {
+    const v = triggerRadio.getValue ? triggerRadio.getValue() : '';
+    if (v === triggerValue) condWrap.classList.add('show');
+    else condWrap.classList.remove('show');
+  };
+  triggerRadio.addEventListener('change', sync);
+  sync();
+  return parentField;
+}
+
+function withConditionalCheckbox(parentField, triggerGroup, triggerValue, condLabel, condInputName) {
+  const condWrap = el('div', { class: 'conditional' });
+  const inner = el('div', { class: 'conditional-inner' });
+  inner.appendChild(el('label', {}, condLabel));
+  inner.appendChild(makeInput(condInputName, '請說明'));
+  condWrap.appendChild(inner);
+  parentField.appendChild(condWrap);
+
+  const sync = () => {
+    const checks = triggerGroup.querySelectorAll('input[type="checkbox"]');
+    let on = false;
+    checks.forEach(c => { if (c.checked && c.parentElement.textContent.trim() === triggerValue) on = true; });
+    condWrap.classList.toggle('show', on);
+  };
+  triggerGroup.addEventListener('change', sync);
+  sync();
+  return parentField;
+}
+
+function withConditionalSelect(parentField, selectEl, triggerValue, condLabel, condInputName) {
+  const condWrap = el('div', { class: 'conditional' });
+  const inner = el('div', { class: 'conditional-inner' });
+  inner.appendChild(el('label', {}, condLabel));
+  inner.appendChild(makeInput(condInputName, '請說明'));
+  condWrap.appendChild(inner);
+  parentField.appendChild(condWrap);
+
+  const sync = () => {
+    condWrap.classList.toggle('show', selectEl.value === triggerValue);
+  };
+  selectEl.addEventListener('change', sync);
+  sync();
+  return parentField;
+}
+
+// ── 客戶屬性欄位（專業客戶／非專業客戶）──
+function makeClientTypeField(name) {
+  const f = field('客戶屬性', makeRadio(name, ['專業客戶', '非專業客戶'], ''), { full: true, required: true });
+  const note = el('div', { style: 'margin-top:10px;font-size:11px;color:var(--muted);line-height:1.8;padding:10px 14px;background:var(--surface);border-radius:6px;border-left:3px solid var(--border)' });
+  note.innerHTML = '<strong style="color:var(--ink)">專業客戶</strong>：要保人或被保險人符合以下條件之一者：<br>' +
+    '<span style="display:block;margin-top:4px">(1) 依金融消費者保護法第四條第二項授權規定之專業投資機構：國內外之銀行業、證券業、期貨業、保險業（不包括保險代理人、保險經紀人及保險公證人）、基金管理公司及政府投資機構；國內外之政府基金、退休基金、共同基金、單位信託及金融服務業依證券投資信託及顧問法、期貨交易法或信託業法經理之基金或接受金融消費者委任交付或信託移轉之委託投資資產；其他經主管機關認定之機構。</span>' +
+    '<span style="display:block;margin-top:4px">(2) 要保人或被保險人為法人，接受本公司提供保險商品或服務時最近一期之財務報告總資產達新臺幣五千萬元以上。</span>';
+  f.appendChild(note);
+  return f;
+}
+
+// ── 年齡計算（回傳整數歲數，birthValue 為 YYYY-MM-DD；無法計算回傳 null）──
+function calcAge(birthValue) {
+  if (!birthValue) return null;
+  const birth = new Date(birthValue);
+  if (isNaN(birth)) return null;
+  const today = new Date();
+  let age = today.getFullYear() - birth.getFullYear();
+  const m = today.getMonth() - birth.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+  return age;
+}
+
+// ============================================================
+// PAGE 1: 試算資料填寫
+// ============================================================
+function buildCalcPage() {
+  const page = el('section', { class: 'page active', 'data-idx': 0 });
+  page.appendChild(el('div', { class: 'page-header' }, [
+    el('span', { class: 'page-tag' }, 'STEP 01 · QUOTE'),
+    el('h2', { class: 'page-title' }, [el('span', { class: 'underline' }, '試算資料填寫')]),
+    el('p', { class: 'page-subtitle' }, '輸入活動資訊，並確認個資蒐集聲明')
+  ]));
+
+  const startDateInput = el('input', { class: 'form-input', type: 'date', name: 'activity_start_date', style: 'flex:3' });
+  const startHourSel = makeSelect('activity_start_h', Array.from({length: 24}, (_, i) => String(i).padStart(2, '0')), '時');
+  const startDateWrap = el('div', { class: 'date-group' });
+  startDateWrap.appendChild(startDateInput);
+  startDateWrap.appendChild(startHourSel);
+
+  const endDateInput = el('input', { class: 'form-input', type: 'date', name: 'activity_end_date', style: 'flex:3' });
+  const endHourSel = makeSelect('activity_end_h', Array.from({length: 24}, (_, i) => String(i).padStart(2, '0')), '時');
+  endHourSel.classList.add('is-locked');
+  endHourSel.disabled = true;
+  const endDateWrap = el('div', { class: 'date-group' });
+  endDateWrap.appendChild(endDateInput);
+  endDateWrap.appendChild(endHourSel);
+
+  const daysInput = makeInput('activity_days', '依起訖日自動計算', 'text');
+  daysInput.readOnly = true;
+  daysInput.classList.add('is-locked');
+
+  const syncFromDates = () => {
+    const sv = startDateInput.value;
+    const ev = endDateInput.value;
+    if (sv && ev) {
+      const diff = Math.round((new Date(ev) - new Date(sv)) / 86400000);
+      daysInput.value = diff > 0 ? diff + ' 天' : (diff === 0 ? '1 天（同日）' : '');
+    } else {
+      daysInput.value = '';
+    }
+    endHourSel.value = startHourSel.value;
+  };
+  startDateInput.addEventListener('change', syncFromDates);
+  endDateInput.addEventListener('change', syncFromDates);
+  startHourSel.addEventListener('change', () => { endHourSel.value = startHourSel.value; });
+
+  const activity = el('div', { class: 'block' }, [
+    el('div', { class: 'block-header' }, [
+      el('span', { class: 'block-title' }, '活動資訊')
+    ]),
+    el('div', { class: 'form-grid' }, [
+      field('活動類型', makeCheckboxGroup('activity_type', ['第2類（露營、自行車、路跑、健行等）'], ['第2類（露營、自行車、路跑、健行等）']), { full: true }),
+      field('繳費方式', makeCheckboxGroup('pay_method', ['信用卡'], ['信用卡']), { full: true }),
+      field('活動起始日（日期／時）', startDateWrap, { required: true }),
+      field('活動結束日（日期／時）', endDateWrap, { required: true }),
+      el('p', { style: 'grid-column:1/-1;font-size:11px;color:var(--accent-dark);line-height:1.65;padding:8px 12px;background:var(--accent-light);border-radius:6px;border-left:3px solid var(--accent)' },
+        '⚠ 保險日期應完整涵蓋整個活動時間，且建議估算活動前後之交通往返時間。'),
+      field('活動共計天數', daysInput, { lockedLabel: '系統自動帶入' }),
+      field('投保人數', makeSelect('insured_count', Array.from({length: 99}, (_, i) => String(i + 1) + ' 人'), '請選擇人數'), { required: true })
+    ])
+  ]);
+  page.appendChild(activity);
+
+  const consentBox = el('div', { class: 'consent' });
+  CONSENT_PARAGRAPHS.forEach(p => {
+    const pe = el('p', {}, p);
+    if (/^[一二三四五六七八九十]、/.test(p)) pe.classList.add('heading');
+    consentBox.appendChild(pe);
+  });
+  page.appendChild(el('div', { class: 'block' }, [
+    el('div', { class: 'block-header' }, [
+      el('span', { class: 'block-title' }, '個人資料蒐集處理及利用')
+    ]),
+    consentBox,
+    el('div', { class: 'consent-confirm' }, [
+      makeCheckbox('agree_consent', '我已仔細閱讀並同意上述個人資料蒐集處理及利用告知事項', false)
+    ])
+  ]));
+
+  page._saveState = () => {};
+
+  page.appendChild(buildActions(0));
+  return page;
+}
+
+// ============================================================
+// PAGE 2: 選擇方案
+// ============================================================
+function buildPlansPage() {
+  const page = el('section', { class: 'page', 'data-idx': 1 });
+  page.appendChild(el('div', { class: 'page-header' }, [
+    el('span', { class: 'page-tag' }, 'STEP 02 · PLAN'),
+    el('h2', { class: 'page-title' }, [el('span', { class: 'underline' }, '選擇方案')]),
+    el('p', { class: 'page-subtitle' }, '依您的活動需求，選擇最合適的投保計畫')
+  ]));
+
+  const grid = el('div', { class: 'plans-grid' });
+  PLANS.forEach((plan, i) => {
+    const card = el('div', { class: 'plan-card', 'data-plan-idx': i });
+    card.appendChild(el('span', { class: 'plan-tag' }, plan.company));
+    card.appendChild(el('span', { class: 'plan-tag-on' }, '已選擇 ✓'));
+    card.appendChild(el('div', { class: 'plan-name' }, plan.name));
+    card.appendChild(el('div', { class: 'plan-company' }, plan.company));
+    card.appendChild(el('div', { class: 'plan-price' }, [
+      el('span', { class: 'num' }, 'NT$' + plan.premium),
+      el('span', { class: 'unit' }, '/人')
+    ]));
+    const feats = el('ul', { class: 'plan-feature-list' });
+    plan.features.forEach(f => feats.appendChild(el('li', {}, f)));
+    card.appendChild(feats);
+    card.appendChild(el('button', { class: 'plan-select-btn' }, '選擇此方案'));
+
+    card.addEventListener('click', () => {
+      grid.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      STATE.selectedPlan = i;
+      const planName = plan.name.split('·')[0].trim();
+      STATE.mainInsured.plan = planName;
+      updatePlanSummary(plan.premium);
+      showToast('已選擇 ' + plan.name);
+    });
+    grid.appendChild(card);
+  });
+  page.appendChild(grid);
+
+  // ── 費用小計 ──────────────────────────────────────────────────
+  const summaryBar = el('div', {
+    id: 'plan-summary-bar',
+    style: 'display:none;margin-top:16px;padding:16px 20px;background:var(--accent-light);border:2px solid var(--accent);border-radius:12px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap'
+  });
+  const summaryLeft = el('div', { style: 'display:flex;align-items:center;gap:20px;flex-wrap:wrap' });
+  const summaryPremiumEl = el('span', { style: 'font-size:13px;color:var(--muted)' }, '');
+  const summaryCountEl   = el('span', { style: 'font-size:13px;color:var(--muted)' }, '');
+  summaryLeft.appendChild(summaryPremiumEl);
+  summaryLeft.appendChild(summaryCountEl);
+  const summaryTotal = el('div', { style: 'text-align:right' });
+  const summaryTotalLabel = el('div', { style: 'font-size:11px;color:var(--muted);margin-bottom:2px' }, '總保費（含稅）');
+  const summaryTotalAmt   = el('div', { style: 'font-size:26px;font-weight:700;color:var(--accent-dark);line-height:1' }, '');
+  summaryTotal.appendChild(summaryTotalLabel);
+  summaryTotal.appendChild(summaryTotalAmt);
+  summaryBar.appendChild(summaryLeft);
+  summaryBar.appendChild(summaryTotal);
+  page.appendChild(summaryBar);
+
+  function updatePlanSummary(premium) {
+    const countEl = document.querySelector('[name="insured_count"]');
+    const countStr = countEl ? countEl.value : '';
+    const count = countStr ? parseInt(countStr) : 0;
+    const total = premium * count;
+    summaryPremiumEl.textContent = '每人保費 NT$' + premium.toLocaleString();
+    summaryCountEl.textContent   = '× ' + (count || '—') + ' 人';
+    summaryTotalAmt.textContent  = total ? 'NT$ ' + total.toLocaleString() : '—';
+    summaryBar.style.display = 'flex';
+  }
+
+  // 若進入此頁時已有已選方案，立即顯示
+  if (STATE.selectedPlan !== null) {
+    updatePlanSummary(PLANS[STATE.selectedPlan].premium);
+    grid.querySelectorAll('.plan-card').forEach((c, i) => {
+      if (i === STATE.selectedPlan) c.classList.add('selected');
+    });
+  }
+
+  page.appendChild(buildActions(1));
+  return page;
+}
+
+// ============================================================
+// PAGE 3: 要/被保險人資料
+// ============================================================
+function buildApplicantAndInsuredPage() {
+  const page = el('section', { class: 'page', 'data-idx': 2 });
+  page.appendChild(el('div', { class: 'page-header' }, [
+    el('span', { class: 'page-tag' }, 'STEP 03 · APPLICANT & INSURED'),
+    el('h2', { class: 'page-title' }, [el('span', { class: 'underline' }, '要/被保險人資料')]),
+    el('p', { class: 'page-subtitle' }, '請依序填寫要保人與被保險人完整資料')
+  ]));
+
+  // ── 要保人類型選擇（從 Step 1 移入）──
+  const typeRadio = makeRadio('applicant_type', ['自然人', '法人'], STATE.applicantType || '自然人');
+  page.appendChild(el('div', { class: 'block' }, [
+    el('div', { class: 'block-header' }, [
+      el('span', { class: 'block-badge' }, '要保人類型'),
+      el('span', { class: 'block-title' }, '要保人身分')
+    ]),
+    field('請選擇要保人類型', typeRadio, { required: true })
+  ]));
+  typeRadio.addEventListener('change', () => {
+    STATE.applicantType = typeRadio.getValue();
+    const old = pagesEl.querySelector('.page[data-idx="2"]');
+    if (old) {
+      const rebuilt = buildApplicantAndInsuredPage();
+      old.replaceWith(rebuilt);
+      rebuilt.classList.add('active');
+    }
+  });
+
+  let app_addrInput = null, app_jobRadio = null, app_natRadio = null, mail = null;
+  let _appName = null, _appId = null, _appBirth = null, _appRel = null, _appCountryBtn = null;
+
+  if (STATE.applicantType === '自然人') {
+    const q = STATE.quote.natural;
+    const mailOptions = [
+      { value: '電子', label: '電子保單', desc: '核保後，約 3~5 個工作天內收到' },
+      { value: '紙本', label: '紙本保單', desc: '核保後，約 7 個工作天內收到' }
+    ];
+    mail = el('div', { class: 'radio-group', 'data-name': 'mail_type', style: 'flex-direction:column' });
+    mailOptions.forEach(opt => {
+      const pill = el('label', { class: 'radio-pill' + (opt.value === '電子' ? ' checked' : '') });
+      const input = el('input', { type: 'radio', name: 'mail_type', value: opt.value });
+      if (opt.value === '電子') input.checked = true;
+      pill.appendChild(input);
+      pill.appendChild(el('div', { style: 'display:flex;flex-direction:column;gap:2px' }, [
+        el('span', {}, opt.label),
+        el('span', { style: 'font-size:11px;font-weight:400;color:var(--muted)' }, opt.desc)
+      ]));
+      pill.addEventListener('click', e => {
+        e.preventDefault();
+        mail.querySelectorAll('.radio-pill').forEach(p => p.classList.remove('checked'));
+        pill.classList.add('checked');
+        input.checked = true;
+        mail.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+      mail.appendChild(pill);
+    });
+    mail.getValue = () => { const c = mail.querySelector('input:checked'); return c ? c.value : ''; };
+
+    const app_nameInput  = makeInput('detail_name', '', 'text', q.name);
+    const app_phoneInput = makeInput('detail_phone', '', 'tel', q.phone);
+    const birthVal = (q.birth_y && q.birth_m && q.birth_d)
+      ? `${q.birth_y}-${String(q.birth_m).padStart(2,'0')}-${String(q.birth_d).padStart(2,'0')}` : '';
+    const app_birthDate = el('input', { class: 'form-input' + (birthVal ? ' is-filled' : ''), type: 'date', name: 'detail_birth', value: birthVal });
+    const app_idInput   = makeInput('detail_id', '', 'text', q.id);
+    [app_nameInput, app_phoneInput, app_idInput].forEach(inp => { if (inp.value) inp.classList.add('is-filled'); });
+    _appName = app_nameInput; _appId = app_idInput; _appBirth = app_birthDate;
+
+    app_natRadio = makeRadio('detail_nat', ['本國籍', '非本國籍'], q.nat || '本國籍');
+    const app_countryBtn = el('button', { type: 'button', class: 'country-pick-btn' + (q.nat_other ? ' selected' : ''), 'data-value': q.nat_other || '' },
+      q.nat_other || '請選擇國家／地區');
+    if (q.nat !== '非本國籍') app_countryBtn.setAttribute('disabled', 'disabled');
+    app_countryBtn.addEventListener('click', () => {
+      openCountryPicker(app_countryBtn.dataset.value, country => {
+        app_countryBtn.dataset.value = country;
+        app_countryBtn.textContent = country;
+        app_countryBtn.classList.add('selected');
+      });
+    });
+    app_natRadio.addEventListener('change', () => {
+      const v = app_natRadio.getValue();
+      if (v === '非本國籍') { app_countryBtn.removeAttribute('disabled'); }
+      else { app_countryBtn.setAttribute('disabled','disabled'); app_countryBtn.dataset.value=''; app_countryBtn.textContent='請選擇國家／地區'; app_countryBtn.classList.remove('selected'); }
+    });
+    const app_natField = el('div', { class: 'form-field' }, [
+      el('label', { class: 'form-label' }, q.nat ? ['國籍', el('span', { class: 'lock' }, '已自動代入')] : '國籍'),
+      el('div', { class: 'nat-row' }, [app_natRadio, app_countryBtn])
+    ]);
+
+    const app_liveRadio = makeRadio('detail_live', ['本國', '非本國'], '本國');
+    const app_liveCountryBtn = el('button', { type: 'button', class: 'country-pick-btn', 'data-value': '', 'data-field': 'detail_live_country', disabled: 'disabled' }, '請選擇居住國家');
+    app_liveCountryBtn.addEventListener('click', () => {
+      openCountryPicker(app_liveCountryBtn.dataset.value, country => {
+        app_liveCountryBtn.dataset.value = country;
+        app_liveCountryBtn.textContent = country;
+        app_liveCountryBtn.classList.add('selected');
+      });
+    });
+    app_liveRadio.addEventListener('change', () => {
+      const v = app_liveRadio.getValue();
+      if (v === '非本國') { app_liveCountryBtn.removeAttribute('disabled'); }
+      else { app_liveCountryBtn.setAttribute('disabled','disabled'); app_liveCountryBtn.dataset.value=''; app_liveCountryBtn.textContent='請選擇居住國家'; app_liveCountryBtn.classList.remove('selected'); }
+    });
+    const app_liveField = el('div', { class: 'form-field full' }, [
+      el('label', { class: 'form-label' }, '居住地'),
+      el('div', { class: 'nat-row' }, [app_liveRadio, app_liveCountryBtn])
+    ]);
+    app_addrInput = makeInput('detail_addr', '請輸入完整地址');
+    app_jobRadio  = makeRadio('detail_job', ['一般職業', '非一般職業'], '一般職業');
+    const app_relSelect = makeSelect('detail_rel', ['本人', '配偶', '子女', '父母', '祖父母', '兄弟姐妹', '孫子女', '其他'], '請選擇');
+    const app_relField = field('要保人與被保險人關係', app_relSelect);
+    withConditionalSelect(app_relField, app_relSelect, '其他', '請說明關係', 'detail_rel_other');
+    _appRel = app_relSelect; _appCountryBtn = app_countryBtn;
+
+    page.appendChild(el('div', { class: 'block' }, [
+      el('div', { class: 'block-header' }, [
+        el('span', { class: 'block-badge' }, '要保人'),
+        el('span', { class: 'block-title' }, '要保人資料（自然人）')
+      ]),
+      el('div', { class: 'form-grid' }, [
+        field('姓名', app_nameInput, { required: true, lockedLabel: q.name ? '已自動代入' : null }),
+        field('性別', makeRadio('detail_gender', ['男', '女'], ''), { required: true }),
+        field('手機號碼', app_phoneInput, { required: true, lockedLabel: q.phone ? '已自動代入' : null }),
+        app_natField,
+        field('身分證號 / 護照號碼 / 居留證號', app_idInput, { required: true, lockedLabel: q.id ? '已自動代入' : null }),
+        field('出生日期', app_birthDate, { required: true, lockedLabel: birthVal ? '已自動代入' : null }),
+        field('電子郵件', makeInput('detail_email', 'name@example.com', 'email'), { required: true }),
+        app_liveField,
+        field('地址', app_addrInput, { full: true, required: true }),
+        (() => {
+          const f = field('職業', app_jobRadio, { full: true });
+          const note = el('p', { style: 'margin-top:8px;font-size:11px;color:var(--muted);line-height:1.65;padding:8px 12px;background:var(--surface);border-radius:2px;border-left:2px solid var(--border)' },
+            '高風險之行職業宜參考國家洗錢資恐及資武擴風險評估報告所列之高及非常高行業，2024年國家洗錢資恐及資武擴風險評估報告所列高及非常高行業類別如下：國際金融業務分行（OBU）、提供虛擬資產服務之事業或人員、本國銀行、國際證券業務分公司（OSU）、外國銀行在臺分行、國際保險業務分公司（OIU）、證券商、銀樓業、辦理儲金匯兌之郵政機構、人壽保險公司、會計師、律師、提供第三方支付服務之事業或人員、不動產經紀業、農業金融機構（含全國農業金庫、農會信用部及漁會信用部）。'
+          );
+          f.appendChild(note);
+          return f;
+        })(),
+        app_relField,
+        makeClientTypeField('detail_client_type')
+      ])
+    ]));
+
+  } else {
+    const q = STATE.quote.legal;
+    const app_cName  = makeInput('c_detail_name', '', 'text', q.c_name);
+    const app_cTax   = makeInput('c_detail_tax', '', 'text', q.c_tax);
+    const app_cReg   = makeInput('c_detail_reg', '請輸入註冊地', 'text', q.c_reg || '');
+    const app_cOwner = makeInput('c_detail_owner', '', 'text', q.c_owner);
+    [app_cName, app_cTax, app_cOwner].forEach(inp => { if (inp.value) inp.classList.add('is-filled'); });
+    const app_cRegField = field('註冊地', app_cReg, { lockedLabel: q.c_reg ? '已自動代入' : null });
+
+    page.appendChild(el('div', { class: 'block' }, [
+      el('div', { class: 'block-header' }, [
+        el('span', { class: 'block-badge' }, '要保人（法人）'),
+        el('span', { class: 'block-title' }, '要保人資料（法人）')
+      ]),
+      el('div', { class: 'form-grid' }, [
+        field('公司名稱', app_cName, { required: true, lockedLabel: q.c_name ? '已自動代入' : null }),
+        field('統一編號', app_cTax, { required: true, lockedLabel: q.c_tax ? '已自動代入' : null }),
+        app_cRegField,
+        field('公司電話', makeInput('c_detail_phone', '02-xxxx-xxxx', 'tel'), { required: true }),
+        field('手機號碼', makeInput('c_detail_mobile', '09xx-xxx-xxx', 'tel'), { required: true }),
+        field('負責人姓名', app_cOwner, { required: true, lockedLabel: q.c_owner ? '已自動代入' : null }),
+        field('負責人身分證號碼', makeInput('c_detail_owner_id', '請輸入身分證號'), { required: true }),
+        field('地址', makeInput('c_detail_addr', '請輸入公司完整地址'), { required: true, full: true }),
+        (() => {
+          const f = field('行業', makeRadio('c_detail_industry', ['一般行業', '非一般行業'], '一般行業'), { full: true });
+          const note = el('p', { style: 'margin-top:8px;font-size:11px;color:var(--muted);line-height:1.65;padding:8px 12px;background:var(--surface);border-radius:2px;border-left:2px solid var(--border)' },
+            '高風險之行職業宜參考國家洗錢資恐及資武擴風險評估報告所列之高及非常高行業…');
+          f.appendChild(note);
+          return f;
+        })(),
+        makeClientTypeField('c_detail_client_type')
+      ])
+    ]));
+  }
+
+  const ins_planSelect = makeSelect('main_plan', ['計畫一', '計畫二'], '請選擇', STATE.mainInsured.plan || '計畫一');
+  const ins_mainBlock = el('div', { class: 'block' });
+  ins_mainBlock.appendChild(el('div', { class: 'block-header' }, [
+    el('span', { class: 'block-badge' }, '主要被保險人'),
+    el('span', { class: 'block-title' }, '主要被保險人')
+  ]));
+
+  const mkLocked = (name, val) => {
+    const i = makeInput(name, '', 'text', val || '—');
+    i.disabled = true; i.classList.add('is-locked');
+    return i;
+  };
+
+  if (STATE.applicantType === '自然人') {
+    const ins_nameInput  = makeInput('main_name', '請輸入姓名');
+    const ins_idInput    = makeInput('main_id', '請輸入身分證號 / 護照號碼 / 居留證號');
+    const ins_birthInput = el('input', { class: 'form-input', type: 'date', name: 'main_birth' });
+
+    // 國籍：本人時鎖定顯示，非本人時開放 radio + 國家選擇按鈕
+    const ins_natDisplay = makeInput('main_nat_display', '');
+    ins_natDisplay.disabled = true; ins_natDisplay.classList.add('is-locked');
+
+    const ins_natRadio = makeRadio('main_nat', ['本國籍', '非本國籍'], '本國籍');
+    const ins_natCountryBtn = el('button', { type: 'button', class: 'country-pick-btn', 'data-value': '', disabled: 'disabled' }, '請選擇國家／地區');
+    ins_natCountryBtn.addEventListener('click', () => {
+      openCountryPicker(ins_natCountryBtn.dataset.value, country => {
+        ins_natCountryBtn.dataset.value = country;
+        ins_natCountryBtn.textContent   = country;
+        ins_natCountryBtn.classList.add('selected');
+      });
+    });
+    ins_natRadio.addEventListener('change', () => {
+      const v = ins_natRadio.getValue();
+      if (v === '非本國籍') { ins_natCountryBtn.removeAttribute('disabled'); }
+      else { ins_natCountryBtn.setAttribute('disabled', 'disabled'); ins_natCountryBtn.dataset.value = ''; ins_natCountryBtn.textContent = '請選擇國家／地區'; ins_natCountryBtn.classList.remove('selected'); }
+    });
+    const ins_natEditableField = el('div', { class: 'form-field' }, [
+      el('label', { class: 'form-label' }, '國籍'),
+      el('div', { class: 'nat-row' }, [ins_natRadio, ins_natCountryBtn])
+    ]);
+
+    const getAppNat = () => {
+      if (!app_natRadio) return '';
+      const v = app_natRadio.getValue();
+      return v === '非本國籍' ? (_appCountryBtn ? (_appCountryBtn.dataset.value || '非本國籍') : '非本國籍') : (v || '');
+    };
+
+    // 國籍欄位容器，依「本人」切換顯示鎖定欄 or 可編輯欄
+    const ins_natWrapper = el('div', { class: 'form-field' });
+
+    const syncMainGender = () => {
+      if (!(_appRel && _appRel.value === '本人')) return;
+      const appGenderChecked = document.querySelector('[name="detail_gender"]:checked');
+      const appGenderVal = appGenderChecked ? appGenderChecked.value : '';
+      const mainGenderPills = document.querySelectorAll('[name="main_gender"]');
+      mainGenderPills.forEach(inp => {
+        inp.checked = inp.value === appGenderVal;
+        inp.closest('.radio-pill')?.classList.toggle('checked', inp.value === appGenderVal);
+      });
+    };
+
+    const syncMain = () => {
+      const isSelf = _appRel && _appRel.value === '本人';
+      if (isSelf) {
+        ins_nameInput.value  = _appName  ? _appName.value  : '';
+        ins_idInput.value    = _appId    ? _appId.value    : '';
+        ins_birthInput.value = _appBirth ? _appBirth.value : '';
+        ins_natDisplay.value = getAppNat();
+        syncMainGender();
+        [ins_nameInput, ins_idInput, ins_birthInput].forEach(i => { i.disabled = true; i.classList.add('is-locked'); });
+        document.querySelectorAll('[name="main_gender"]').forEach(inp => { inp.disabled = true; inp.closest('.radio-pill')?.style.setProperty('pointer-events','none'); inp.closest('.radio-pill')?.style.setProperty('opacity','0.5'); });
+        ins_natWrapper.innerHTML = '';
+        ins_natWrapper.appendChild(el('label', { class: 'form-label' }, ['國籍', el('span', { class: 'lock' }, '依要保人帶入')]));
+        ins_natWrapper.appendChild(ins_natDisplay);
+      } else {
+        [ins_nameInput, ins_idInput, ins_birthInput].forEach(i => { i.disabled = false; i.classList.remove('is-locked'); });
+        document.querySelectorAll('[name="main_gender"]').forEach(inp => { inp.disabled = false; inp.closest('.radio-pill')?.style.setProperty('pointer-events',''); inp.closest('.radio-pill')?.style.setProperty('opacity',''); });
+        ins_natWrapper.innerHTML = '';
+        ins_natWrapper.appendChild(ins_natEditableField);
+      }
+    };
+
+    if (_appRel)   _appRel.addEventListener('change', syncMain);
+    if (_appName)  _appName.addEventListener('input',  () => { if (_appRel && _appRel.value === '本人') ins_nameInput.value  = _appName.value; });
+    if (_appId)    _appId.addEventListener('input',    () => { if (_appRel && _appRel.value === '本人') ins_idInput.value    = _appId.value; });
+    if (_appBirth) _appBirth.addEventListener('change',() => { if (_appRel && _appRel.value === '本人') ins_birthInput.value = _appBirth.value; });
+    if (app_natRadio) app_natRadio.addEventListener('change', () => { if (_appRel && _appRel.value === '本人') ins_natDisplay.value = getAppNat(); });
+    const appGenderGroup = document.querySelector('[data-name="detail_gender"]');
+    if (appGenderGroup) appGenderGroup.addEventListener('change', syncMainGender);
+    syncMain();
+
+    const ins_guardianInput = makeInput('main_guardian', '請輸入法定監護人姓名');
+    const ins_guardianField = field('法定監護人姓名', ins_guardianInput, { full: true, required: true });
+    ins_guardianField.style.display = 'none';
+
+    const ins_ageError = el('p', { style: 'display:none;margin-top:6px;font-size:12px;color:var(--danger);font-weight:600' }, '⚠ 被保險人須年滿 15 歲，未滿 15 歲無法投保。');
+    const ins_birthField = field('出生日期', ins_birthInput, { required: true });
+    ins_birthField.appendChild(ins_ageError);
+
+    const checkMainGuardian = () => {
+      const age = calcAge(ins_birthInput.value);
+      const tooYoung = age !== null && age < 15;
+      const needGuardian = age !== null && age >= 15 && age < 18;
+      ins_guardianField.style.display = needGuardian ? '' : 'none';
+      ins_ageError.style.display = tooYoung ? '' : 'none';
+      ins_birthInput.style.borderColor = tooYoung ? 'var(--danger)' : '';
+    };
+    ins_birthInput.addEventListener('change', checkMainGuardian);
+    checkMainGuardian();
+
+    ins_mainBlock.appendChild(el('div', { class: 'form-grid', style: 'margin-top:14px' }, [
+      field('姓名', ins_nameInput, { required: true }),
+      field('性別', makeRadio('main_gender', ['男', '女'], ''), { required: true }),
+      field('身分證號 / 護照號碼 / 居留證號', ins_idInput, { required: true }),
+      ins_birthField,
+      ins_natWrapper,
+      field('被保險人是否受有監護宣告', makeRadio('main_guardianship', ['是', '否'], '否'), { full: true }),
+      field('投保方案', ins_planSelect, { required: true, lockedLabel: STATE.selectedPlan !== null ? '從選擇方案帶入' : null }),
+      ins_guardianField
+    ]));
+  } else {
+    const legal_nameInput  = makeInput('main_name', '請輸入被保險人姓名');
+    const legal_idInput    = makeInput('main_id', '請輸入身分證號 / 護照號碼 / 居留證號');
+    const legal_birthInput = el('input', { class: 'form-input', type: 'date', name: 'main_birth' });
+    ins_mainBlock.appendChild(el('div', { class: 'form-grid', style: 'margin-top:14px' }, [
+      field('姓名', legal_nameInput, { required: true }),
+      field('身分證號 / 護照號碼 / 居留證號', legal_idInput, { required: true }),
+      field('出生日期', legal_birthInput, { required: true }),
+      field('被保險人是否受有監護宣告', makeRadio('main_guardianship', ['是', '否'], '否'), { full: true }),
+      field('投保方案', ins_planSelect, { required: true, lockedLabel: STATE.selectedPlan !== null ? '從選擇方案帶入' : null })
+    ]));
+  }
+
+  ins_mainBlock.appendChild(el('div', { style: 'margin-top:12px;padding:10px 14px;background:var(--surface);border-radius:2px;font-size:13px;color:var(--muted)' },
+    '受益人：法定受益人'));
+  page.appendChild(ins_mainBlock);
+
+  const extraBlock = el('div', { class: 'block' });
+  extraBlock.appendChild(el('div', { class: 'block-header' }, [
+    el('span', { class: 'block-badge' }, '其他被保人'),
+    el('span', { class: 'block-title' }, '其他被保險人')
+  ]));
+  const extraList = el('div', { class: 'roster-list', id: 'extra-insured-list' });
+  extraBlock.appendChild(extraList);
+
+  // 依 Step 1 投保人數預先展開（主被保人佔 1 位，其餘為額外被保人）
+  const countEl = document.querySelector('[name="insured_count"]');
+  const preCount = countEl ? (parseInt(countEl.value) || 1) : 1;
+  for (let i = 0; i < preCount - 1; i++) {
+    extraList.appendChild(makeExtraCard(i + 1));
+  }
+
+  extraBlock.appendChild(el('button', { class: 'add-roster', onclick: () => {
+    const idx = extraList.children.length + 1;
+    extraList.appendChild(makeExtraCard(idx));
+  }}, '+ 新增被保險人'));
+  page.appendChild(extraBlock);
+
+  function makeExtraCard(idx) {
+    const card = el('div', { class: 'roster-item' });
+    card.appendChild(el('div', { class: 'roster-item-head' }, [
+      el('span', { class: 'roster-name' }, `被保人 ${idx}`),
+      el('button', { class: 'roster-remove', onclick: e => { e.preventDefault(); card.remove(); }}, '移除')
+    ]));
+    const planI = makeSelect(`r_plan_${idx}`, ['計畫一', '計畫二'], '同主要被保險人', ins_planSelect.value);
+    planI.disabled = true; planI.classList.add('is-locked');
+    ins_planSelect.addEventListener('change', () => { planI.value = ins_planSelect.value; });
+    const birthI = el('input', { class: 'form-input', type: 'date', name: `r_birth_${idx}` });
+    const ageErrorI = el('p', { style: 'display:none;margin-top:6px;font-size:12px;color:var(--danger);font-weight:600' }, '⚠ 被保險人須年滿 15 歲，未滿 15 歲無法投保。');
+    const birthFieldI = field('出生日期', birthI, { required: true });
+    birthFieldI.appendChild(ageErrorI);
+    const guardianI = makeInput(`r_guardian_${idx}`, '請輸入法定監護人姓名');
+    const guardianFieldI = field('法定監護人姓名', guardianI, { full: true, required: true });
+    guardianFieldI.style.display = 'none';
+    birthI.addEventListener('change', () => {
+      const age = calcAge(birthI.value);
+      const tooYoung = age !== null && age < 15;
+      const needGuardian = age !== null && age >= 15 && age < 18;
+      guardianFieldI.style.display = needGuardian ? '' : 'none';
+      ageErrorI.style.display = tooYoung ? '' : 'none';
+      birthI.style.borderColor = tooYoung ? 'var(--danger)' : '';
+    });
+    card.appendChild(el('div', { class: 'form-grid', style: 'margin-top:12px' }, [
+      field('姓名', makeInput(`r_name_${idx}`, '請輸入姓名'), { required: true }),
+      field('身分證號 / 護照號碼 / 居留證號', makeInput(`r_id_${idx}`, ''), { required: true }),
+      birthFieldI,
+      guardianFieldI,
+      field('被保險人是否受有監護宣告', makeRadio(`r_guard_${idx}`, ['是', '否'], '否')),
+      field('投保方案', planI, { lockedLabel: '系統鎖定（與主被相同）' })
+    ]));
+    card.appendChild(el('div', { style: 'margin-top:10px;padding:8px 12px;background:var(--surface);border-radius:2px;font-size:12px;color:var(--muted)' },
+      '受益人：法定受益人'));
+    return card;
+  }
+
+  if (mail) {
+    page.appendChild(el('div', { class: 'block' }, [
+      el('div', { class: 'block-header' }, [
+        el('span', { class: 'block-badge' }, '保單寄送'),
+        el('span', { class: 'block-title' }, '保單寄送方式')
+      ]),
+      el('div', { class: 'form-grid' }, [
+        field('寄送方式', mail, { full: true })
+      ])
+    ]));
+  }
+
+  page._saveState = () => {
+    STATE.applicantType = typeRadio.getValue();
+    if (STATE.applicantType === '自然人') {
+      STATE.applicantDetail.addr = app_addrInput ? app_addrInput.value : '';
+      STATE.applicantDetail.job  = app_jobRadio ? app_jobRadio.getValue() : '一般職業';
+      STATE.applicantDetail.nat  = app_natRadio ? app_natRadio.getValue() : '本國籍';
+      const nameEl  = page.querySelector('[name="detail_name"]');
+      const phoneEl = page.querySelector('[name="detail_phone"]');
+      const idEl    = page.querySelector('[name="detail_id"]');
+      const bv      = page.querySelector('[name="detail_birth"]');
+      if (nameEl)  STATE.quote.natural.name  = nameEl.value;
+      if (phoneEl) STATE.quote.natural.phone = phoneEl.value;
+      if (idEl)    STATE.quote.natural.id    = idEl.value;
+      if (bv && bv.value) {
+        const parts = bv.value.split('-');
+        STATE.quote.natural.birth_y = parts[0];
+        STATE.quote.natural.birth_m = parts[1];
+        STATE.quote.natural.birth_d = parts[2];
+      }
+      STATE.quote.natural.nat = STATE.applicantDetail.nat;
+    } else {
+      const cNameEl  = page.querySelector('[name="c_detail_name"]');
+      const cTaxEl   = page.querySelector('[name="c_detail_tax"]');
+      const cOwnerEl = page.querySelector('[name="c_detail_owner"]');
+      const cPhoneEl = page.querySelector('[name="c_detail_phone"]');
+      const cRegEl   = page.querySelector('[name="c_detail_reg"]');
+      if (cNameEl)  STATE.quote.legal.c_name  = cNameEl.value;
+      if (cTaxEl)   STATE.quote.legal.c_tax   = cTaxEl.value;
+      if (cOwnerEl) STATE.quote.legal.c_owner = cOwnerEl.value;
+      if (cPhoneEl) STATE.quote.legal.c_phone = cPhoneEl.value;
+      if (cRegEl)   STATE.quote.legal.c_reg   = cRegEl.value;
+    }
+    STATE.mainInsured.plan = ins_planSelect.value;
+    const extraCards = page.querySelectorAll('#extra-insured-list .roster-item');
+    STATE.insuredTotal = 1 + extraCards.length;
+  };
+
+  page.appendChild(buildActions(2));
+  return page;
+}
+
+// ============================================================
+// PAGE 4: 問卷填寫
+// ============================================================
+function buildSurveyPage() {
+  const page = el('section', { class: 'page', 'data-idx': 3 });
+  page.appendChild(el('div', { class: 'page-header' }, [
+    el('span', { class: 'page-tag' }, 'STEP 04 · SURVEY'),
+    el('h2', { class: 'page-title' }, [el('span', { class: 'underline' }, '問卷填寫')]),
+    el('p', { class: 'page-subtitle' }, '請依實際情況回答以下問題，完成投保')
+  ]));
+
+  const block = el('div', { class: 'block' });
+  block.appendChild(el('div', { class: 'block-header' }, [
+    el('span', { class: 'block-badge' }, 'KYC'),
+    el('span', { class: 'block-title' }, '保戶問卷')
+  ]));
+
+  if (STATE.applicantType === '法人') {
+    // ── 法人 KYC ────────────────────────────────────────────────
+
+    // 要保單位資訊
+    const unitNameInput = makeInput('s_unit_name', '');
+    unitNameInput.value = STATE.quote.legal.c_name || '';
+    unitNameInput.disabled = true; unitNameInput.classList.add('is-locked');
+
+    const repInput = makeInput('s_unit_rep', '');
+    repInput.value = STATE.quote.legal.c_owner || '';
+    repInput.disabled = true; repInput.classList.add('is-locked');
+
+    const purposeCbGroup = makeCheckboxGroup('s_unit_purpose', ['保障', '員工福利', '其他'], []);
+    const purposeField = field('投保目的（可複選）', purposeCbGroup, { full: true, required: true });
+    withConditionalCheckbox(purposeField, purposeCbGroup, '其他', '請說明其他目的', 's_unit_purpose_other');
+
+    const infoBlock = el('div', { class: 'block' });
+    infoBlock.appendChild(el('div', { class: 'block-header' }, [
+      el('span', { class: 'block-badge' }, '要保單位'),
+      el('span', { class: 'block-title' }, '要保單位資訊')
+    ]));
+    infoBlock.appendChild(el('div', { class: 'form-grid' }, [
+      field('要保單位名稱', unitNameInput, { lockedLabel: '依要保人帶入' }),
+      field('代表人', repInput, { lockedLabel: '依要保人帶入' }),
+      purposeField,
+      field('資本額（萬元）', makeInput('s_unit_capital', '請輸入金額'), { required: true }),
+      field('成立時間（民國年）', makeInput('s_unit_founded', '例：90', 'number'), { required: true }),
+      field('員工人數（人）', makeInput('s_unit_employees', '請輸入人數', 'number'), { required: true }),
+      field('過去三年平均營收（萬元）', makeInput('s_unit_revenue', '請輸入金額'), { required: true, full: true })
+    ]));
+    page.appendChild(infoBlock);
+
+    // 法人 KYC 問卷
+    const legalKycBlock = el('div', { class: 'block' });
+    legalKycBlock.appendChild(el('div', { class: 'block-header' }, [
+      el('span', { class: 'block-badge' }, 'KYC'),
+      el('span', { class: 'block-title' }, '保戶問卷')
+    ]));
+
+    const lq1Radio = makeRadio('s_abroad', ['是', '否'], '');
+    const lq1Field = field('（一）過去一年內要保人是否居住於中華民國境外超過半年以上', lq1Radio, { full: true, required: true });
+    withConditional(lq1Field, lq1Radio, '是', '請說明居住國家（地區）', 's_abroad_country', '請輸入國家名稱');
+
+    const lq2Radio = makeRadio('s_pep', ['是', '否'], '');
+    const lq2Field = field('（二）要保人或被保險人是否為現任（或曾任）國內外政府或國際組織之重要政治性職務人士（如中央或地方民意代表、公務機關首長）', lq2Radio, { full: true, required: true });
+    withConditional(lq2Field, lq2Radio, '是', '若是，請說明', 's_pep_detail');
+
+    const lq3Radio = makeRadio('s_care', ['是', '否'], '');
+    const lq3Field = field('（三）要保人購買保險商品時，是否對於保障內容或給付項目完全不關心，抑或對於具高保單價值準備金或具高現金價值或躉繳保費之保險商品，僅關注保單借款、解約或變更受益人等程序', lq3Radio, { full: true, required: true });
+
+    legalKycBlock.appendChild(el('div', { class: 'form-grid cols-1' }, [lq1Field, lq2Field, lq3Field]));
+    page.appendChild(legalKycBlock);
+
+  } else {
+    // ── 自然人 KYC ───────────────────────────────────────────────
+
+    const q1Sel = makeSelect('s_purpose', ['保障', '子女教育經費', '退休規劃', '房屋貸款', '其他'], '請選擇投保目的');
+    const q1Field = field('要 / 被保險人投保目的及需求', q1Sel, { full: true, required: true });
+    withConditionalSelect(q1Field, q1Sel, '其他', '請說明', 's_purpose_other');
+
+    const q2Sel = makeSelect('s_income', ['25萬以下', '26-50萬', '51-75萬', '76-100萬', '其他'], '請選擇收入區間');
+    const q2Field = field('要保人 / 被保險人 / 家中主要經濟者年收入', q2Sel, { full: true, required: true });
+    withConditionalSelect(q2Field, q2Sel, '其他', '請說明', 's_income_other');
+
+    const q3Sel = makeSelect('s_economic_src', ['本人', '配偶', '父母', '子女', '其他'], '請選擇');
+    const q3Field = field('家中主要經濟來源為被保險人之', q3Sel, { full: true, required: true });
+    withConditionalSelect(q3Field, q3Sel, '其他', '請說明', 's_economic_src_other');
+
+    const q4Radio = makeRadio('s_abroad', ['是', '否'], '');
+    const q4Field = field('過去一年內要保人是否居住於中華民國境外超過半年', q4Radio, { full: true, required: true });
+    withConditional(q4Field, q4Radio, '是', '請填寫居住國家／地區', 's_abroad_country', '請輸入國家名稱');
+
+    const q5Sel = makeSelect('s_pay_src', ['薪資', '投資收入', '存款（退休金）', '存款（其他）', '父母 / 二等親代繳', '貸款', '保單借款', '定存解約', '保險解約金', '其他'], '請選擇');
+    const q5Field = field('本次投保的保險費支出來源', q5Sel, { full: true, required: true });
+    withConditionalSelect(q5Field, q5Sel, '其他', '請說明', 's_pay_src_other');
+
+    const q6Radio = makeRadio('s_pep', ['是', '否'], '');
+    const q6Field = field('要保人或被保險人是否為現任或曾任國內外政府或國際組織重要政治性職務人士', q6Radio, { full: true, required: true });
+    withConditional(q6Field, q6Radio, '是', '請填寫職務說明', 's_pep_detail');
+
+    const form = el('div', { class: 'form-grid cols-1' }, [
+      q1Field, q2Field, q3Field, q4Field, q5Field, q6Field,
+      field('購買保險商品時是否對保障內容或給付項目完全不關心', makeRadio('s_care', ['是', '否'], ''), { full: true, required: true }),
+      (() => {
+        const radio = makeRadio('s_other_ins', ['是', '否'], '');
+        const f = field('被保險人是否投保其它商業保險', radio, { full: true, required: true });
+        withConditional(f, radio, '是', '請填寫保險公司名稱', 's_other_ins_company', '請輸入公司名稱');
+        return f;
+      })(),
+      field('要保人及被保險人投保前三個月內是否有辦理終止契約、貸款或保險單借款', makeRadio('s_recent_act', ['是', '否'], ''), { full: true, required: true })
+    ]);
+    block.appendChild(form);
+    page.appendChild(block);
+  }
+  page.appendChild(buildActions(3));
+  return page;
+}
+
+// ============================================================
+// PAGE 5: 資料確認
+// ============================================================
+function buildConfirmPage() {
+  const page = el('section', { class: 'page', 'data-idx': 4 });
+  page.appendChild(el('div', { class: 'page-header' }, [
+    el('span', { class: 'page-tag' }, 'STEP 05 · CONFIRM'),
+    el('h2', { class: 'page-title' }, [el('span', { class: 'underline' }, '資料確認')]),
+    el('p', { class: 'page-subtitle' }, '請確認以下所有資料皆正確，再前往付款')
+  ]));
+
+  const gv  = name => { const e = document.querySelector(`[name="${name}"]`); return e ? (e.value || '—') : '—'; };
+  const gcb = name => { const checked = [...document.querySelectorAll(`[name="${name}"]:checked`)].map(e => e.closest('label')?.textContent.trim() || e.value); return checked.length ? checked.join('、') : '—'; };
+  const grv = name => { const e = document.querySelector(`[name="${name}"]:checked`); return e ? (e.closest('label')?.textContent.trim() || e.value) : '—'; };
+
+  const row = (label, value) => el('div', { style: 'display:flex;justify-content:space-between;align-items:baseline;padding:7px 0;border-bottom:1px dashed var(--border-light);gap:12px;font-size:13px' }, [
+    el('span', { style: 'color:var(--muted);flex-shrink:0;min-width:130px' }, label),
+    el('span', { style: 'font-weight:600;text-align:right' }, value || '—')
+  ]);
+  const section = (badge, title, rows) => el('div', { class: 'block' }, [
+    el('div', { class: 'block-header' }, [el('span', { class: 'block-badge' }, badge), el('span', { class: 'block-title' }, title)]),
+    el('div', {}, rows)
+  ]);
+
+  const startDate = gv('activity_start_date');
+  const startH    = gv('activity_start_h');
+  const endDate   = gv('activity_end_date');
+  const endH      = gv('activity_end_h');
+  const startStr  = startDate !== '—' ? `${startDate} ${startH}:00` : '—';
+  const endStr    = endDate   !== '—' ? `${endDate} ${endH}:00`   : '—';
+  page.appendChild(section('活動', '活動資訊', [
+    row('活動類型', '第2類（露營、自行車、路跑、健行等）'),
+    row('繳費方式', '信用卡'),
+    row('活動起始', startStr),
+    row('活動結束', endStr),
+    row('活動天數', gv('activity_days'))
+  ]));
+
+  const plan    = STATE.selectedPlan !== null ? PLANS[STATE.selectedPlan] : PLANS.find(p => p.name.startsWith(STATE.mainInsured.plan));
+  const premium = plan ? plan.premium : 0;
+  const total   = premium * STATE.insuredTotal;
+  const feeBlock = section('方案', '投保方案與費用', [
+    row('選擇方案', plan ? plan.name : '—'),
+    row('保障內容', plan ? plan.features.join('、') : '—'),
+    row('每人保費', premium ? `NT$ ${premium.toLocaleString()}` : '—'),
+    row('投保人數', `${STATE.insuredTotal} 人`)
+  ]);
+  feeBlock.appendChild(el('div', { style: 'display:flex;justify-content:space-between;align-items:center;padding:12px 0 4px;margin-top:4px;border-top:1.5px solid var(--border);gap:12px' }, [
+    el('span', { style: 'font-weight:700;font-size:14px' }, '總保費'),
+    el('span', { style: 'font-size:26px;font-weight:700' }, total ? `NT$ ${total.toLocaleString()}` : '—')
+  ]));
+  page.appendChild(feeBlock);
+
+  const isNatural = STATE.applicantType === '自然人';
+  const qn = STATE.quote.natural;
+  const ql = STATE.quote.legal;
+
+  if (isNatural) {
+    const birthStr = (qn.birth_y && qn.birth_m && qn.birth_d) ? `${qn.birth_y}/${qn.birth_m}/${qn.birth_d}` : '—';
+    const natStr   = qn.nat === '非本國籍' ? (qn.nat_other || '非本國籍') : (qn.nat || '—');
+    const liveVal  = grv('detail_live');
+    const liveCBtn = document.querySelector('[data-field="detail_live_country"]');
+    const liveOther = liveCBtn ? (liveCBtn.dataset.value || '') : '';
+    const liveStr  = liveVal === '非本國' ? `非本國（${liveOther || '—'}）` : liveVal;
+    const relVal   = gv('detail_rel');
+    const relOther = gv('detail_rel_other');
+    const relStr   = relVal === '其他' ? `其他（${relOther}）` : relVal;
+    page.appendChild(section('要保人', '要保人資料（自然人）', [
+      row('姓名', qn.name || '—'), row('性別', grv('detail_gender') || '—'),
+      row('出生日期', birthStr), row('國籍', natStr),
+      row('身分證 / 護照 / 居留證', qn.id || '—'), row('手機號碼', qn.phone || '—'),
+      row('電子郵件', gv('detail_email')), row('居住地', liveStr || '—'),
+      row('地址', gv('detail_addr')), row('職業', grv('detail_job') || '—'),
+      row('與被保險人關係', relStr), row('保單寄送方式', grv('mail_type') || '—')
+    ]));
+  } else {
+    page.appendChild(section('要保人', '要保人資料（法人）', [
+      row('公司名稱', ql.c_name || '—'), row('統一編號', ql.c_tax || '—'),
+      row('註冊地', gv('c_detail_reg')), row('公司電話', gv('c_detail_phone')),
+      row('負責人姓名', ql.c_owner || '—'), row('負責人身分證號碼', gv('c_detail_owner_id')),
+      row('地址', gv('c_detail_addr')), row('行業', grv('c_detail_industry') || '—')
+    ]));
+  }
+
+  if (isNatural) {
+    const relVal = gv('detail_rel');
+    const sectionTitle = relVal === '本人' ? '主要被保險人（同要保人）' : '主要被保險人';
+    page.appendChild(section('主要被保險人', sectionTitle, [
+      row('姓名', gv('main_name')), row('性別', grv('main_gender') || '—'),
+      row('身分證 / 護照 / 居留證', gv('main_id')),
+      row('出生日期', gv('main_birth')), row('國籍', gv('main_nat')),
+      row('投保方案', STATE.mainInsured.plan || '—'), row('受益人', '法定受益人')
+    ]));
+  } else {
+    page.appendChild(section('主要被保險人', '主要被保險人', [
+      row('姓名', gv('main_name')), row('性別', grv('main_gender') || '—'),
+      row('身分證 / 護照 / 居留證', gv('main_id')),
+      row('出生日期', gv('main_birth')), row('投保方案', STATE.mainInsured.plan || '—'), row('受益人', '法定受益人')
+    ]));
+  }
+
+  const extraCards = document.querySelectorAll('#extra-insured-list .roster-item');
+  if (extraCards.length > 0) {
+    const extraRows = [];
+    extraCards.forEach((card, i) => {
+      const n  = card.querySelector(`[name="r_name_${i+1}"]`);
+      const id = card.querySelector(`[name="r_id_${i+1}"]`);
+      const b  = card.querySelector(`[name="r_birth_${i+1}"]`);
+      const g  = card.querySelector(`[name="r_guard_${i+1}"]:checked`);
+      if (i > 0) extraRows.push(el('div', { style: 'border-top:1px dashed var(--border-light);margin:6px 0' }));
+      extraRows.push(
+        row(`被保人 ${i+1} 姓名`,      n  ? (n.value  || '—') : '—'),
+        row(`被保人 ${i+1} 身分證`,    id ? (id.value || '—') : '—'),
+        row(`被保人 ${i+1} 出生日期`,  b  ? (b.value  || '—') : '—'),
+        row(`被保人 ${i+1} 監護宣告`,  g  ? (g.closest('label')?.textContent.trim() || g.value) : '—'),
+        row(`被保人 ${i+1} 受益人`,    '法定受益人')
+      );
+    });
+    page.appendChild(section('其他被保人', '其他被保險人', extraRows));
+  }
+
+  const purposeVal = gcb('s_purpose');
+  const abroadVal  = grv('s_abroad');
+  const abroadCntry = abroadVal === '是' ? `是（${gv('s_abroad_country')}）` : abroadVal;
+  const pepVal     = grv('s_pep');
+  const pepDetail  = pepVal === '是' ? `是（${gv('s_pep_detail')}）` : pepVal;
+  page.appendChild(section('問卷', '問卷填寫摘要', [
+    row('投保目的', purposeVal), row('年收入', gv('s_income')),
+    row('主要經濟來源', gv('s_economic_src')), row('過去一年居住境外超過半年', abroadCntry),
+    row('保費來源', gv('s_pay_src')), row('現任/曾任政治性職務', pepDetail),
+    row('完全不關心保障內容', grv('s_care') || '—'), row('投保其他商業保險', grv('s_other_ins') || '—'),
+    row('投保前三個月終止/貸款', grv('s_recent_act') || '—')
+  ]));
+
+  const confirmCheck = makeCheckbox('data_confirm', '我確認以上資料皆正確無誤', false);
+  page.appendChild(el('div', { class: 'block', style: 'background:var(--surface)' }, [
+    el('div', { style: 'display:flex;align-items:center;gap:10px' }, [confirmCheck])
+  ]));
+
+  page.appendChild(el('div', { class: 'page-actions' }, [
+    el('button', { class: 'btn btn-ghost', onclick: () => goPage(3) }, '← 上一步'),
+    el('button', { class: 'btn btn-primary', onclick: () => {
+      const ck = page.querySelector('input[name="data_confirm"]');
+      if (!ck || !ck.checked) { showToast('請先勾選確認資料正確'); return; }
+      STATE.done.add(4);
+      refreshStepper();
+      goPage(5);
+    }}, '下一步 →')
+  ]));
+  return page;
+}
+
+// ============================================================
+// PAGE 6: 信用卡簽帳
+// ============================================================
+function buildCardPage() {
+  const page = el('section', { class: 'page', 'data-idx': 5 });
+  page.appendChild(el('div', { class: 'page-header' }, [
+    el('span', { class: 'page-tag' }, 'STEP 06 · PAYMENT'),
+    el('h2', { class: 'page-title' }, [el('span', { class: 'underline' }, '信用卡簽帳')]),
+    el('p', { class: 'page-subtitle' }, '確認本次投保費用，填寫信用卡資訊完成扣款授權')
+  ]));
+
+  // ── 費用摘要 ──────────────────────────────────────────────────
+  const plan    = STATE.selectedPlan !== null ? PLANS[STATE.selectedPlan]
+                : PLANS.find(p => p.name.startsWith(STATE.mainInsured.plan));
+  const premium = plan ? plan.premium : 0;
+  const countFromStep1El = document.querySelector('[name="insured_count"]');
+  const countFromStep1   = countFromStep1El ? parseInt(countFromStep1El.value) || 0 : 0;
+  const count   = STATE.insuredTotal > 1 ? STATE.insuredTotal : (countFromStep1 || 1);
+  const total   = premium * count;
+
+  // 明細列
+  const mkRow = (label, val, bold) => {
+    const row = el('div', { style: 'display:flex;justify-content:space-between;align-items:baseline;padding:8px 0;border-bottom:1px solid var(--border-light);font-size:13px;gap:12px' });
+    row.appendChild(el('span', { style: 'color:var(--muted)' }, label));
+    row.appendChild(el('span', { style: bold ? 'font-weight:700' : '' }, val));
+    return row;
+  };
+
+  const summaryBlock = el('div', { class: 'block', style: 'margin-bottom:16px' });
+  summaryBlock.appendChild(el('div', { class: 'block-header' }, [
+    el('span', { class: 'block-badge' }, '費用摘要'),
+    el('span', { class: 'block-title' }, '本次扣款明細')
+  ]));
+
+  const detailArea = el('div', { style: 'margin-bottom:4px' });
+  detailArea.appendChild(mkRow('投保方案', plan ? plan.name : '—'));
+  detailArea.appendChild(mkRow('保障內容', plan ? plan.features.join('、') : '—'));
+  detailArea.appendChild(mkRow('每人保費', premium ? `NT$ ${premium.toLocaleString()}` : '—'));
+  detailArea.appendChild(mkRow('投保人數', `${count} 人`));
+  summaryBlock.appendChild(detailArea);
+
+  // 總額區塊
+  const totalRow = el('div', { style: 'display:flex;justify-content:space-between;align-items:center;padding:14px 0 2px;margin-top:4px;border-top:2px solid var(--ink);gap:12px' });
+  totalRow.appendChild(el('span', { style: 'font-size:14px;font-weight:700' }, '總計應付金額'));
+  const totalAmt = el('div', { style: 'text-align:right' });
+  totalAmt.appendChild(el('div', { style: 'font-size:28px;font-weight:700;line-height:1' },
+    total ? `NT$ ${total.toLocaleString()}` : '—'));
+  totalRow.appendChild(totalAmt);
+  summaryBlock.appendChild(totalRow);
+
+  page.appendChild(summaryBlock);
+
+  // ── 信用卡表單 ────────────────────────────────────────────────
+  const bankSelect = makeSelect('card_bank', [
+    '004-臺灣銀行','005-臺灣土地銀行','006-合作金庫商業銀行','007-第一商業銀行',
+    '008-華南商業銀行','009-彰化商業銀行','011-上海商業儲蓄銀行','012-台北富邦商業銀行',
+    '013-國泰世華商業銀行','016-高雄銀行','017-兆豐國際商業銀行','021-花旗（台灣）商業銀行',
+    '048-王道商業銀行','050-臺灣中小企業銀行','052-渣打銀行','053-台中商業銀行',
+    '081-匯豐（台灣）商業銀行','102-華泰商業銀行','103-臺灣新光商業銀行','108-陽信商業銀行',
+    '147-三信商業銀行','700-中華郵政公司','803-聯邦商業銀行','805-遠東國際商業銀行',
+    '806-元大商業銀行','807-永豐商業銀行','808-玉山商業銀行','809-凱基商業銀行',
+    '810-星展(臺灣)商業銀行','812-台新國際商業銀行'
+  ], '請選擇銀行');
+  const bankField = field('發卡銀行', bankSelect, { required: true });
+  withConditionalSelect(bankField, bankSelect, '其他', '請輸入銀行名稱', 'card_bank_other');
+
+  const cardRelRadio   = makeRadio('card_relation', ['要保人', '主被保險人'], '要保人');
+  const cardHolderName = makeInput('card_holder', '');
+  const cardHolderId   = makeInput('card_holder_id', '');
+  const cardHolderPhone = makeInput('card_holder_phone', '', 'tel');
+
+  const syncCardHolder = () => {
+    const val = cardRelRadio.getValue();
+    if (val === '要保人') {
+      const nameEl  = document.querySelector('[name="detail_name"]');
+      const idEl    = document.querySelector('[name="detail_id"]');
+      const phoneEl = document.querySelector('[name="detail_phone"]');
+      cardHolderName.value  = nameEl  ? nameEl.value  : '';
+      cardHolderId.value    = idEl    ? idEl.value    : '';
+      cardHolderPhone.value = phoneEl ? phoneEl.value : '';
+      [cardHolderName, cardHolderId, cardHolderPhone].forEach(i => { i.disabled = true; i.classList.add('is-locked'); });
+    } else if (val === '主被保險人') {
+      const nameEl = document.querySelector('[name="main_name"]');
+      const idEl   = document.querySelector('[name="main_id"]');
+      cardHolderName.value  = nameEl ? nameEl.value : '';
+      cardHolderId.value    = idEl   ? idEl.value   : '';
+      cardHolderPhone.value = '';
+      [cardHolderName, cardHolderId].forEach(i => { i.disabled = true; i.classList.add('is-locked'); });
+      cardHolderPhone.disabled = false; cardHolderPhone.classList.remove('is-locked');
+    } else {
+      [cardHolderName, cardHolderId, cardHolderPhone].forEach(i => { i.disabled = false; i.classList.remove('is-locked'); });
+    }
+  };
+  cardRelRadio.addEventListener('change', syncCardHolder);
+  syncCardHolder();
+
+  const cardBlock = el('div', { class: 'block' });
+  cardBlock.appendChild(el('div', { class: 'block-header' }, [
+    el('span', { class: 'block-badge' }, '信用卡'),
+    el('span', { class: 'block-title' }, '信用卡資料')
+  ]));
+  const cardGrid = el('div', { class: 'form-grid' });
+  cardGrid.appendChild(field('持卡人關係', cardRelRadio, { full: true, required: true }));
+  [
+    field('持卡人姓名', cardHolderName, { required: true }),
+    field('持卡人手機 / 電話', cardHolderPhone, { required: true }),
+    field('持卡人身分證', cardHolderId, { required: true }),
+    el('div'),
+    field('信用卡種類', makeSelect('card_type', ['VISA', 'MASTER', 'JCB'], '請選擇卡別'), { required: true }),
+    bankField,
+    (() => {
+      const wrap = el('div', { style: 'display:flex;align-items:center;gap:6px' });
+      ['card_no_1','card_no_2','card_no_3','card_no_4'].forEach((name, i) => {
+        if (i > 0) wrap.appendChild(el('span', { style: 'color:var(--muted);font-size:16px;line-height:1' }, '–'));
+        const inp = makeInput(name, '', 'text');
+        inp.maxLength = 4;
+        inp.style.width = '70px';
+        inp.style.textAlign = 'center';
+        inp.style.letterSpacing = '3px';
+        inp.addEventListener('input', () => {
+          inp.value = inp.value.replace(/\D/g, '').slice(0, 4);
+          if (inp.value.length === 4) {
+            const next = wrap.querySelectorAll('input')[i + 1];
+            if (next) next.focus();
+          }
+        });
+        wrap.appendChild(inp);
+      });
+      return field('信用卡卡號', wrap, { required: true });
+    })(),
+    (() => {
+      const cy = new Date().getFullYear();
+      const years = Array.from({length: 15}, (_, i) => String(cy + i));
+      const wrap = el('div', { class: 'date-group' });
+      wrap.appendChild(makeSelect('card_exp_y', years, '年'));
+      wrap.appendChild(makeSelect('card_exp_m', Array.from({length: 12}, (_, i) => String(i + 1).padStart(2,'0')), '月'));
+      return field('信用卡有效年月', wrap, { required: true });
+    })(),
+  ].forEach(f => cardGrid.appendChild(f));
+  cardBlock.appendChild(cardGrid);
+  page.appendChild(cardBlock);
+
+  // ── 送出確認 ──────────────────────────────────────────────────
+  page.appendChild(el('div', { style: 'border:1px dashed var(--border-light);border-radius:4px;padding:14px 18px;background:var(--surface);font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:4px' },
+    '按下「授權並送出申請」即表示同意本公司依信用卡授權規定，一次性扣款上列總金額。保單將於核保完成後，以您選擇的方式寄送。'));
+
+  page.appendChild(el('div', { class: 'page-actions' }, [
+    el('button', { class: 'btn btn-ghost', onclick: () => goPage(4) }, '← 上一步'),
+    el('button', { class: 'btn btn-dark', onclick: () => {
+      STATE.done.add(5);
+      refreshStepper();
+      showCompletePage();
+    }}, '送出申請')
+  ]));
+  return page;
+}
+
+// ============================================================
+// 完成頁
+// ============================================================
+function showCompletePage() {
+  // 隱藏 stepper + pages，顯示完成頁
+  document.getElementById('stepper').style.display = 'none';
+  document.getElementById('pages').style.display = 'none';
+
+  const plan  = STATE.selectedPlan !== null ? PLANS[STATE.selectedPlan]
+              : PLANS.find(p => p.name.startsWith(STATE.mainInsured.plan));
+  const total = (plan ? plan.premium : 0) * (STATE.insuredTotal || 1);
+  const email = document.querySelector('[name="detail_email"]')?.value || '您的電子郵件';
+
+  const wrap = el('div', { id: 'complete-page' });
+
+  // ── 成功標示 ──
+  const hero = el('div', { style: 'border:1.5px solid var(--border);border-radius:4px;padding:32px 28px;margin-bottom:16px;background:var(--surface);text-align:center' });
+  hero.appendChild(el('div', { style: 'width:52px;height:52px;border:2px solid var(--ink);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:22px' }, '✓'));
+  hero.appendChild(el('div', { style: 'font-size:20px;font-weight:700;margin-bottom:8px' }, '申請送出成功'));
+  hero.appendChild(el('div', { style: 'font-size:13px;color:var(--muted)' }, `已收到您的投保申請，系統正在處理中`));
+  wrap.appendChild(hero);
+
+  // ── 申請資訊 ──
+  const infoBlock = el('div', { class: 'block' });
+  infoBlock.appendChild(el('div', { class: 'block-header' }, [
+    el('span', { class: 'block-badge' }, '申請摘要'),
+    el('span', { class: 'block-title' }, '本次投保資訊')
+  ]));
+  const mkRow = (label, val) => {
+    const r = el('div', { style: 'display:flex;justify-content:space-between;align-items:baseline;padding:8px 0;border-bottom:1px solid var(--border-light);font-size:13px;gap:12px' });
+    r.appendChild(el('span', { style: 'color:var(--muted)' }, label));
+    r.appendChild(el('span', { style: 'font-weight:600' }, val));
+    return r;
+  };
+  infoBlock.appendChild(mkRow('投保方案', plan ? plan.name : '—'));
+  infoBlock.appendChild(mkRow('投保人數', `${STATE.insuredTotal || 1} 人`));
+  infoBlock.appendChild(mkRow('扣款金額', total ? `NT$ ${total.toLocaleString()}` : '—'));
+  infoBlock.appendChild(mkRow('要保人', STATE.quote.natural.name || STATE.quote.legal.c_name || '—'));
+  wrap.appendChild(infoBlock);
+
+  // ── 後續步驟 ──
+  const nextBlock = el('div', { class: 'block' });
+  nextBlock.appendChild(el('div', { class: 'block-header' }, [
+    el('span', { class: 'block-badge' }, '後續步驟'),
+    el('span', { class: 'block-title' }, '請完成以下動作')
+  ]));
+
+  const steps = [
+    {
+      num: '1',
+      title: '收取要保書',
+      desc: `系統將於送出後 5 分鐘內，將要保書寄送至\n${email}\n請至收件匣（含垃圾郵件夾）確認收信。`
+    },
+    {
+      num: '2',
+      title: '簽署要保書',
+      desc: '請列印要保書，由要保人親筆簽名後掃描或拍照存檔。若為法人，須加蓋公司大小章。'
+    },
+    {
+      num: '3',
+      title: '回傳要保書',
+      desc: '請透過 Email 中連結上傳要保書，我們會盡快為您進行投保。'
+    }
+  ];
+
+  steps.forEach(s => {
+    const row = el('div', { style: 'display:flex;gap:16px;padding:16px 0;border-bottom:1px dashed var(--border-light)' });
+    const numBox = el('div', { style: 'width:28px;height:28px;border:1.5px solid var(--ink);border-radius:2px;display:grid;place-items:center;font-size:13px;font-weight:700;flex-shrink:0' }, s.num);
+    const text = el('div');
+    text.appendChild(el('div', { style: 'font-size:14px;font-weight:700;margin-bottom:4px' }, s.title));
+    text.appendChild(el('div', { style: 'font-size:12px;color:var(--muted);line-height:1.7;white-space:pre-line' }, s.desc));
+    row.appendChild(numBox);
+    row.appendChild(text);
+    nextBlock.appendChild(row);
+  });
+
+  wrap.appendChild(nextBlock);
+
+  // ── 下載要保書 ──
+  const dlBtn = el('button', {
+    style: 'width:100%;margin-top:16px;margin-bottom:16px;padding:14px;background:#fff;border:2px solid var(--accent);border-radius:10px;color:var(--accent-dark);font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .15s'
+  }, '');
+  dlBtn.appendChild(el('span', {}, '⬇'));
+  dlBtn.appendChild(el('span', {}, '下載要保書'));
+  dlBtn.addEventListener('mouseenter', () => dlBtn.style.background = 'var(--accent-light)');
+  dlBtn.addEventListener('mouseleave', () => dlBtn.style.background = '#fff');
+  dlBtn.addEventListener('click', () => {
+    alert('【Wireframe】套印要保書下載功能（實際串接後將產生 PDF）');
+  });
+  wrap.appendChild(dlBtn);
+
+  // ── 注意事項 ──
+  const noteBox = el('div', { style: 'border:1px dashed var(--border-light);border-radius:4px;padding:14px 18px;background:var(--surface);margin-bottom:16px' });
+  noteBox.appendChild(el('div', { style: 'font-size:12px;font-weight:700;margin-bottom:8px' }, '注意事項'));
+  const notes = [
+    '保障起始時間以要保書簽回並完成核保後生效，請儘速上傳。',
+    '若 3 個工作天內未上傳簽回文件，本公司將退還已收保費並取消本次申請。',
+    '如有任何問題，請聯繫客服：0800-XXX-XXX（週一至週五 09:00–17:00）'
+  ];
+  const ul = el('ul', { style: 'list-style:none;display:flex;flex-direction:column;gap:6px' });
+  notes.forEach(n => {
+    const li = el('li', { style: 'font-size:12px;color:var(--muted);display:flex;gap:8px' });
+    li.appendChild(el('span', { style: 'flex-shrink:0;font-weight:700;color:var(--ink)' }, '!'));
+    li.appendChild(document.createTextNode(n));
+    ul.appendChild(li);
+  });
+  noteBox.appendChild(ul);
+  wrap.appendChild(noteBox);
+
+  document.getElementById('pages').insertAdjacentElement('afterend', wrap);
+}
+
+// ============================================================
+// 共用按鈕區
+// ============================================================
+function buildActions(idx) {
+  const actions = el('div', { class: 'page-actions' });
+  const left = el('button', { class: 'btn btn-ghost', onclick: () => goPage(idx - 1) }, '← 上一步');
+  if (idx === 0) left.style.visibility = 'hidden';
+  const right = el('button', { class: 'btn btn-primary', onclick: () => {
+    STATE.done.add(idx);
+    refreshStepper();
+    goPage(idx + 1);
+  }}, '下一步 →');
+  actions.appendChild(left);
+  actions.appendChild(right);
+  return actions;
+}
+
+// ============================================================
+// 渲染
+// ============================================================
+const stepperEl = document.getElementById('stepper');
+STAGES.forEach((s, idx) => {
+  const btn = el('button', {
+    class: 'step-btn' + (idx === 0 ? ' active' : ''),
+    'data-idx': idx,
+    onclick: () => goPage(idx)
+  });
+  btn.innerHTML = `
+    <div class="step-icon">
+      <span class="step-emoji">${s.icon}</span>
+      <span class="step-num">${s.tag}</span>
+    </div>
+    <div class="step-name">${s.name}</div>
+    <div class="step-desc">${s.desc}</div>
+  `;
+  stepperEl.appendChild(btn);
+});
+
+const pagesEl = document.getElementById('pages');
+pagesEl.appendChild(buildCalcPage());
+pagesEl.appendChild(buildPlansPage());
+pagesEl.appendChild(buildApplicantAndInsuredPage());
+pagesEl.appendChild(buildSurveyPage());
+pagesEl.appendChild(buildConfirmPage());
+pagesEl.appendChild(buildCardPage());
+
+function goPage(idx) {
+  if (idx < 0 || idx >= STAGES.length) return;
+
+  if (STATE.current === 0 && idx > 0) {
+    const ck = document.querySelector('input[name="agree_consent"]');
+    if (!ck || !ck.checked) { showToast('請先勾選同意個資聲明'); return; }
+  }
+
+  const currentPage = pagesEl.querySelector(`.page[data-idx="${STATE.current}"]`);
+  if (currentPage && typeof currentPage._saveState === 'function') {
+    try { currentPage._saveState(); } catch (e) { console.warn('saveState error', e); }
+  }
+
+  if (idx === 2) {
+    const old = pagesEl.querySelector('.page[data-idx="2"]');
+    if (old) old.replaceWith(buildApplicantAndInsuredPage());
+  }
+  if (idx === 3) {
+    const old = pagesEl.querySelector('.page[data-idx="3"]');
+    if (old) old.replaceWith(buildSurveyPage());
+  }
+  if (idx === 4) {
+    const old = pagesEl.querySelector('.page[data-idx="4"]');
+    if (old) old.replaceWith(buildConfirmPage());
+  }
+  if (idx === 5) {
+    const old = pagesEl.querySelector('.page[data-idx="5"]');
+    if (old) old.replaceWith(buildCardPage());
+  }
+
+  STATE.current = idx;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const target = pagesEl.querySelector(`.page[data-idx="${idx}"]`);
+  if (target) target.classList.add('active');
+  refreshStepper();
+  window.scrollTo({ top: document.querySelector('.stepper').offsetTop - 16, behavior: 'smooth' });
+}
+
+function refreshStepper() {
+  document.querySelectorAll('.step-btn').forEach((b, i) => {
+    b.classList.remove('active', 'done');
+    if (i === STATE.current) b.classList.add('active');
+    else if (STATE.done.has(i)) b.classList.add('done');
+  });
+}
+
+document.addEventListener('keydown', e => {
+  if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
+  if (e.key === 'ArrowRight') goPage(STATE.current + 1);
+  if (e.key === 'ArrowLeft') goPage(STATE.current - 1);
+});
+
+function tick() {
+  const d = new Date();
+  document.getElementById('liveTime').textContent = 'LIVE · ' + d.toLocaleTimeString('zh-TW', { hour12: false });
+}
+tick(); setInterval(tick, 1000);
+</script>
+</body>
+</html>
