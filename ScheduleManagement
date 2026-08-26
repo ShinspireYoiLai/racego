@@ -1,1 +1,2746 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>RaceGo 競賽咖 – 後台示意稿（新增賽程管理）</title>
+<style>
+  :root{
+    --teal:#14b8a6; --teal-dark:#0d9488; --teal-bg:#ecfdf9; --teal-text:#0f766e;
+    --orange:#f59e0b;
+    --ink-900:#1c1f2b; --ink-700:#454a5c; --ink-500:#6b7086; --ink-300:#c9cdd6; --ink-100:#eef0f3;
+    --canvas:#f4f5f7; --paper:#ffffff;
+    --dropdown-bg:#20242f; --dropdown-hover:#2c313e;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--canvas);color:var(--ink-900);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC","Segoe UI",sans-serif;
+    -webkit-font-smoothing:antialiased;font-size:14px;}
+
+  /* ---------- topbar ---------- */
+  .topbar{height:60px;background:#fff;border-bottom:1px solid var(--ink-100);display:flex;align-items:center;
+    justify-content:space-between;padding:0 22px;position:sticky;top:0;z-index:20;}
+  .logo{display:flex;align-items:center;gap:8px;}
+  .logo .mark{width:28px;height:28px;border-radius:8px;background:var(--teal);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .logo .mark svg{width:16px;height:16px;fill:#fff;}
+  .logo .word{font-size:19px;font-weight:800;color:#22262f;letter-spacing:.2px;}
+  .logo .word .go{color:var(--orange);}
+  .logo .cjk{font-size:19px;font-weight:800;color:#22262f;margin-left:2px;}
+  .page-title{font-size:14.5px;font-weight:600;color:var(--ink-700);}
+  .top-right{display:flex;align-items:center;gap:14px;}
+  .icon-btn{width:32px;height:32px;border-radius:9px;background:var(--teal);display:flex;align-items:center;justify-content:center;cursor:pointer;}
+  .icon-btn svg{width:16px;height:16px;fill:#fff;}
+  .user-chip{display:flex;align-items:center;gap:8px;background:var(--teal-bg);border-radius:999px;padding:5px 12px 5px 6px;cursor:pointer;}
+  .user-chip .avatar{width:26px;height:26px;border-radius:50%;background:var(--teal);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;}
+  .user-chip .u-name{font-size:13px;font-weight:700;color:var(--ink-900);line-height:1.2;}
+  .user-chip .u-sub{font-size:10.5px;color:var(--ink-500);line-height:1.2;}
+  .user-chip .chev{font-size:10px;color:var(--ink-500);margin-left:2px;}
+
+  /* ---------- layout ---------- */
+  .shell{display:flex;min-height:calc(100vh - 60px);}
+  .sidebar{width:230px;background:#fff;border-right:1px solid var(--ink-100);padding:18px 12px;flex-shrink:0;}
+  .nav-section{margin-bottom:6px;}
+  .nav-label{font-size:11px;color:var(--ink-500);font-weight:700;padding:12px 10px 6px;letter-spacing:.03em;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;color:var(--ink-700);
+    font-size:13.5px;font-weight:500;cursor:pointer;position:relative;margin-bottom:2px;user-select:none;}
+  .nav-item:hover{background:#f7f8fa;}
+  .nav-item svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.8;flex-shrink:0;}
+  .nav-item.active{background:var(--teal-bg);color:var(--teal-text);font-weight:700;}
+  .nav-item.active::before{content:'';position:absolute;left:-12px;top:6px;bottom:6px;width:3px;border-radius:0 3px 3px 0;background:var(--teal);}
+  .nav-item .chev-r{margin-left:auto;font-size:10px;color:var(--ink-300);transition:transform .15s;}
+  .nav-item.open .chev-r{transform:rotate(90deg);color:var(--teal);}
+  .nav-item.new-badge{position:relative;}
+  .badge-new{font-size:9px;background:var(--orange);color:#fff;border-radius:999px;padding:1px 6px;margin-left:auto;font-weight:700;}
+
+  /* collapsible accordion submenu (inline, pushes items below it) */
+  .subnav{max-height:0;overflow:hidden;transition:max-height .2s ease;}
+  .subnav.show{max-height:280px;}
+  .subnav .f-item{padding:8px 10px 8px 39px;border-radius:8px;color:var(--ink-700);font-size:13px;cursor:pointer;
+    position:relative;margin-bottom:1px;}
+  .subnav .f-item::before{content:'';position:absolute;left:22px;top:0;bottom:0;width:1px;background:var(--ink-100);}
+  .subnav .f-item:last-child::before{bottom:50%;}
+  .subnav .f-item::after{content:'';position:absolute;left:22px;top:50%;width:8px;height:1px;background:var(--ink-300);}
+  .subnav .f-item:hover{background:var(--teal-bg);color:var(--teal-text);}
+  .subnav .f-item.active{background:var(--teal-bg);color:var(--teal-text);font-weight:700;}
+
+  .main{flex:1;min-width:0;padding:26px 30px;}
+  .main h1{font-size:19px;margin:0 0 16px;}
+
+  .card{background:#fff;border-radius:12px;border:1px solid var(--ink-100);overflow:hidden;}
+  .card-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--ink-100);}
+  .card-head .ch-left{display:flex;align-items:center;gap:9px;font-size:14.5px;font-weight:700;}
+  .card-head .ch-left .chat-ic{width:26px;height:26px;border-radius:50%;background:var(--teal);display:flex;align-items:center;justify-content:center;}
+  .card-head .ch-left .chat-ic svg{width:14px;height:14px;fill:#fff;}
+  .filters{display:flex;gap:8px;}
+  .pill{font-size:12px;padding:6px 14px;border-radius:999px;border:1px solid var(--ink-100);color:var(--ink-500);cursor:pointer;font-weight:600;}
+  .pill.on{background:var(--teal);border-color:var(--teal);color:#fff;}
+
+  .msg-row{display:flex;align-items:flex-start;gap:12px;padding:16px 20px;}
+  .msg-row .m-avatar{width:34px;height:34px;border-radius:50%;background:#6c63f0;color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .msg-row .m-body{flex:1;}
+  .msg-row .m-name{font-weight:700;font-size:13.5px;}
+  .msg-row .m-tag{font-size:11.5px;color:var(--ink-500);margin:1px 0 4px;}
+  .msg-row .m-text{font-size:13px;color:var(--ink-700);}
+  .msg-row .m-time{font-size:11.5px;color:var(--ink-500);flex-shrink:0;}
+
+  .note{font-size:11.5px;color:var(--ink-500);text-align:center;margin-top:18px;}
+  .note b{color:var(--teal-text);}
+
+  .table-card{background:#fff;border-radius:12px;border:1px solid var(--ink-100);overflow:hidden;}
+  .table-card table{width:100%;border-collapse:collapse;}
+  .table-card th{background:#f7f8fa;color:var(--ink-500);font-size:12px;font-weight:700;text-align:left;padding:12px 20px;border-bottom:1px solid var(--ink-100);}
+  .table-card td{padding:13px 20px;font-size:13.5px;color:var(--ink-900);border-bottom:1px solid var(--ink-100);}
+  .table-card tr:last-child td{border-bottom:none;}
+  .table-card tbody tr:hover{background:#fafbfc;}
+  .btn-setting{background:var(--teal);color:#fff;border:none;border-radius:8px;padding:6px 16px;font-size:12.5px;font-weight:600;cursor:pointer;}
+  .btn-setting:hover{background:var(--teal-dark);}
+  .row-actions{display:flex;gap:8px;}
+  .btn-venue{background:#fff;border:1.3px solid var(--teal);color:var(--teal-text);border-radius:8px;padding:6px 16px;font-size:12.5px;font-weight:600;cursor:pointer;}
+  .btn-venue:hover{background:var(--teal-bg);}
+
+  /* ---------- 賽程設定（組別列表，依賽事項目篩選） ---------- */
+  #page-schedule-settings .sport-filter-bar{display:flex;align-items:flex-end;gap:16px;margin-bottom:16px;max-width:260px;}
+  #page-schedule-settings .sport-filter-bar label{display:block;font-size:12.5px;color:var(--ink-700);margin-bottom:6px;font-weight:600;}
+  #page-schedule-settings .sport-filter-bar select{width:100%;padding:10px 12px;border:1.3px solid var(--ink-300);border-radius:8px;font-size:14px;color:var(--ink-900);background:#fff;}
+  #page-schedule-settings .sport-filter-bar select:focus{outline:none;border-color:var(--teal);}
+  #page-schedule-tool .sched-sport-tag{display:inline-block;font-size:12px;font-weight:700;color:var(--teal-text);background:var(--teal-bg);border-radius:999px;padding:2px 12px;margin-left:8px;vertical-align:middle;}
+
+  /* ---------- 賽程設定工具（單一組別的賽程圖產生器，內嵌於後台） ---------- */
+  #page-schedule-tool .sched-backlink,  #page-result-tool .sched-backlink,#page-venue-tool .sched-backlink,#page-court-tool .sched-backlink{font-size:12.5px;color:var(--ink-500);cursor:pointer;margin-bottom:10px;font-weight:600;display:inline-block;}
+  #page-schedule-tool .sched-backlink:hover,  #page-result-tool .sched-backlink:hover,#page-venue-tool .sched-backlink:hover,#page-court-tool .sched-backlink:hover{color:var(--teal-text);}
+  #page-schedule-tool label,  #page-result-tool label,#page-venue-tool label,#page-court-tool label{display:block;font-size:12.5px;color:var(--ink-700);margin-bottom:6px;font-weight:600;}
+  #page-schedule-tool select,  #page-result-tool select,#page-schedule-tool input[type=number],#page-result-tool input[type=number],#page-venue-tool input[type=text],#page-court-tool input[type=text]{width:100%;padding:10px 12px;border:1.3px solid var(--ink-300);border-radius:8px;font-size:14px;color:var(--ink-900);background:#fff;}
+  #page-schedule-tool select:focus,  #page-result-tool select:focus,#page-schedule-tool input:focus,#page-result-tool input:focus{outline:none;border-color:var(--teal);}
+  #page-schedule-tool .panel,  #page-result-tool .panel,#page-venue-tool .panel,#page-court-tool .panel{background:#fff;border-radius:14px;box-shadow:0 1px 2px rgba(28,31,43,.06),0 8px 24px rgba(28,31,43,.06);padding:22px 24px;margin-bottom:16px;}
+  #page-schedule-tool .panel h2,  #page-result-tool .panel h2,#page-venue-tool .panel h2,#page-court-tool .panel h2{margin:0 0 4px;font-size:16px;}
+  #page-schedule-tool .panel .sub,  #page-result-tool .panel .sub,#page-venue-tool .panel .sub,#page-court-tool .panel .sub{color:var(--ink-500);font-size:12.5px;margin-bottom:14px;}
+  #page-schedule-tool .fmt-row,  #page-result-tool .fmt-row{display:flex;gap:16px;align-items:flex-start;}
+  #page-schedule-tool .fmt-row>div:first-child,  #page-result-tool .fmt-row>div:first-child{flex:0 0 280px;}
+  #page-schedule-tool .fmt-desc,  #page-result-tool .fmt-desc{font-size:12.5px;color:var(--ink-500);line-height:1.6;padding-top:8px;}
+  #page-schedule-tool .fmt-desc b,  #page-result-tool .fmt-desc b{color:var(--teal-text);}
+  #page-schedule-tool .field-grid,  #page-result-tool .field-grid,#page-venue-tool .field-grid,#page-court-tool .field-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:6px;}
+  #page-schedule-tool .field-group,  #page-result-tool .field-group{border:1px solid var(--ink-100);border-radius:10px;padding:16px 18px;margin-bottom:14px;}
+  #page-schedule-tool .field-group:last-child,  #page-result-tool .field-group:last-child{margin-bottom:0;}
+  #page-schedule-tool .field-group h4,  #page-result-tool .field-group h4{margin:0 0 12px;font-size:12.5px;color:var(--ink-700);display:flex;align-items:center;gap:8px;}
+  #page-schedule-tool .field-group h4 .chip,  #page-result-tool .field-group h4 .chip{font-size:10.5px;background:var(--teal-bg);color:var(--teal-text);padding:2px 8px;border-radius:999px;font-weight:700;}
+  #page-schedule-tool .hint,  #page-result-tool .hint{font-size:11.5px;color:var(--ink-500);margin-top:8px;line-height:1.5;}
+  #page-schedule-tool .formula-box,  #page-result-tool .formula-box{margin-top:10px;background:#fdf1de;border:1px dashed #c07a12;border-radius:8px;padding:9px 12px;font-size:12px;color:#7a5209;}
+  #page-schedule-tool .toggle-row,  #page-result-tool .toggle-row{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;background:var(--canvas);border-radius:8px;margin-top:10px;}
+  #page-schedule-tool .toggle-row .t-label,  #page-result-tool .toggle-row .t-label{font-size:12.5px;font-weight:600;}
+  #page-schedule-tool .toggle-row .t-hint,  #page-result-tool .toggle-row .t-hint{font-size:11px;color:var(--ink-500);margin-top:2px;}
+  #page-schedule-tool .switch,  #page-result-tool .switch{width:36px;height:20px;border-radius:999px;background:var(--ink-300);position:relative;cursor:pointer;flex-shrink:0;}
+  #page-schedule-tool .switch.on,  #page-result-tool .switch.on{background:var(--teal);}
+  #page-schedule-tool .switch .knob,  #page-result-tool .switch .knob{position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:.15s;}
+  #page-schedule-tool .switch.on .knob,  #page-result-tool .switch.on .knob{left:18px;}
+  #page-schedule-tool .tabs,  #page-result-tool .tabs{display:flex;gap:8px;margin-bottom:16px;}
+  #page-schedule-tool .tab,  #page-result-tool .tab{font-size:12.5px;padding:7px 16px;border-radius:999px;background:var(--ink-100);color:var(--ink-700);cursor:pointer;font-weight:600;}
+  #page-schedule-tool .tab.on,  #page-result-tool .tab.on{background:var(--ink-900);color:#fff;}
+  #page-schedule-tool .preview-head,  #page-result-tool .preview-head,#page-venue-tool .preview-head,#page-court-tool .preview-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:4px;}
+  #page-schedule-tool .btn-download,  #page-result-tool .btn-download{background:#fff;border:1.3px solid var(--teal);color:var(--teal-text);border-radius:8px;padding:8px 16px;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:6px;}
+  #page-schedule-tool .btn-download:hover,  #page-result-tool .btn-download:hover{background:var(--teal-bg);}
+  #page-schedule-tool .chart-frame,  #page-result-tool .chart-frame{border:1.5px dashed var(--ink-300);border-radius:12px;padding:20px;background:#fcfcfd;}
+  #page-schedule-tool .chart-frame.portrait,  #page-result-tool .chart-frame.portrait{max-width:900px;margin:0 auto;}
+  #page-schedule-tool .chart-title,  #page-result-tool .chart-title{font-size:11.5px;color:var(--ink-500);text-align:center;margin-bottom:6px;font-weight:700;}
+  #page-schedule-tool .chart-total,  #page-result-tool .chart-total{font-size:13px;color:var(--teal-text);text-align:center;margin-bottom:16px;font-weight:700;background:var(--teal-bg);border-radius:999px;padding:5px 0;max-width:220px;margin-left:auto;margin-right:auto;}
+  #page-schedule-tool .match-list,  #page-result-tool .match-list{margin:16px auto 4px;max-width:320px;}
+  #page-schedule-tool .match-list-count,  #page-result-tool .match-list-count{font-size:12px;font-weight:700;color:var(--ink-700);margin-bottom:6px;text-align:center;}
+  #page-schedule-tool .match-list-table,  #page-result-tool .match-list-table{width:100%;border-collapse:collapse;font-size:12px;}
+  #page-schedule-tool .match-list-table th,  #page-result-tool .match-list-table th{background:var(--teal);color:#fff;padding:6px 8px;font-weight:700;}
+  #page-schedule-tool .match-list-table td,  #page-result-tool .match-list-table td{padding:5px 8px;text-align:center;border-bottom:1px solid var(--ink-100);color:var(--ink-700);}
+  #page-schedule-tool .match-list-table tbody tr:nth-child(even) td,  #page-result-tool .match-list-table tbody tr:nth-child(even) td{background:var(--canvas);}
+  #page-schedule-tool .match-list-table tr.ml-extra td,  #page-result-tool .match-list-table tr.ml-extra td{background:var(--teal-bg);}
+  #page-schedule-tool .ml-extra-note,  #page-result-tool .ml-extra-note{font-size:10px;color:var(--teal-text);margin-left:4px;}
+  #page-schedule-tool .groups-wrap,  #page-result-tool .groups-wrap{display:flex;flex-wrap:wrap;gap:18px;justify-content:center;}
+  #page-schedule-tool .groups-wrap.landscape,  #page-result-tool .groups-wrap.landscape{max-width:900px;margin:0 auto;}
+  #page-schedule-tool .group-diagram,  #page-result-tool .group-diagram{border:1px solid var(--ink-100);border-radius:10px;padding:10px 12px 8px;text-align:center;background:#fff;}
+  #page-schedule-tool .group-diagram-label,  #page-result-tool .group-diagram-label{font-size:11.5px;font-weight:700;color:var(--ink-700);margin-bottom:6px;}
+  #page-schedule-tool .group-svg,  #page-result-tool .group-svg{width:150px;height:150px;display:block;margin:0 auto;}
+  #page-schedule-tool .group-matrix,  #page-result-tool .group-matrix{border-collapse:collapse;margin:0 auto;}
+  #page-schedule-tool .group-matrix th,  #page-result-tool .group-matrix th,#page-schedule-tool .group-matrix td,#page-result-tool .group-matrix td{border:1px solid var(--ink-300);width:28px;height:28px;min-width:28px;text-align:center;font-size:9.5px;color:var(--ink-700);padding:0;}
+  #page-schedule-tool .group-matrix th,  #page-result-tool .group-matrix th{background:var(--canvas);font-weight:700;}
+  #page-schedule-tool .group-matrix .gm-corner,  #page-result-tool .group-matrix .gm-corner{background:#fff;border-color:var(--ink-100);}
+  #page-schedule-tool .group-matrix .gm-diag,  #page-result-tool .group-matrix .gm-diag{background:linear-gradient(to top left, transparent calc(50% - 0.6px), #333 50%, transparent calc(50% + 0.6px));}
+  #page-schedule-tool .bracket-scroll,  #page-result-tool .bracket-scroll{overflow-x:auto;}
+  #page-schedule-tool .bracket-svg,  #page-result-tool .bracket-svg{display:block;margin:0 auto;max-width:100%;height:auto;}
+  #page-schedule-tool .swiss-table,  #page-result-tool .swiss-table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  #page-schedule-tool .swiss-table th,  #page-result-tool .swiss-table th,#page-schedule-tool .swiss-table td,#page-result-tool .swiss-table td{border:1px solid var(--ink-100);padding:8px 10px;text-align:left;}
+  #page-schedule-tool .swiss-table th,  #page-result-tool .swiss-table th{background:var(--canvas);color:var(--ink-700);}
+  #page-schedule-tool .de-section-title,  #page-result-tool .de-section-title{font-size:12px;font-weight:700;color:var(--teal-text);margin:18px 0 6px;text-align:center;}
+  #page-schedule-tool .note-inline,  #page-result-tool .note-inline{font-size:11px;color:var(--ink-500);text-align:center;margin-top:6px;}
+  #page-schedule-tool .footer-note,  #page-result-tool .footer-note,#page-venue-tool .footer-note,#page-court-tool .footer-note{font-size:11px;color:var(--ink-500);text-align:center;margin-top:24px;}
+  #page-venue-tool .venue-context,#page-court-tool .venue-context,#page-result-tool .venue-context{color:var(--ink-500);font-size:12.5px;margin-bottom:16px;}
+  #page-venue-tool .btn-del,#page-court-tool .btn-del,#page-timetable-settings .btn-del{background:#fff;border:1.3px solid #e05d5d;color:#c0392b;border-radius:8px;padding:6px 14px;font-size:12.5px;font-weight:600;cursor:pointer;height:fit-content;}
+  #page-venue-tool .btn-del:hover,#page-court-tool .btn-del:hover,#page-timetable-settings .btn-del:hover{background:#fdecec;}
+  #page-venue-tool td .row-actions,#page-court-tool td .row-actions{justify-content:flex-start;}
+  #page-result-tool .matchup-cell{display:flex;flex-direction:column;gap:2px;}
+  #page-result-tool .matchup-notation{font-size:11px;color:var(--ink-500);font-weight:600;}
+  #page-result-tool .matchup-teams{font-size:13.5px;color:var(--ink-900);font-weight:700;}
+  #page-result-tool .result-section-row td{background:var(--canvas);color:var(--teal-text);font-weight:700;font-size:12.5px;text-align:center;padding:8px 14px;}
+  #page-result-tool .result-summary{font-size:12.5px;color:var(--ink-500);margin-bottom:14px;}
+  .venue-modal-mask{display:none;position:fixed;inset:0;background:rgba(28,31,43,.45);z-index:200;align-items:center;justify-content:center;padding:24px;}
+  .venue-modal-mask.show{display:flex;}
+  .venue-modal{background:#fff;border-radius:14px;box-shadow:0 20px 60px rgba(28,31,43,.25);width:100%;max-width:520px;max-height:calc(100vh - 48px);overflow-y:auto;padding:24px 26px;}
+  .venue-modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+  .venue-modal-head h2{margin:0;font-size:16px;}
+  .venue-modal-close{background:none;border:none;font-size:16px;color:var(--ink-500);cursor:pointer;line-height:1;padding:4px;border-radius:6px;}
+  .venue-modal-close:hover{background:var(--canvas);color:var(--ink-900);}
+  .venue-modal .field-grid{margin-bottom:0;}
+  .venue-modal label{display:block;font-size:12.5px;color:var(--ink-700);margin-bottom:6px;font-weight:600;}
+  .venue-modal input[type=text]{width:100%;padding:10px 12px;border:1.3px solid var(--ink-300);border-radius:8px;font-size:14px;color:var(--ink-900);background:#fff;}
+  .venue-modal .venue-form-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px;}
+  #page-schedule-tool .save-bar,  #page-result-tool .save-bar,#page-timetable-settings .save-bar{display:flex;justify-content:flex-end;margin-top:4px;}
+  #page-schedule-tool .btn-save,#page-timetable-settings .btn-save{background:var(--teal);color:#fff;border:none;border-radius:8px;padding:10px 28px;font-size:13.5px;font-weight:700;cursor:pointer;}
+  #page-schedule-tool .btn-save:hover,#page-timetable-settings .btn-save:hover{background:var(--teal-dark);}
+
+  /* ---------- 場地時間表（設定＋拖曳排點看板，同一頁面） ---------- */
+  #page-timetable-settings .sched-backlink{font-size:12.5px;color:var(--ink-500);cursor:pointer;margin-bottom:10px;font-weight:600;display:inline-block;}
+  #page-timetable-settings .sched-backlink:hover{color:var(--teal-text);}
+  #page-timetable-settings label{display:block;font-size:12.5px;color:var(--ink-700);margin-bottom:6px;font-weight:600;}
+  #page-timetable-settings select,#page-timetable-settings input[type=number],#page-timetable-settings input[type=date],#page-timetable-settings input[type=time]{width:100%;padding:9px 11px;border:1.3px solid var(--ink-300);border-radius:8px;font-size:13.5px;color:var(--ink-900);background:#fff;}
+  #page-timetable-settings select:focus,#page-timetable-settings input:focus{outline:none;border-color:var(--teal);}
+  #page-timetable-settings .panel{background:#fff;border-radius:14px;box-shadow:0 1px 2px rgba(28,31,43,.06),0 8px 24px rgba(28,31,43,.06);padding:22px 24px;margin-bottom:16px;}
+  #page-timetable-settings .panel h2{margin:0 0 4px;font-size:16px;}
+  #page-timetable-settings .panel .sub{color:var(--ink-500);font-size:12.5px;margin-bottom:14px;}
+  #page-timetable-settings .field-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:6px;}
+  #page-timetable-settings .preview-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:4px;}
+  #page-timetable-settings .footer-note{font-size:11px;color:var(--ink-500);text-align:center;margin-top:24px;}
+  #page-timetable-settings .venue-context{color:var(--ink-500);font-size:12.5px;margin-bottom:16px;}
+  #page-timetable-settings .tt-session-row{display:grid;grid-template-columns:1.1fr 1fr 1fr auto;gap:12px;align-items:end;padding:12px 0;border-bottom:1px solid var(--ink-100);}
+  #page-timetable-settings .tt-session-row:last-child{border-bottom:none;padding-bottom:0;}
+  #page-timetable-settings .tt-session-row:first-child{padding-top:0;}
+  #page-timetable-settings .tt-toolbar-row{display:flex;align-items:flex-end;gap:20px;flex-wrap:wrap;}
+  #page-timetable-settings .tt-toolbar-field{min-width:150px;}
+  #page-timetable-settings .tt-scale-field{min-width:140px;}
+  #page-timetable-settings .tt-toolbar-spacer{flex:1;}
+  #page-timetable-settings .tt-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--ink-700);}
+  #page-timetable-settings .tt-legend-item{display:flex;align-items:center;gap:6px;}
+  #page-timetable-settings .tt-legend-dot{width:11px;height:11px;border-radius:3px;display:inline-block;}
+  #page-timetable-settings .tt-board-scroll{overflow:auto;}
+  #page-timetable-settings .tt-table{border-collapse:collapse;table-layout:fixed;}
+  #page-timetable-settings .tt-table th{background:var(--canvas);color:var(--ink-700);font-size:12px;font-weight:700;padding:8px 10px;border:1px solid var(--ink-100);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;position:sticky;top:0;z-index:2;}
+  #page-timetable-settings .tt-table th:first-child,#page-timetable-settings .tt-table td:first-child{position:sticky;left:0;background:var(--canvas);z-index:1;text-align:center;font-size:11.5px;color:var(--ink-500);font-weight:700;white-space:nowrap;}
+  #page-timetable-settings .tt-table th:first-child{z-index:3;}
+  #page-timetable-settings .tt-cell{border:1px solid var(--ink-100);padding:0;vertical-align:top;background:#fff;}
+  #page-timetable-settings .tt-cell.tt-drag-over{background:var(--teal-bg);}
+  #page-timetable-settings .tt-block{margin:3px;border-radius:8px;color:#fff;padding:6px 8px;font-size:11.5px;line-height:1.4;cursor:grab;position:relative;box-shadow:0 1px 3px rgba(28,31,43,.15);}
+  #page-timetable-settings .tt-block-head{display:flex;align-items:flex-start;justify-content:space-between;gap:6px;}
+  #page-timetable-settings .tt-block-title{font-weight:700;font-size:11px;opacity:.9;}
+  #page-timetable-settings .tt-block-teams{font-weight:700;margin-top:2px;}
+  #page-timetable-settings .tt-block-remove{cursor:pointer;opacity:.8;font-size:11px;flex-shrink:0;line-height:1.4;}
+  #page-timetable-settings .tt-block-remove:hover{opacity:1;}
+  #page-timetable-settings .tt-block-text{margin-top:2px;font-weight:600;outline:none;min-height:14px;cursor:text;word-break:break-word;}
+  #page-timetable-settings .tt-block-text:empty:before{content:attr(data-placeholder);opacity:.7;font-weight:400;}
+  #page-timetable-settings .tt-block-text:focus{background:rgba(255,255,255,.18);border-radius:4px;}
+  #page-timetable-settings .tt-empty-hint{color:var(--ink-300);font-size:11px;text-align:center;padding:14px 4px;}
+
+  /* drawer pushes page content aside instead of covering it, so drop targets stay reachable */
+  .main{transition:margin-right .25s ease;}
+  body.tt-drawer-open .main{margin-right:380px;}
+
+  .tt-drawer-mask{position:fixed;inset:0;pointer-events:none;z-index:210;}
+  .tt-drawer{position:fixed;top:0;right:-400px;width:380px;max-width:90vw;height:100vh;background:#fff;box-shadow:-8px 0 24px rgba(28,31,43,.18);transition:right .25s ease;display:flex;flex-direction:column;padding:20px 20px 24px;pointer-events:auto;}
+  .tt-drawer-mask.show .tt-drawer{right:0;}
+  .tt-drawer-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;}
+  .tt-drawer-head h3{margin:0;font-size:15px;}
+  .tt-drawer-close{cursor:pointer;font-size:14px;color:var(--ink-500);padding:4px 8px;border-radius:6px;}
+  .tt-drawer-close:hover{background:var(--canvas);color:var(--ink-900);}
+  .tt-drawer-sub{font-size:11.5px;color:var(--ink-500);margin-bottom:12px;line-height:1.5;}
+  .tt-drawer-section-title{font-size:12.5px;font-weight:700;color:var(--ink-700);margin-bottom:8px;}
+  .tt-drawer-section-title.tt-collapsible{display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;flex-shrink:0;}
+  .tt-drawer-section-title.tt-collapsible:hover{color:var(--teal-text);}
+  .tt-count-badge{font-weight:600;color:var(--ink-500);margin-left:4px;}
+  .tt-collapse-arrow{font-size:11px;color:var(--ink-500);transition:transform .2s ease;display:inline-block;}
+  .tt-collapse-arrow.collapsed{transform:rotate(-90deg);}
+  #tt-blank-body{overflow:hidden;flex-shrink:0;}
+  #tt-blank-body.collapsed{display:none;}
+  .tt-drawer-divider{height:1px;background:var(--ink-100);margin:16px 0;flex-shrink:0;}
+  .tt-blank-adder{display:flex;align-items:flex-end;gap:8px;margin-bottom:10px;}
+  .tt-blank-adder label{display:block;font-size:12px;color:var(--ink-700);font-weight:600;margin-bottom:6px;}
+  .tt-blank-adder input{width:100%;padding:9px 11px;border:1.3px solid var(--ink-300);border-radius:8px;font-size:13.5px;color:var(--ink-900);background:#fff;}
+  .tt-blank-adder .btn-setting{white-space:nowrap;}
+  .tt-blank-list{display:flex;flex-direction:column;gap:8px;max-height:180px;overflow-y:auto;padding-right:2px;flex-shrink:0;}
+  .tt-blank-empty{font-size:12px;color:var(--ink-300);padding:2px 0 4px;}
+  .tt-blank-card{position:relative;padding-right:52px;}
+  .tt-blank-card-del{position:absolute;top:10px;right:12px;font-size:11px;color:var(--ink-500);cursor:pointer;text-decoration:underline;}
+  .tt-blank-card-del:hover{color:#c0392b;}
+  .tt-drawer-group-select{margin-bottom:14px;flex-shrink:0;}
+  .tt-drawer-group-select label{display:block;font-size:12px;color:var(--ink-700);font-weight:600;margin-bottom:6px;}
+  .tt-drawer-group-select select{width:100%;padding:9px 11px;border:1.3px solid var(--ink-300);border-radius:8px;font-size:13.5px;color:var(--ink-900);background:#fff;}
+  .tt-drawer-list{flex:1 1 auto;min-height:60px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding-right:2px;}
+  .tt-drawer-card{border:1.6px solid var(--teal);border-radius:10px;padding:10px 12px;background:#fff;cursor:grab;font-size:12.5px;}
+  .tt-drawer-card.tt-placed{border-color:var(--ink-100);background:var(--canvas);cursor:default;opacity:.7;}
+  .tt-drawer-card-num{font-size:11px;color:var(--teal-text);font-weight:700;margin-bottom:2px;}
+  .tt-drawer-card.tt-placed .tt-drawer-card-num{color:var(--ink-500);}
+  .tt-drawer-card-teams{font-weight:700;color:var(--ink-900);margin-bottom:2px;}
+  .tt-drawer-card-tag{display:inline-block;font-size:10px;background:var(--ink-300);color:#fff;border-radius:999px;padding:1px 8px;margin-top:4px;}
+
+  /* ---------- 抽籤設定（單一組別的抽籤系統與種子隊設定） ---------- */
+  #page-draw-tool .backlink{font-size:12.5px;color:var(--ink-500);cursor:pointer;margin-bottom:10px;font-weight:600;display:inline-block;}
+  #page-draw-tool .backlink:hover{color:var(--teal-text);}
+  #page-draw-tool label{display:block;font-size:12.5px;color:var(--ink-700);margin-bottom:6px;font-weight:600;}
+  #page-draw-tool select,#page-draw-tool input[type=number],#page-draw-tool input[type=date],#page-draw-tool input[type=time]{width:100%;padding:10px 12px;border:1.3px solid var(--ink-300);border-radius:8px;font-size:14px;color:var(--ink-900);background:#fff;}
+  #page-draw-tool select:focus,#page-draw-tool input:focus{outline:none;border-color:var(--teal);}
+  #page-draw-tool .panel{background:#fff;border-radius:14px;box-shadow:0 1px 2px rgba(28,31,43,.06),0 8px 24px rgba(28,31,43,.06);padding:22px 24px;margin-bottom:16px;}
+  #page-draw-tool .panel h2{margin:0 0 4px;font-size:16px;}
+  #page-draw-tool .panel .sub{color:var(--ink-500);font-size:12.5px;margin-bottom:14px;}
+  #page-draw-tool .field-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:6px;}
+  #page-draw-tool .hint{font-size:11.5px;color:var(--ink-500);margin-top:8px;line-height:1.5;}
+  #page-draw-tool .toggle-row{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;background:var(--canvas);border-radius:8px;}
+  #page-draw-tool .toggle-row .t-label{font-size:12.5px;font-weight:600;}
+  #page-draw-tool .toggle-row .t-hint{font-size:11px;color:var(--ink-500);margin-top:2px;}
+  #page-draw-tool .switch{width:36px;height:20px;border-radius:999px;background:var(--ink-300);position:relative;cursor:pointer;flex-shrink:0;}
+  #page-draw-tool .switch.on{background:var(--teal);}
+  #page-draw-tool .switch .knob{position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:.15s;}
+  #page-draw-tool .switch.on .knob{left:18px;}
+  #page-draw-tool .disabled-block{opacity:.45;pointer-events:none;}
+  #page-draw-tool .datetime-row{display:flex;gap:16px;flex-wrap:wrap;}
+  #page-draw-tool .datetime-row>div{flex:1;min-width:220px;}
+  #page-draw-tool .datetime-row .dt-inputs{display:flex;gap:8px;}
+  #page-draw-tool .radio-row{display:flex;gap:10px;margin-top:6px;flex-wrap:wrap;}
+  #page-draw-tool .radio-opt{flex:1;min-width:200px;border:1.3px solid var(--ink-300);border-radius:10px;padding:12px 14px;cursor:pointer;}
+  #page-draw-tool .radio-opt.on{border-color:var(--teal);background:var(--teal-bg);}
+  #page-draw-tool .radio-opt .r-title{font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px;}
+  #page-draw-tool .radio-opt .r-dot{width:16px;height:16px;border-radius:50%;border:1.6px solid var(--ink-300);flex-shrink:0;position:relative;background:#fff;}
+  #page-draw-tool .radio-opt.on .r-dot{border-color:var(--teal);}
+  #page-draw-tool .radio-opt.on .r-dot::after{content:'';position:absolute;inset:3px;border-radius:50%;background:var(--teal);}
+  #page-draw-tool .radio-opt .r-desc{font-size:11.5px;color:var(--ink-500);margin-top:4px;margin-left:24px;}
+  #page-draw-tool .seed-table{width:100%;border-collapse:collapse;margin-top:4px;}
+  #page-draw-tool .seed-table th{background:var(--canvas);color:var(--ink-500);font-size:11.5px;font-weight:700;text-align:left;padding:9px 10px;border-bottom:1px solid var(--ink-100);}
+  #page-draw-tool .seed-table td{padding:8px 10px;border-bottom:1px solid var(--ink-100);vertical-align:middle;}
+  #page-draw-tool .seed-table select{padding:7px 8px;font-size:13px;}
+  #page-draw-tool .save-bar{display:flex;justify-content:flex-end;margin-top:4px;}
+  #page-draw-tool .btn-save{background:var(--teal);color:#fff;border:none;border-radius:8px;padding:10px 28px;font-size:13.5px;font-weight:700;cursor:pointer;}
+  #page-draw-tool .btn-save:hover{background:var(--teal-dark);}
+  #page-draw-tool .footer-note{font-size:11px;color:var(--ink-500);text-align:center;margin-top:24px;}
+  #page-draw-tool .seed-bracket-example{margin-top:18px;border-top:1px dashed var(--ink-100);padding-top:16px;text-align:center;}
+  #page-draw-tool .seed-bracket-example-title{font-size:12px;font-weight:700;color:var(--ink-700);margin-bottom:10px;}
+  #page-draw-tool .seed-bracket-example img{max-width:100%;border:1px solid var(--ink-100);border-radius:8px;background:#fff;}
+
+  /* ---------- 賽程管理（單一組別逐場次設定日期／時間／場地） ---------- */
+  #page-schedule-manage-tool .backlink{font-size:12.5px;color:var(--ink-500);cursor:pointer;margin-bottom:10px;font-weight:600;display:inline-block;}
+  #page-schedule-manage-tool .backlink:hover{color:var(--teal-text);}
+  #page-schedule-manage-tool .panel{background:#fff;border-radius:14px;box-shadow:0 1px 2px rgba(28,31,43,.06),0 8px 24px rgba(28,31,43,.06);padding:22px 24px;margin-bottom:16px;}
+  #page-schedule-manage-tool .panel h2{margin:0 0 4px;font-size:16px;}
+  #page-schedule-manage-tool .panel .sub{color:var(--ink-500);font-size:12.5px;margin-bottom:14px;}
+  #page-schedule-manage-tool .table-card table{width:100%;border-collapse:collapse;}
+  #page-schedule-manage-tool .table-card th{background:#f7f8fa;color:var(--ink-500);font-size:12px;font-weight:700;text-align:left;padding:10px 14px;border-bottom:1px solid var(--ink-100);white-space:nowrap;}
+  #page-schedule-manage-tool .table-card td{padding:8px 14px;font-size:13px;color:var(--ink-900);border-bottom:1px solid var(--ink-100);vertical-align:middle;}
+  #page-schedule-manage-tool .table-card tr:last-child td{border-bottom:none;}
+  #page-schedule-manage-tool select,#page-schedule-manage-tool input[type=time],#page-schedule-manage-tool input[type=text]{width:100%;padding:7px 8px;border:1.3px solid var(--ink-300);border-radius:7px;font-size:12.5px;color:var(--ink-900);background:#fff;}
+  #page-schedule-manage-tool select:focus,#page-schedule-manage-tool input:focus{outline:none;border-color:var(--teal);}
+  #page-schedule-manage-tool .match-no{font-weight:700;color:var(--ink-700);}
+  #page-schedule-manage-tool .matchup{font-weight:600;white-space:nowrap;}
+  #page-schedule-manage-tool .save-bar{display:flex;justify-content:flex-end;margin-top:4px;}
+  #page-schedule-manage-tool .btn-save{background:var(--teal);color:#fff;border:none;border-radius:8px;padding:10px 28px;font-size:13.5px;font-weight:700;cursor:pointer;}
+  #page-schedule-manage-tool .btn-save:hover{background:var(--teal-dark);}
+  #page-schedule-manage-tool .footer-note{font-size:11px;color:var(--ink-500);text-align:center;margin-top:24px;}
+
+  .mock-toast{position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(20px);background:var(--ink-900);color:#fff;padding:10px 22px;border-radius:999px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:999;}
+  .mock-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">
+    <div class="mark"><svg viewBox="0 0 24 24"><path d="M4 21V3h2v6.5l4-2 4 2 4-2 2 1V15l-2-1-4 2-4-2-4 2v6z"/></svg></div>
+    <div class="word">Race<span class="go">Go</span></div>
+    <div class="cjk">競賽咖</div>
+  </div>
+  <div class="page-title">8/11隊伍狀態確認</div>
+  <div class="top-right">
+    <div class="icon-btn"><svg viewBox="0 0 24 24"><path d="M3 11v2a1 1 0 001 1h2l5 4V6L6 10H4a1 1 0 00-1 1zm13.5 1a4.5 4.5 0 00-2.5-4v8a4.5 4.5 0 002.5-4z"/></svg></div>
+    <div class="user-chip">
+      <div class="avatar">Y</div>
+      <div>
+        <div class="u-name">YOI</div>
+        <div class="u-sub">yoi測試</div>
+      </div>
+      <div class="chev">▾</div>
+    </div>
+  </div>
+</div>
+
+<div class="shell">
+  <div class="sidebar">
+    <div class="nav-section">
+      <div class="nav-label">主控台</div>
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>
+        總覽
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-item" id="eventNavItem" onclick="toggleGroup(event,'eventNavItem','eventFlyout')">
+        <svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2"/><path d="M3 12h18"/></svg>
+        賽事管理
+        <span class="chev-r">▸</span>
+      </div>
+      <div class="subnav" id="eventFlyout">
+        <div class="f-item">賽事資訊</div>
+        <div class="f-item">賽事詳情</div>
+        <div class="f-item">賽事公告</div>
+        <div class="f-item">組別管理</div>
+      </div>
+
+      <div class="nav-item" id="regNavItem" onclick="toggleGroup(event,'regNavItem','regFlyout')">
+        <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/><path d="M16 4.2A3.2 3.2 0 1116 10.6"/><path d="M17.5 14.6c2.3.5 3.5 2.4 3.5 5.4"/></svg>
+        報名管理
+        <span class="chev-r">▸</span>
+      </div>
+      <div class="subnav" id="regFlyout">
+        <div class="f-item">報名名單</div>
+        <div class="f-item">重複名單</div>
+      </div>
+
+      <div class="nav-item open" id="scheduleNavItem" onclick="toggleGroup(event,'scheduleNavItem','scheduleFlyout')">
+        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18"/><path d="M8 2v4M16 2v4"/><path d="M8 13h2M8 17h2M14 13h2M14 17h2"/></svg>
+        賽程管理
+        <span class="chev-r">▸</span>
+      </div>
+      <div class="subnav show" id="scheduleFlyout">
+        <div class="f-item active" id="fitem-schedule-settings" onclick="showPage(event,'page-schedule-settings','fitem-schedule-settings')">賽程設定</div>
+        <div class="f-item" id="fitem-venue-settings" onclick="showPage(event,'page-venue-settings','fitem-venue-settings')">賽事場地</div>
+        <div class="f-item">參賽隊伍</div>
+        <div class="f-item" id="fitem-draw-settings" onclick="showPage(event,'page-draw-settings','fitem-draw-settings')">抽籤設定</div>
+        <div class="f-item" id="fitem-schedule-manage" onclick="showPage(event,'page-schedule-manage-settings','fitem-schedule-manage')">賽程管理</div>
+        <div class="f-item" id="fitem-schedule-result" onclick="showPage(event,'page-result-settings','fitem-schedule-result')">賽程結果</div>
+      </div>
+
+      <div class="nav-item" id="nav-messages" onclick="showPage(event,'page-messages','nav-messages')">
+        <svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
+        賽事諮詢
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">設定</div>
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        賽事設定
+      </div>
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg>
+        通知中心
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="page" id="page-messages" style="display:none">
+      <h1>賽事諮詢</h1>
+      <div class="card">
+        <div class="card-head">
+          <div class="ch-left">
+            <div class="chat-ic"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg></div>
+            賽事諮詢
+          </div>
+          <div class="filters">
+            <div class="pill on">全部</div>
+            <div class="pill">未讀</div>
+            <div class="pill">已回覆</div>
+          </div>
+        </div>
+        <div class="msg-row">
+          <div class="m-avatar">y</div>
+          <div class="m-body">
+            <div class="m-name">yoi</div>
+            <div class="m-tag">第二組・4月</div>
+            <div class="m-text">你好</div>
+          </div>
+          <div class="m-time">2026/8/19 上午08:42</div>
+        </div>
+      </div>
+      <div class="note">＊本頁為示意稿：左側清單由上到下為「賽事管理」＞「報名管理」＞「<b>賽程管理</b>」＞「賽事諮詢」＞「賽事場地」，前三者皆為收合式（Accordion）選單，點擊後在原位置展開子項目、不會遮蓋其他選單；「賽事管理」收合內容為賽事資訊、賽事詳情、賽事公告、組別管理，「報名管理」收合內容為報名名單、重複名單；其餘畫面沿用原有 RaceGo 後台版型。</div>
+    </div>
+
+    <div class="page" id="page-venue-settings" style="display:none">
+      <h1>賽事場地</h1>
+      <div class="table-card">
+        <table>
+          <thead>
+            <tr><th style="width:90px">項次</th><th>賽事項目</th><th style="width:220px">操作</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>籃球</td><td><div class="row-actions"><button class="btn-setting" onclick="openSportVenue(event,'籃球')">場地設定</button><button class="btn-venue" onclick="openSportTimetable(event,'籃球')">時間表</button></div></td></tr>
+            <tr><td>2</td><td>排球</td><td><div class="row-actions"><button class="btn-setting" onclick="openSportVenue(event,'排球')">場地設定</button><button class="btn-venue" onclick="openSportTimetable(event,'排球')">時間表</button></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="note">＊本頁為示意稿：列出本賽事下的各賽事項目，「場地設定」進入該項目的地點／場地管理（與「賽程設定」共用同一份資料）；「時間表」進入該項目的場地時間表，可拖曳賽程安排至各場地時段。</div>
+    </div>
+
+    <div class="page" id="page-schedule-settings">
+      <h1>賽程設定</h1>
+      <div class="sport-filter-bar">
+        <div style="flex:1">
+          <label>賽事項目</label>
+          <select id="sched-sport-filter" onchange="schedOnSportFilterChange()">
+            <option value="籃球">籃球</option>
+            <option value="排球">排球</option>
+          </select>
+        </div>
+      </div>
+      <div class="table-card">
+        <table>
+          <thead>
+            <tr><th style="width:90px">項次</th><th style="width:140px">賽事項目</th><th>組別</th><th style="width:200px">操作</th></tr>
+          </thead>
+          <tbody id="sched-group-table-body"></tbody>
+        </table>
+      </div>
+      <div class="note">＊本頁為示意稿：先於上方選擇欲維護的「賽事項目」，下方僅列出該項目所屬的組別清單，避免混淆不同賽事項目的組別；組別資訊由「賽事管理＞組別管理」帶入；點擊每列的「賽制」按鈕可進入該組別的賽程圖產生畫面；場地設定請至左側「賽事場地」統一管理。</div>
+    </div>
+
+    <div class="page" id="page-schedule-tool" style="display:none">
+      <div class="sched-backlink" onclick="showPage(event,'page-schedule-settings','fitem-schedule-settings')">← 返回組別列表</div>
+      <h1>賽程設定－<span id="sched-group-name">女子組</span><span class="sched-sport-tag" id="sched-sport-tag">籃球</span></h1>
+
+      <div class="panel">
+        <div class="fmt-row">
+          <div>
+            <label>賽制</label>
+            <select id="fmt-select"></select>
+          </div>
+          <div class="fmt-desc" id="fmt-desc"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>填寫賽事資料</h2>
+        <div class="sub" id="fields-sub"></div>
+        <div id="fields-body"></div>
+      </div>
+
+      <div class="panel">
+        <div class="preview-head">
+          <div>
+            <h2>賽程圖預覽</h2>
+            <div class="sub">依上方資料即時產生，可切換直向／橫向檢視</div>
+          </div>
+          <button class="btn-download" onclick="downloadChart()">⬇ 下載</button>
+        </div>
+        <div class="tabs">
+          <div class="tab on" data-o="portrait">直向</div>
+          <div class="tab" data-o="landscape">橫向</div>
+        </div>
+        <div id="chart-body"></div>
+      </div>
+
+      <div class="save-bar">
+        <button class="btn-save" onclick="saveSchedule()">儲存</button>
+      </div>
+
+      <div class="footer-note">＊本頁為介面呈現樣式示意稿，賽程圖排版參考主辦方實際賽程海報樣式；日期／時間為示意用途</div>
+    </div>
+
+    <div class="page" id="page-venue-tool" style="display:none">
+      <div class="sched-backlink" id="venue-tool-backlink" onclick="venueGoBack(event)">← 返回組別列表</div>
+      <h1>場地設定</h1>
+      <div class="venue-context">由「<span id="venue-group-name">女子組</span>」<span id="venue-context-suffix">的賽程設定進入；地點與場地資訊為整場賽事共用，各組別皆可套用</span></div>
+
+      <div class="panel">
+        <div class="preview-head">
+          <div>
+            <h2>地點清單</h2>
+            <div class="sub">先建立比賽地點（如：某體育館），再進入該地點管理內部劃分的場地</div>
+          </div>
+          <button class="btn-setting" onclick="openPlaceForm()">＋ 新增地點</button>
+        </div>
+        <div class="table-card">
+          <table>
+            <thead><tr><th style="width:70px">項次</th><th>地點名稱</th><th>地點說明</th><th style="width:90px">場地數量</th><th>備註</th><th style="width:260px">操作</th></tr></thead>
+            <tbody id="place-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="footer-note">＊本頁為介面呈現樣式示意稿：地點與場地資料僅存於瀏覽器記憶體，重新整理頁面後會還原為預設示例</div>
+    </div>
+
+    <div class="page" id="page-court-tool" style="display:none">
+      <div class="sched-backlink" onclick="showPage(event,'page-venue-tool',venueEntryFrom.fitem)">← 返回地點列表</div>
+      <h1>場地管理－<span id="court-place-name">羽球館 A 館</span></h1>
+      <div class="venue-context">場地為「<span id="court-place-name-ctx">羽球館 A 館</span>」內部劃分的比賽場地，例如：1 號場、2 號場</div>
+
+      <div class="panel">
+        <div class="preview-head">
+          <div>
+            <h2>場地清單</h2>
+            <div class="sub">管理此地點內的所有比賽場地，可新增、修改、刪除</div>
+          </div>
+          <button class="btn-setting" onclick="openCourtForm()">＋ 新增場地</button>
+        </div>
+        <div class="table-card">
+          <table>
+            <thead><tr><th style="width:70px">項次</th><th>場地名稱</th><th>備註</th><th style="width:170px">操作</th></tr></thead>
+            <tbody id="court-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="footer-note">＊本頁為介面呈現樣式示意稿：場地資料僅存於瀏覽器記憶體，重新整理頁面後會還原為預設示例</div>
+    </div>
+
+    <div class="page" id="page-timetable-settings" style="display:none">
+      <div class="sched-backlink" onclick="showPage(event,'page-venue-settings','fitem-venue-settings')">← 返回賽事項目列表</div>
+      <h1>場地時間表－<span id="tt-settings-sport-name">籃球</span></h1>
+      <div class="venue-context">設定比賽時段與每場比賽時間後，點擊「產生時間表」即可在下方拖曳排點</div>
+
+      <div class="panel">
+        <h2>每場比賽時間</h2>
+        <div class="sub">所有場次皆採統一時間長度，時間表格與拖曳方塊會依此長度顯示</div>
+        <div class="field-grid" style="max-width:260px">
+          <div><label>每場比賽時間（分鐘）</label><input type="number" id="tt-duration" min="10" step="5" value="30"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="preview-head">
+          <div>
+            <h2>比賽時間</h2>
+            <div class="sub">提供日期與時間區間，可新增多組（例如不同天、上下午場）</div>
+          </div>
+          <button class="btn-setting" onclick="ttAddSession()">＋ 新增時段</button>
+        </div>
+        <div id="tt-session-list"></div>
+      </div>
+
+      <div class="save-bar">
+        <button class="btn-save" onclick="ttGenerateBoard(event)">產生時間表</button>
+      </div>
+
+      <div class="panel tt-toolbar" id="tt-board-wrap" style="display:none">
+        <div class="tt-toolbar-row">
+          <div class="tt-toolbar-field">
+            <label>日期</label>
+            <select id="tt-date-select" onchange="ttOnDateChange()"></select>
+          </div>
+          <div class="tt-toolbar-field tt-scale-field">
+            <label>顯示比例</label>
+            <input type="range" id="tt-scale" min="70" max="160" value="100" oninput="ttOnScaleChange()">
+          </div>
+          <div class="tt-toolbar-spacer"></div>
+          <div class="tt-legend" id="tt-legend"></div>
+          <button class="btn-venue" onclick="ttToggleDrawer()">📋 賽程清單</button>
+          <button class="btn-setting" onclick="ttExportCSV()">📤 匯出</button>
+          <button class="btn-setting" onclick="ttSave()">儲存</button>
+        </div>
+      </div>
+
+      <div class="panel tt-board-panel" id="tt-board-panel" style="display:none">
+        <h2>場地時間表</h2>
+        <div class="tt-board-scroll">
+          <table class="tt-table" id="tt-table"></table>
+        </div>
+      </div>
+
+      <div class="footer-note">＊本頁為介面呈現樣式示意稿：時段設定與排點結果僅存於瀏覽器記憶體，重新整理頁面後會還原為預設示例</div>
+    </div>
+
+    <div class="tt-drawer-mask" id="tt-drawer-mask">
+      <div class="tt-drawer">
+        <div class="tt-drawer-head">
+          <h3>賽程清單</h3>
+          <div class="tt-drawer-close" onclick="ttToggleDrawer()">✕</div>
+        </div>
+        <div class="tt-drawer-sub">拖曳場次卡片至左側表格空格；已排入的場次會標示「已排入」，可再次拖曳調整位置</div>
+
+        <div class="tt-blank-adder">
+          <div style="flex:1"><label>分鐘數</label><input type="number" id="tt-blank-minutes" min="5" step="5" value="30"></div>
+          <button class="btn-setting" onclick="ttAddBlank()">＋ 新增</button>
+        </div>
+        <div class="tt-drawer-section-title tt-collapsible" onclick="ttToggleBlankList()">
+          <span>自訂空白格清單<span class="tt-count-badge" id="tt-blank-count"></span></span>
+          <span class="tt-collapse-arrow" id="tt-blank-collapse-arrow">▾</span>
+        </div>
+        <div id="tt-blank-body">
+          <div class="tt-blank-list" id="tt-blank-list"></div>
+        </div>
+
+        <div class="tt-drawer-divider"></div>
+
+        <div class="tt-drawer-section-title">賽事場次</div>
+        <div class="tt-drawer-group-select">
+          <label>組別</label>
+          <select id="tt-drawer-group-select" onchange="ttOnDrawerGroupChange()"></select>
+        </div>
+        <div class="tt-drawer-list" id="tt-drawer-list"></div>
+      </div>
+    </div>
+
+    <div class="page" id="page-draw-settings" style="display:none">
+      <h1>抽籤設定</h1>
+      <div class="table-card">
+        <table>
+          <thead>
+            <tr><th style="width:90px">項次</th><th>賽事項目</th><th style="width:140px">操作</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>籃球</td><td><button class="btn-setting" onclick="openSportDraw(event,'籃球')">設定</button></td></tr>
+            <tr><td>2</td><td>排球</td><td><button class="btn-setting" onclick="openSportDraw(event,'排球')">設定</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="note">＊本頁為示意稿：點擊左側「抽籤設定」後，先列出本賽事下的賽事項目清單（與「賽事場地」相同呈現方式）；點擊每列的「設定」按鈕即可進入該賽事項目的抽籤設定畫面。開放抽籤時間為該項目共用設定，種子隊設定則需先選擇組別後再分別設定。</div>
+    </div>
+
+    <div class="page" id="page-draw-tool" style="display:none">
+      <div class="backlink" onclick="showPage(event,'page-draw-settings','fitem-draw-settings')">← 返回賽事項目列表</div>
+      <h1>抽籤設定－<span id="draw-group-name">籃球</span></h1>
+
+      <div class="panel">
+        <h2>抽籤系統設定</h2>
+        <div class="sub">設定是否開放隊伍自行抽籤，以及開放的起訖時間</div>
+
+        <div class="toggle-row">
+          <div>
+            <div class="t-label">開放抽籤</div>
+            <div class="t-hint">開啟後，隊伍可於下方設定的時間內自行進行線上抽籤；關閉則由主辦方於後台手動安排籤位</div>
+          </div>
+          <div class="switch on" id="draw-open-switch" onclick="drawToggleOpen()"><div class="knob"></div></div>
+        </div>
+
+        <div id="draw-time-block" style="margin-top:14px">
+          <div class="datetime-row">
+            <div>
+              <label>開放開始時間</label>
+              <div class="dt-inputs">
+                <input type="date" id="draw-start-date" value="2026-08-25">
+                <input type="time" id="draw-start-time" value="09:00">
+              </div>
+            </div>
+            <div>
+              <label>開放結束時間</label>
+              <div class="dt-inputs">
+                <input type="date" id="draw-end-date" value="2026-08-26">
+                <input type="time" id="draw-end-time" value="18:00">
+              </div>
+            </div>
+          </div>
+          <div class="hint">＊僅於開放時間內，參賽隊伍可自行進行抽籤；時間之外此功能將自動關閉</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>種子隊設定</h2>
+        <div class="sub">請先選擇組別，種子隊數量、名單與籤位安排方式皆依組別分別設定</div>
+
+        <div class="field-grid" style="margin-bottom:4px">
+          <div>
+            <label>組別</label>
+            <select id="draw-seed-group-select" onchange="drawOnSeedGroupChange()">
+              <option value="女子組">女子組</option>
+              <option value="男子組">男子組</option>
+              <option value="混合組">混合組</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field-grid">
+          <div>
+            <label>種子隊數量</label>
+            <input type="number" id="draw-seed-count" value="4" min="0" onchange="drawOnSeedCountChange()">
+          </div>
+        </div>
+
+        <label style="margin-top:14px">籤位安排方式</label>
+        <div class="radio-row">
+          <div class="radio-opt on" id="draw-mode-system" onclick="drawSetMode('system')">
+            <div class="r-title"><span class="r-dot"></span>由系統安排</div>
+            <div class="r-desc">系統將於抽籤執行時，依隨機演算法自動分配種子隊籤位</div>
+          </div>
+          <div class="radio-opt" id="draw-mode-manual" onclick="drawSetMode('manual')">
+            <div class="r-title"><span class="r-dot"></span>主辦自行安排</div>
+            <div class="r-desc">由主辦方於下方手動指定每一個種子隊的籤位</div>
+          </div>
+        </div>
+
+        <div id="draw-seed-table-wrap" style="margin-top:14px"></div>
+        <div class="hint" id="draw-seed-hint"></div>
+
+        <div class="seed-bracket-example">
+          <div class="seed-bracket-example-title">籤位與賽程圖對應範例（僅供參考）</div>
+          <img src="data:image/png;base64,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do/6aNiy7clqlLGf58uo1KlTZ+fOnZpA5+66iaNDftGiRX2/taYTGm3x2vtrAiOLruEpn0ufPv0111yjT3i/fv00VNRWsDrR1/UMfdpN3dcrsylevHiN6C/K1v69SZMmAwcO1OmNTnUkoC2hZcuW2gDSGfSPEBWXr+hqza+//qpDmsYsWbJEFLpfqR3cI488ojEqMtGeLnPmzKobWXRi8/HHHys0DZXhnTlzRmP0idAYFW35SneyZ8+uupFFSYz6XaHpZo5yGl3diYyM1IFfY1RGjx6tO/s681fdyKJ9nXb4Ck17AFF88skntWrV8v22kj4Xixcv1jm/JjCy6N609njay2n/pj2/+vr555/X1Q2rx7XlV6xYURpp06Y1MnxldcrwdNxXdMoB1PVfffXVoUOH6tatqzHp06fv37+/dgU639NL84ruWutgZx3rdQNTh7wtW7boyq4u9FjBasvX5b+sWbNaL00aujHT1ZFeXahDu4quZCit0b081a1StWpV5YK66KVpjCza1itXrvz4448rXl28WbZs2bx583SNUy9V9JnXhn777bcbGbuCUiKr23O6R6Ng9QnXKc1nn32mm/V6qaIb+tr3vRj2/5akhoWnlCtXbsiQIV988YWCValWrdobb7yhy3iqW+WOO+7QJZ/wNCZF1vLHH3/89ddfVrBFihTR9rB582brpYaFCxfWlf4UaVh4VqrodMBTpCr79u3TjR1dx1LdKjr46eMQnpakyFq0befNm9cKVnmPsjrd3WrdurU1RumvroMIIUXaFoaVas+mG3o6wCleZb27d++ePHmytgG9VNFbus6nT0QYWpIiq9BxTfcxhg4dqmBVdPvugw8+0A5fdRVd237llVd0fEyRtoVhpcpqdENv6tSpClZF93J1SVundqpbRR8NKzsKQ2PCvAo3ZroWcQO/h87hfK90vmtNYPZQN618IefPn1/7d+ulkmCzA7ei0yHNilfDsmXLVqpUSRUVJfrWBGYPy5Qpo2CtIgolfFZdQ7MDt6LLly+fIrXKPffcky1bNquuoa7rWNMYPFSMitRXIiIifPWrr77a4MB9ofniVUWHf2V4qqhoV+CbxuCK9nIK1iq6naWMx6rfdNNNtoo6RI2pUqWKFa+GqpcqVUoVFR0TQ7RGWy1WGY6Ctcptt92m7Naqa2irdga3Me7NdAcMGKBbtFbRnXqroqFuaJYuXTq4yjZcmi7iKlirpEmTJmPGjFa9du3a2u/bsMHBbZKua2qBVsi6kadi1a+55pr27dvrLbOL7lZv2rTJClmnebpZadU11OfC7NgVnW7Zz5w5U8Faxf/j74bwdbv2448/tmLXUJmuhlbp1KmTjnwiMrvowp4Vr4a6q5MpUyZVVBo2bKi0z+zYFV3v3r0VrFUiIyO1B7DqlSpVatasmSYwu4wbN+7AgQNWyDrr8+38c+TIoQ3D7NgV3ezZs5csWWKFry1f279V13DkyJGawMji3kxXt/DUr1Y5cuSIVbGGjRo1sr5wysgu9wVlBavhxo0bdVNDFau0bdt27ty5vskcUklyM7W/s+KdP3++PvxWXcMePXpomOTFOW0G3bdVmCrKelevXq2KVd5///1nn33WadEkub26Z2fFq5xv7969Vt0a6hZnkhfntBm2bdtmBavh+fPnNfSVO+64w2nRJLm9p06d8sW7c+fOTz75xPeyRYsW66K/girJC3XUDL54V6xYMXnyZN/L5557buLEiY4KJZDGfvfdd1bIOuNduHChVdfwrbfesn6NNZCFOmeeOXPmKFiV8ePHb926VRVfMfVvkd2b6erwNiv6kStXLu34oqsxA53jnj171jnbbSAt3bdvnxVt/fr1VR89erT1UsNatWoZn+grz9OnXcEqr92yZcuLL76oulW0rzf+Pwjooo5O6xWvjmqrVq3SfSvVrfLFF1+sWbMmkE3KOfPcd999ymaseP/888+SJUtadWuoI59zQgmkpfnz59++fbsV7OnTp5XpWnVrqEsAgSzUUfMcPnzYCrZChQq6zKGTPeulhtdee631teKOCiihxsY/XtmtIlVp1arVjh07+vfvr7pVHn744d1+/1Mg/vkdPlYHuwULFijeYcOG/fPPP0JQ3Sqi0HUfh8d3heY//fTTK1eutOJdunTpTTfdZNWtoe53XWF+Z77t3kxXt+x1Nq8TuC5duuietbJbFSW4Z86c0d1MZ/ZmElqtYBX+t99+my1bNu3d9FJFNzKOHj0qmSQsyJmT6o6Vduh///23Lma/99571i08Cej8R285M6YktDpt2rS6ha0NQOc5v//+u3pcsavIRMMkLMiZk2o718mtwr/rrrv0edfte0WtIhNtCc6MKQmtVryaWuHrpE53NrQxKHaVkydPRkVFWe9qAoOLPuMKf/jw4XXr1r355pszZsyo8BXviRMntG2oYnbRLXuF/9tvv23YsOH555+XhsLXUBc43LD9K0adzkmgW7duX375pW/737Vrl2TM7npFp739sWPHFH61atU2b96sDV69ryITDTWBkcWNma7OXX788Uddu9KOvnLlytrZ+bpWN7J1nqdrPPow+EYaVtFpnMJXUfi6ialhTIAej6709OvXT598g39XT1dwFbvKSy+9NHTo0LFjx/rCV6V79+4yMfgXtXU1S7Gr6BxPXa+NQVH7iq5w6/ins3zfGPMqil3l/fffV/jaCfgHOGLEiK+++srsP0yZMmWKwh8zZozCb9q0ably5XwCU6dOHTVqlNm/qKo9vMLXGb7CV4L7SOyX6wlh9erVAwcOvOqqq3Tyr5dGlrVr1yp8FYU/Y8aMt2P/SZiCPX78+JtvvqkrHbruo5dGFuWyil3l1VdflYDu7PmH+cILL+iKplIC/5Em1XUDR7Gr6NK1wo9z80oj9ZZ/OmRS7G7MdHUl76+//tJNK926feCBB/y78/bbb69YsaLuZWc18SvlrEg3bdqk8FUU/iux/wzWekv7uMcee0wI119/vTXGvOGePXsUu4oO9ipxAhw0aFDu3Ln9j39xJnD6Sx3PFLtK586dtQHECUdX+LZu3Wr2/01Q7Cq1atVS+LqP7y/Qs2fPf//99/PPP/cfaVh98eLFCj9LliwKv06dOv7RKfFVnqdbHP4jDasr1VP4umet8Nu2besfXZUqVe68886WLVsWLVr0wnizav/995/CV1H4ymz8g8ucObNO/suXL2/wL2rrpo1iV3nrrbck4B++6hMmTNBN3Y4dO6puZFF0il2lSZMmCj/OBWwd+5T76hKAkbG7MdPVptyrVy8NfT06ePBgX11XdAze0ynMRo0aKXwV1a3yzDPPFCxY0Kor0VcSYNWNHCqJV+wqvjs16vHatWtbwebMmdPgNFcx5suXT7GrlChRQi9VSpUq9eSTT6piFZ3mWRVTh4pdxXfpQjfv+vbt6wu2a9euvrqRFd21UPjK53zR+Wf2SnZz5crle8u8is7kFb5uW/tCe/311327gptvvvm6667zvWVeRZu9wlfxhaYtQft866WudNxzzz1W3cih7tYqdhXtBq0Adf9KB0Srrtv67dq1s+pGDnUTQ7GrVK1a1QowT548/ns8XdS3xps3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jVGukytXLpNCTiiWXr16KWqVCRMmKCVIaDKTxuvGheJV0UGwb9++6u4zZ87opcqBAwfee+89jSlVqpRJIfticWOmq0xOl7I0tBTefvttnej//fff2gnqcu9DDz30wgsvNG3a1Hr3kqHjR+gIp/BVrEi+++67L7/8UuGvWrVKRzuF37FjR13c0s1cawLDhjqxUewq1vFs+fLl+oQrfBUlPQq/VatWOgDMmzfPsMCtcPLly6fYVUqUKKExSny7dOmi2FWU6T7++OM689H2r5RX7xpZFLvKrbfeakWn9E6xq2jv36dPH20AOvnp2bOn9a55Q6UyCl8XdazQXnrpJX0EFL5OgL/66iuF/8orr2gbsN41b6jAFb4QrNBGjhw5ZcoUha8LH0uWLFH4zz77rJJdnfRaExg21Gav8FWsuH799ddRo0YpfJWjR48q/Hbt2ulqnxsyPyFYRfmfwfcwrY62hhkzZrRC1kHQGvPkk0+q61V0r08HAm0A+mgYeVnXjZmu7tvq3o2GP//8syoFChToHf3QJ/z6669Xdfbs2f3797c2BfOGunClqFV0bNNw6dKlCllFty+VBqmiu5kff/yx9d9TzAtfh3NFrXLw4EENdWqrkK2iC/mq6N69sn9TL+xpn66oVbSR67BXq1YthWwVXd7r3r37gAEDdPy76667zOt6KyLFrjJkyJBnnnlGFSt2DW+++eZHH31UFWV+OgBYE5s3vOGGGxS19nXazlWpXbu2QlbRub2u5qry119/Jf33Nxzj1KZNG0V94403KkxVdKankFV0dleyZElVpk6dqm0jVSozj4yDBw9W1Cq6ka3hN998o5CtojRIlfHjx3/++eeFCxd2TI8G1NBGjRrpur41q/YDun2vo6H10uChLtyq01W+/vprfd5VUY9bpWLFirrCpfqCBQuaNGliHoKZn+fL99OPP/6oe1XKZu655x5VdJZfv379ChUqqKJPviq6sWXwHRxtzYpatywLFSqkihLc1157TVFfd911OpVXpVy5crqjp7Tv8owOfVcfY0Wt3ZxSeVW0Z588ebLyWgWuvb+Gqn/xxRdZsmRxaICXb3bp0qUVtU7ilePOmjVr4cKFunivHlfgqivbU0W7/jx58lx+Oc59V+Hr9sXTTz/9/vvvq37ttddqj6+ox44dq/s8qigNMvhIryOZoh42bJjuXahy9913K2QVXdHRSFWkoZzPuf17+ZbrIq6injNnTrVq1VTp3LmzzmoU9R133KGRqmjnr/T38gtx7rudOnVS1Nr5R0ZGqqKcfsSIEdrjKXCd+WuoXcFvv/1m3e9ybphXbLnu32pPaE2WO3duXdHUfXzrpcHDHDlyqNO183/ggQcmTJigevr06bXBq991EHzwwQdV0TB//vzmIaREpmsPxcqVK+sUx/fHpzoA6D7O/fffr4rv2r49WhqSVmTNmlWJ3caNG62lK7fT/Xrd0Vb4urJljTR4WK9ePd2tVr5rxajr3Apce38N3377bWukwUPdodZNW1/4usKhwPWJmDZt2k8//WRw4FZouoSjEzwd7ay/stcxT+E3b9584MCBqljTGDz877//GjRooF3f/v37rTAVtW5u6HqnKgZn+VawGubNm1c36//991/VVWbMmKHLHzVq1FD4Bt/NUKRW0clMVFSUrmtYLz/44AMFni1bNg11bdsaydBUgaFDh+qerXrf+hUdXd1Qv995552fffaZKqZG7dJMd9y4cQ0bNtSdXJ3RWvu7QYMGffnllzrZVcUaY2qXKy5lObp5oZN4XcVZunSpxghEl7h0eU/h676exhhc/vzzT13ATpcunXbx1tcsTJ8+XYGfPXtWQ+NTPWV4OpUvWLCg9nc6s1dHW5u9EqDhw4frfE9jDC5HjhyRQKVKldTRuo6rSHfv3q1+X7Ro0Q8//KCKxqRACeMq9fHXmZ7iVV9bya6ilsb8+fNV0fl/GNuSAqvSjTvt/bS1f/TRR+vWrVMLPvzwQ30WNm/erPB1UNAYg4su2ar3ta/TBd0//vhDkerET4HrSraGv/76q8ZQTBXYuXOndoC6pKVsx/pjDO0M1e/a7JXpqmJq4C7NdB977LE+ffrcdNNNderU0aVN9a7O8nPmzJkxY0ZVdG1PYwwur7/+unLcq6666qmnnjp2zPt1wrqDo8DTpEmjYaZMmQyOXaEprddVzMyZM+santJ9jdEVbgUeERGhoa5taIzBZe7cuYq9YsWKCn/Pnj2KVDcrFXjatGnz5MmjLUFjDC7a1+v2hTYA3clVyIrUt9lnz55dDhpjdnnjjTe6dOli/d6CMh4Fq6gVuz74qkhDYwwuzzzzjPZ+pUqV0o1apXeKNE8e72av3b7C10mgxhhcdEVDF2615XfvxiYBCQAAEABJREFU3v3w4cOKVF2vwFOlSqWhqb+1pTApEli9erVu5ijt6dmz56FDhzRGV3zU7zoE5MqVSxWNsVEJXlPcmOk+/fTTuqphGdaqVatYsWKffPLJbbfddv311+fPn18VXdkyON1RftO+fXvt1iVQvHjxmjVr6l52kyZNFLgSIA11IKxevbreNbKo6wsVKqQ8T9Hp0K6jXePGjXXwU+Da12uo7L9ly5Z618iycePGxYsXK2orOmV75cqV69evnwLPkSPHLbfcct999+kk0HrXyOFrr73Wo0cPK7RWrVqlTp3a+vjrrr0u9MpB1/ysd40cPvTQQ7p4Y4WmO/U63dXVXEVdoUIF7QlV+eKLL6x3jRyq6wcPHmyFpu7WvZ13331XSb92gzrHU/h6ee2111oTmDdU1+uC7tVXX63Q8uXLV79+/bZt27Zu3VqBp02bVkMlwdLQu2YXnercc889Voy6tHn77bdbJtYYU4c6sRk/frzyHytAHfWU2urSvvpdlRtuuEEV3eiw3jVs6MZMV5ncnXfe6d+RL730kj7tb7311uzZs1VR0RV+/wlMqj/xxBPNmjVTVucLSpm9Qn7yySe3bdumisry5ct97xpWqV27docOHZTV+eKaNm2aQlY5c+aMhiq6i+1717CKsvxXX321aNGivrj++ecfhayydu1a7ftU0bmQ710HVRLZVN2hU4rjm/jcuXMKWWXq1Kl6S5XOnTv73jWv8sEHH+gj4B9Xu3btFLXu4GuzV0XF/13D6s8999z999/vH5RO8xRy165dtdNTRWXr1q3+E5hU13mszu5069IXlO5iK2QV3dzTUOW3337zvWtqpUaNGvq8W9FpB1igQAFd1LReGjzUlay+ffuWLl3aF+PevXvV4yoLFizQnV5VdCHA965JFTdmurqMEacLdTfz33///fHHH5UCqrJmzRr/TCjOxE5/qXtVOn33j0InuIpaaW7ZsmVVWb9+va7t+U9gUl17eV3K9Y+oTZs2ilpF93E03LRpk1Jh/wlMqqvr42zb1apVU9QqN95448qVK7UZmHpab/VjnI+/btYrdhVdyx83bpwq1i8vWhObN7z02pU2eEWt090uXbqosmrVKvOi9kWkW7T+J/ka/9133ynqv/76q27duqqsW7fOPxXQBCaVLFmyxPn1DN3FVtQqOi5ouGHDBl31NynkhGLRKW7O6IcC1wlAQpM5fbx/+7Xla/v3H1OwYEF1uopO/6ZPn66KPg7+ExhTd2OmG6fz/v777znRj6VLl+7cuVNVXfPQHb04k5n6UpmNQlbR9Wyd1quii7u6qmf9WbqpUfviOnjwoEK2SlRUlCr9+/fX/R2d7PqmMbii3b1CtsqhQ4eU5E2cOFH3sJT9GBy1f2hW7BpqL69EXxVd9tblPf9pDK4vWbJEIasowd2yZYsq5cuX//333w0O2T80ndUrZBVd09q/f78qjRs3/uSTT/ynMbi+a9cuhWyVs2fPqvLyyy/7fn/X4MCt0NTjKjrBs166cKget8qePXsWLVqkeuXKlXWlzzwK92a6Op27/fbb1aParesOjoqOc4ULF1blpptu8t3a0ASmlhYtWig0HeEUssrXX3995513qqJzXN2/O378uN41uOhOjaLTuY1CtopSfFW2b9+ui746AdC7Bpd7771XN7POnDmjkK1Ss2bNKVOmzJgxQ1d5ddZncOwKTTFav45pxa6hdgibN29W5dFHH505c6amMbhoR6cbuApw2rRpCllFSY9u4KrSsGFDs39TWVHr7k2jRo1UWbhwoUJWmTVrVtWqVVUpXrz44sWLrS9g0gSmFt3BUGg6oVXIVtHhQBXtEE6cOOGS83wJuLPceuutefPmVezqcauULFnS+izcddddusWttwwr7s108+fP//jjj6s727VrNyS+h94yu7z++usKUNltfNEPiXOPW1MaVqzvzdWdynjD16mtYfHGCUfXrXVKo1uZ8YZv5QFxZjHppXbolSpVUkTxhv/ss8/qLYNL2bJldb9SAb700kuXCgwaNEhvGVwyZsz4zDPPKMCmTZteGr7G6D6v3jW46K6dorvxxhsV7KWlWLFiepcSLWDg4JFHHrH+VOPSrteYJ554wryYU5kXEhEhgAACCCCAAAIIICABMl0hUBAIkgCLQQABBBCwt0CtWrV0R0uXtH3N1E08jVHp2LGjbyQVYwTIdI3pSgJBAAEEEEDAZgK2ac7MmTMLRz/+/PPPAwcOzJ8//6effooeUXjlypUHDx7cvXt3r169bNNeGhI0ATLdiyi3bdu2ZcuWi0a56cWRI0eWLVvmpojjxvqbC75LMm7Mfq9/+eUXv1euqy5cuPDkyZOuCzs24H/++WfXrl2xr1z3vGfPnrVr17ou7NiAz5w5s2DBgthXZj7XrVt3a/SjTJkyivDo0aOpU6ceHv3IkyfPlClTPvzww6ZNm27evFnvuq38bvQ3rrg3030nvsdzzz3XuXNnfRaM38rfe++9SwF69uz5xBNPpOz+LjzyEyZMuDR8jXnwwQcnTpwYnjak4FqU0CvYS8t99903bNiwFGxYeFa9bt26S2PXmBYtWrjhio4O8Ar20tK+ffuuXbvqWld4eiEF13Jp7Brz8ssvP/XUU6uM/jphy3zkyJGKN07p06dP8+bNzT7X3bBhgxW1zmpUGTx4sPaEVtEprio7duyoXLnyv//+a0EZOVy8eLFiv7Q0adJEI40MWUG5N9PNH98je/bs2bJlS5cunWjMLldfffWlADqvzZAhQ+bMmc2OXdHlypXr0vA1Rqf4xn/phMLPmjWrgr20pEqVyvr2GU1jcNFGfmnsGpM+fXo3hK9eVrCXlixZsmjjT5MmjcFdb4V2aewakzNnzkyZMmnbsKax1TC4jbnqqqsUb5ySL1++yMhIHf6Cuy5bLU0fcCtqbeSqlC9fvlGjRtujH2fPno1+3l68ePGbb77ZVs0ObmO0kSv2S0vatGmVFQR3XfZZmnszXV2/8S8PPPDAu+++qyRPFzvdcLR75JFH/MNXXeHrau748ePLlStnnw00RC25/fbbFbJ/+d///ieBWbNm1a5dO0Qrtc9idd3CP3bVdRlD4U+dOlUfBPu0M0QtKVSokEL2L8rwFH6XLl2efvrpEK3UPovNmDGjf+yq16pVS+FXqlTpzTffVL5rn6aGqCUKOU5R+Lt379bFTuvbl0K0XpssVrdu4oT/6aeffv7555MmTapWrZpNGhmKZhQoUECBr169Wtd0VWnQoMGWLVt02q8Pvi5yaXjnnXca+W2y/pilSpVS7P7lzJkz2v6HDh3asmVL/ylNqrs30/XvRZ3G6Wxm0aJFAwcOzJ07t/9bDqwnucnNmjXTOa7C//777wsXLpzk+R0+w6BBgxR+586dJWD9/pbDA0pa8+fOnavwtbtX+NZ/E0ja/A6fWtdyFP7XX3+t8LWj14UNhweU5ObrKubdd9+t8F999VWzL+nFS1OnTh1tAAp/zJgxOgrEO43BI7t27arwFbvu3Vv/S8XgYK3QlN2eOHHC90n/8MMPq1atqlN9DR977DFrGpcMRaHe/+eff7T933vvvQZHTabr7dxz584dPHhQN/UiIiL0euvWrRqjikvK+fPnly9frvBVFLLOd48ePaqKS0pUVNSoUaOqV69uha/Y3fYvgtq0adO+fXsrfGV+27Ztc0nXW2Fed911Y8eOtcLXmHXr1mnonqJ93d9//63wIyK8e7+NGzeaGHuCMSn8/fv3K3wVTbRjx45Tp06p4pKinf+UKVN0sdMK/8CBAzoUGhz722+/rfM6feR1IbNhw4aKtFOnTitXrtR9Hg11S1NjXFWk8dZbb1m9r8A3bdqkoXnFjZnutGnTdAnHvxw/ftz/5T333KMjn3mdbUW0cOFC/2BVV2aje/eqWKVt27Z9+vSRiTW9YUMdyK0wfcOlS5f+9ddfvpdvvPGGbmHrFN+wwK1wdBjzRWpVZs6cuWHDBquu4ejRo3VTz+Cv4FCM/uWbb76JY1KlSpVZs2ZZXOYNJ06c6B++6jrT09BXatWq9e2335oXuBXRnDlzfJFaFZ3W6l6WVdewadOm77//vkys6Q0b6pRGMfoXndfNnj3bN+aFF1546aWX9u3bZ1jgVjg6jVGC67tv+eOPPyrB1cjXXntNZzsaam9g8O9vnD592tfRVuXnn3/evn27VbeGusUxf/58i8ukoRszXZ21rL34oa3ff8TDDz+srd+kbvaPZefOnf7Bqn7kyJHNmzerYhXdxMmUKZNM/Ocypq60xgrTN9yzZ4+/SbZs2XTGLxNjQvYPRNerfIFbFd3BOHTokFXXcPfu3Q8++KBM/Ocyqa4Y/YuO9CdPnvQf8/LLL+vcz6SQ/WNZv369f7CqK6vT0Fd0micT/1lMqusM1hepVdGNbN29teoa3n777UoITArZPxal9YrRv+girrZ235iiRYsq+ZOJ/1zG1I8dO1ajRg3/PzjLkiVLqehHZGRk9HOpfPnyGRNvnEB0v87X0VZF131kYtWtoe7vGZn8uDHTbdeuXY+LH0puLh7hfRVnKzHm5b333usNz++nbNmyTz31lN8Ib1UmxoTsH4iu2HnD8/vRsa1BgwZ+I7xVU39hN2/evN7w/H4ef/zxS03q1avnj2ZS3S90b7Vbt246tnlrfj+PPvqoSSH7x6KLdn6Bequ6cel98vt55ZVX/GeJqRvx9Mgjj/gF6q0qsXvxxRe9Nb+fiAjvL3IYEfFFQdSuXdsvSm/1hhtuaN68ubfm91OwYMGLZjPlRfHixevWresfTY4cObT3U1Gmq6FKkSJF/CcwqZ4xY0a/TvZWO3XqVKJECW/N76dRo0YmRW3F4sZM14qcIQIIIIAAAgi4VqBAgQL3Rz90G1PPxYoV++qrr1yrYXDgocp0HUF27tw5Xc93RFND0UjdtTT4Pl1ixHTbOjGTmTrNKTf95c2lnaiNXx+BS8e7ZIx2fefOnXNJsJeGef78eVN/QevSYOMd4+aPf/r06WWyZs0aXea0yvbt21W58cYb33///SFDhuhds4v2fmYHGCc6V2e6M2bMePvttxcuXOi2Xrc2An22O3TooPD3799vjXHbsEGDBgp/m8u+asDXyw8++KDCX716tW+Mqyqvvfba5MmTJRC2qG21ogkTJnz00UcK353p/rJly7p166bwj7rpe2Z8W6AOeS1atFD4u3bt8o10T2X+/PkRERGlS5c+Ht+jY8eOxlM8/fTTc+fOXb58ufGRWgG6OtO94447ypQp88ADD/j/irrl4oahbty0b9/+qaee0tWd7NmzuyHkODF+8803r7766vTp00uUKBHnLTe8nDRpki5g9OjRo0aNGm6IN06Mffv2/eOPP2rWrHnffffFecsNL5Xo6MrWXXfdpYob4o0TY+XKle++++6WLVtqN+j7atU40xj8MjIysn///s8///z69eslYHCkhBavwMcff/zFF180b0EptggAAAUwSURBVN48xf8kI97mBX2kqzNdaTZu3Hjw4MEjR45U3YVFu/thw4bp0k7+/PldGH62bNmGDx8+dOhQpTsuDF8ha3/3wQcf6HivugtLnz59Bg4c2LNnTxfGrpBbt26tUx1tA6q7sNx666367I8YMSJDhgwuDP+aa67Rnl/7/7Jly7owfELWxj9o0KDOnTu7gcLtma76uGHDhlmzZlXFnaV69eolS5Z0Z+yKunDhwrfccosq7iy6tNOkSRPnxB78lrpkR58QXLNmzVKlcu9RoG7duu48ybe2B+W4VapUseoMXSjQqlUrl0Tt3n2cSzqYMBFAAAEEEEDAUAHCurIAme6VjZgCAQQQQAABBAwQOHLkyN74HhkzZjx48KABARLCpQJkupeaMAYBcwWIDAEEEHCxwODBg5vE9zh9+nT37t1dDGNy6GS6JvcusSGAAAIIIICAT6Bbt24zL3506dKlUaNGzz777NChQ32TUTFJgEzXpN4kFgQQQAABBBBIlMDChQvbtm27atWqDBkyDBgwIFHzMJEDBch0HdhpNDlFBVg5AggggIABAhs3bkyVKtWT0Q8DwiGEhATIdBOSYTwCCCCAAAIIXFnAuVMUKlQoR44cVvsXLVrUoUMHq87QJAEyXZN6k1gQQAABBBBAIB6BWbNmFbv40alTp3fffdc37qGHHpoyZcqYMWPimZlRThYg03Vy7zm17bQbAQQQQACBsArceuutGy9+DB48uEuXLheP2/jEE0+EtVmsLPQCZLqhN2YNCCCAAAIIXE6A9xBAIFQCZLqhkmW5CCCAAAIIIIAAAikrQKabsv6Brp35EEAAAQQQQCAggUqVKgU0HzM5UoBM15HdRqMRQAABBC4S4AUCiRZYunRpRETEww8/nOg5mNDBAmS6Du48mo4AAggggAACAQhs2LCha9eu/AfgAOgcN4t7M13HdRUNRgABBBBAAIGgCBQrVuydd94JyqJYiM0FyHRt3kE0DwEEEAiTAKtBAAEEzBMg0zWvT4kIAQQQQAABBBBAwCuQnEzXOz8/CCCAAAIIIIAAAgjYU4BM1579QqsQQMCJArQZAQQQQMBeAmS69uoPWoMAAggggAACCJgikPJxkOmmfB/QAgQQQAABBBBAAIFQCJDphkKVZSKAQKACzIcAAggggEDwBMh0g2fJkhBAAAEEEEAAgeAKsLTkCZDpJs+PuRFAAAEEEEAAAQTsKkCma9eeoV0IBCrAfAgggAACCCBgCZDpWg4MEUAAAQQQQMBMAaJyswCZrpt7n9gRQAABBBBAAAGTBch0Te5dYgtUgPkQQAABBBBAwAQBMl0TepEYEEAAAQQQCKUAy0bAqQJkuk7tOdqNAAIIIIAAAgggcHkBMt3L+/BuoALMhwACCCCAAAIIpLQAmW5K9wDrRwABBBBwgwAxIoBASgiQ6aaEOutEAAEEEEAAAQQQCL0AmW7ojQNdA/MhgAACCCCAAAIIJEeATDc5esyLAAIIIBA+AdaEAAIIJFWATDepYkyPAAIIIIAAAggg4AwBszNdZ/QBrUQAAQQQQAABBBAIhQCZbihUWSYCCCBgTwFahQACCLhLgEzXXf1NtAgggAACCCCAgHsErpTpukeCSBFAAAEEEEAAAQTMEiDTNas/iQYBBEItwPIRQAABBJwjQKbrnL6ipQgggAACCCCAgN0E7N0eMl179w+tQwABBBBAAAEEEAhUgEw3UDnmQwCBQAWYDwEEEEAAgfAIkOmGx5m1IIAAAggggAAC8QswNnQC/wcAAP//Mm9/xQAAAAZJREFUAwAvdM1vvpLBQAAAAABJRU5ErkJggg==" alt="籤位與賽程圖對應範例">
+        </div>
+      </div>
+
+      <div class="save-bar">
+        <button class="btn-save" onclick="saveDrawSettings()">儲存</button>
+      </div>
+
+      <div class="footer-note">＊本頁為介面呈現樣式示意稿，尚未串接後端；種子隊名單暫以模擬隊伍資料呈現，實際將串接「參賽隊伍」名單</div>
+    </div>
+
+    <div class="page" id="page-schedule-manage-settings" style="display:none">
+      <h1>賽程管理</h1>
+      <div class="table-card">
+        <table>
+          <thead>
+            <tr><th style="width:90px">項次</th><th>組別</th><th style="width:140px">操作</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>女子組</td><td><button class="btn-setting" onclick="openGroupScheduleManage(event,'女子組')">設定</button></td></tr>
+            <tr><td>2</td><td>男子組</td><td><button class="btn-setting" onclick="openGroupScheduleManage(event,'男子組')">設定</button></td></tr>
+            <tr><td>3</td><td>混合組</td><td><button class="btn-setting" onclick="openGroupScheduleManage(event,'混合組')">設定</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="note">＊本頁為示意稿：點擊左側「賽程管理」後，先列出該賽事的組別清單，組別資訊由「賽事管理＞組別管理」帶入；點擊每列的「設定」按鈕即可進入該組別的賽程管理畫面，逐場次設定日期、時間、場地。</div>
+    </div>
+
+    <div class="page" id="page-schedule-manage-tool" style="display:none">
+      <div class="backlink" onclick="showPage(event,'page-schedule-manage-settings','fitem-schedule-manage')">← 返回組別列表</div>
+      <h1>賽程管理－<span id="mg-group-name">女子組</span></h1>
+
+      <div class="panel">
+        <h2>場次總覽</h2>
+        <div class="sub">對戰組合依「賽程設定」所選賽制與隊伍數自動產生；如需調整對戰組合請至該頁修改賽制或隊伍數，此處僅需為每場次指定日期、時間與場地</div>
+        <div class="table-card">
+          <table>
+            <thead>
+              <tr><th style="width:70px">場次</th><th style="width:170px">日期</th><th style="width:110px">時間</th><th style="width:170px">場地</th><th>對戰組合</th><th style="width:160px">備註</th></tr>
+            </thead>
+            <tbody id="mg-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="save-bar">
+        <button class="btn-save" onclick="saveScheduleManage()">儲存</button>
+      </div>
+
+      <div class="footer-note">＊本頁為介面呈現樣式示意稿，尚未串接後端；日期／場地選項與對戰組合為模擬資料</div>
+    </div>
+
+    <div class="page" id="page-result-settings" style="display:none">
+      <h1>賽程結果</h1>
+      <div class="table-card">
+        <table>
+          <thead>
+            <tr><th style="width:90px">項次</th><th>組別</th><th style="width:140px">操作</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>女子組</td><td><button class="btn-setting" onclick="openGroupResult(event,'女子組')">查看</button></td></tr>
+            <tr><td>2</td><td>男子組</td><td><button class="btn-setting" onclick="openGroupResult(event,'男子組')">查看</button></td></tr>
+            <tr><td>3</td><td>混合組</td><td><button class="btn-setting" onclick="openGroupResult(event,'混合組')">查看</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="note">＊本頁為示意稿：點擊左側「賽程結果」後，先列出該賽事的組別清單，組別資訊由「賽事管理＞組別管理」帶入；點擊每列的「查看」按鈕即可進入該組別的賽程結果畫面。</div>
+    </div>
+
+    <div class="page" id="page-result-tool" style="display:none">
+      <div class="sched-backlink" onclick="showPage(event,'page-result-settings','fitem-schedule-result')">← 返回組別列表</div>
+      <h1>賽程結果－<span id="result-group-name">女子組</span></h1>
+      <div class="venue-context">依「賽程設定」目前所選賽制與隊伍數，及「賽程管理」「場地設定」的資料自動整合呈現（示意資料）</div>
+
+      <div class="panel">
+        <h2>場次總覽</h2>
+        <div class="sub">列出所有場次的對戰組合、比賽時間與場地資訊</div>
+        <div class="table-card">
+          <table>
+            <thead>
+              <tr><th style="width:70px">場次</th><th>對戰組合</th><th style="width:150px">比賽時間</th><th style="width:150px">比賽地點</th><th style="width:110px">場地</th></tr>
+            </thead>
+            <tbody id="result-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="preview-head">
+          <div>
+            <h2>賽程圖</h2>
+            <div class="sub">賽程圖已壓上各場次隊伍名稱與比賽開始時間，可切換直向／橫向檢視</div>
+          </div>
+          <button class="btn-download" onclick="downloadResultChart()">⬇ 下載</button>
+        </div>
+        <div class="tabs">
+          <div class="tab on" data-ro="portrait">直向</div>
+          <div class="tab" data-ro="landscape">橫向</div>
+        </div>
+        <div id="result-chart-body"></div>
+      </div>
+
+      <div class="footer-note">＊本頁為介面呈現樣式示意稿：隊伍對戰、時間與場地為示意資料，尚未串接實際比賽結果與後端資料</div>
+    </div>
+  </div>
+</div>
+
+<div class="venue-modal-mask" id="place-modal-mask" onclick="if(event.target===this) closePlaceForm()">
+  <div class="venue-modal">
+    <div class="venue-modal-head">
+      <h2 id="place-form-title">新增地點</h2>
+      <button type="button" class="venue-modal-close" onclick="closePlaceForm()" aria-label="關閉">✕</button>
+    </div>
+    <div class="venue-modal-body">
+      <div class="field-grid">
+        <div><label>地點名稱</label><input type="text" id="place-name" placeholder="例：羽球館 A 館"></div>
+        <div><label>地點說明</label><input type="text" id="place-address" placeholder="例：台北市中山區○○路 123 號"></div>
+      </div>
+      <div style="margin-top:14px"><label>備註</label><input type="text" id="place-note" placeholder="選填"></div>
+    </div>
+    <div class="venue-form-actions">
+      <button class="btn-venue" onclick="closePlaceForm()">取消</button>
+      <button class="btn-setting" onclick="savePlace()">儲存地點</button>
+    </div>
+  </div>
+</div>
+
+<div class="venue-modal-mask" id="court-modal-mask" onclick="if(event.target===this) closeCourtForm()">
+  <div class="venue-modal">
+    <div class="venue-modal-head">
+      <h2 id="court-form-title">新增場地</h2>
+      <button type="button" class="venue-modal-close" onclick="closeCourtForm()" aria-label="關閉">✕</button>
+    </div>
+    <div class="venue-modal-body">
+      <div class="field-grid">
+        <div><label>場地名稱</label><input type="text" id="court-name" placeholder="例：1 號場"></div>
+      </div>
+      <div style="margin-top:14px"><label>備註</label><input type="text" id="court-note" placeholder="選填"></div>
+    </div>
+    <div class="venue-form-actions">
+      <button class="btn-venue" onclick="closeCourtForm()">取消</button>
+      <button class="btn-setting" onclick="saveCourt()">儲存場地</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleGroup(e, itemId, subId){
+  e.stopPropagation();
+  document.getElementById(itemId).classList.toggle('open');
+  document.getElementById(subId).classList.toggle('show');
+}
+
+function showPage(e, pageId, triggerId){
+  e.stopPropagation();
+  const ttMask = document.getElementById('tt-drawer-mask');
+  if(ttMask){ ttMask.classList.remove('show'); document.body.classList.remove('tt-drawer-open'); }
+  document.querySelectorAll('.page').forEach(function(p){ p.style.display = (p.id === pageId) ? '' : 'none'; });
+  document.querySelectorAll('.nav-item, .f-item').forEach(function(el){ el.classList.remove('active'); });
+  document.getElementById(triggerId).classList.add('active');
+}
+
+const SCHED_EVENT_SPORTS = ['籃球', '排球'];
+const SCHED_GROUPS = ['女子組', '男子組', '混合組'];
+let schedSelectedSport = SCHED_EVENT_SPORTS[0];
+
+function schedRenderGroupTable(){
+  const body = document.getElementById('sched-group-table-body');
+  if(!body) return;
+  body.innerHTML = SCHED_GROUPS.map((g,i)=>`
+    <tr>
+      <td>${i+1}</td>
+      <td>${schedSelectedSport}</td>
+      <td>${g}</td>
+      <td><div class="row-actions"><button class="btn-setting" onclick="openGroupSchedule(event,'${schedSelectedSport}','${g}')">賽制</button></div></td>
+    </tr>`).join('');
+}
+
+function schedOnSportFilterChange(){
+  schedSelectedSport = document.getElementById('sched-sport-filter').value;
+  schedRenderGroupTable();
+}
+
+function openGroupSchedule(e, sportName, groupName){
+  document.getElementById('sched-group-name').textContent = groupName;
+  document.getElementById('sched-sport-tag').textContent = sportName;
+  showPage(e, 'page-schedule-tool', 'fitem-schedule-settings');
+}
+
+let venueEntryFrom = { page:'page-venue-settings', fitem:'fitem-venue-settings', label:'← 返回賽事項目列表' };
+
+function venueGoBack(e){
+  showPage(e, venueEntryFrom.page, venueEntryFrom.fitem);
+}
+
+function openSportVenue(e, sportName){
+  venueEntryFrom = { page:'page-venue-settings', fitem:'fitem-venue-settings', label:'← 返回賽事項目列表' };
+  document.getElementById('venue-group-name').textContent = sportName;
+  document.getElementById('venue-context-suffix').textContent = '的賽事場地設定進入；地點與場地資訊為整場賽事共用，各賽事項目皆可套用';
+  document.getElementById('venue-tool-backlink').textContent = venueEntryFrom.label;
+  showPage(e, 'page-venue-tool', 'fitem-venue-settings');
+}
+
+/* ---------- 地點與場地管理（二層結構：地點內部劃分多個場地，整場賽事共用） ---------- */
+let placeList = [
+  {id:1, name:'羽球館 A 館', address:'1 樓', note:'', courts:[
+    {id:101, name:'1 號場', note:''},
+    {id:102, name:'2 號場', note:''},
+    {id:103, name:'3 號場', note:''},
+    {id:104, name:'4 號場', note:''},
+  ]},
+  {id:2, name:'羽球館 B 館', address:'2 樓', note:'冷氣維修中', courts:[
+    {id:105, name:'5 號場', note:''},
+    {id:106, name:'6 號場', note:''},
+  ]},
+  {id:3, name:'羽球館 C 館', address:'3 樓', note:'', courts:[
+    {id:107, name:'7 號場', note:''},
+    {id:108, name:'8 號場', note:''},
+  ]},
+];
+let placeNextId = 4;
+let courtNextId = 109;
+let placeEditingId = null;
+let courtEditingId = null;
+let currentPlaceId = null;
+
+function renderPlaceTable(){
+  const body = document.getElementById('place-table-body');
+  if(!body) return;
+  if(placeList.length===0){
+    body.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--ink-500);padding:24px 0">尚未新增任何地點，請點擊右上方「＋ 新增地點」</td></tr>`;
+    return;
+  }
+  body.innerHTML = placeList.map((p,i)=>`
+    <tr>
+      <td>${i+1}</td>
+      <td>${p.name}</td>
+      <td>${p.address||'-'}</td>
+      <td>${p.courts.length}</td>
+      <td>${p.note||'-'}</td>
+      <td>
+        <div class="row-actions">
+          <button class="btn-setting" onclick="openCourtManage(event,${p.id})">管理場地</button>
+          <button class="btn-venue" onclick="openPlaceForm(${p.id})">編輯</button>
+          <button class="btn-del" onclick="deletePlace(${p.id},this)">刪除</button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+function openPlaceForm(id){
+  placeEditingId = (typeof id === 'number') ? id : null;
+  const mask = document.getElementById('place-modal-mask');
+  const title = document.getElementById('place-form-title');
+  if(placeEditingId!==null){
+    const p = placeList.find(x=>x.id===placeEditingId);
+    title.textContent = '編輯地點';
+    document.getElementById('place-name').value = p ? p.name : '';
+    document.getElementById('place-address').value = p ? p.address : '';
+    document.getElementById('place-note').value = p ? p.note : '';
+  } else {
+    title.textContent = '新增地點';
+    document.getElementById('place-name').value = '';
+    document.getElementById('place-address').value = '';
+    document.getElementById('place-note').value = '';
+  }
+  mask.classList.add('show');
+  document.getElementById('place-name').focus();
+}
+
+function closePlaceForm(){
+  document.getElementById('place-modal-mask').classList.remove('show');
+  placeEditingId = null;
+}
+
+function savePlace(){
+  const name = document.getElementById('place-name').value.trim();
+  const address = document.getElementById('place-address').value.trim();
+  const note = document.getElementById('place-note').value.trim();
+  if(!name){ showToast('請先填寫地點名稱'); return; }
+  if(placeEditingId!==null){
+    const p = placeList.find(x=>x.id===placeEditingId);
+    if(p){ p.name=name; p.address=address; p.note=note; }
+    showToast('已更新地點「'+name+'」');
+  } else {
+    placeList.push({id:placeNextId++, name, address, note, courts:[]});
+    showToast('已新增地點「'+name+'」');
+  }
+  closePlaceForm();
+  renderPlaceTable();
+}
+
+function deletePlace(id, btnEl){
+  if(btnEl.dataset.confirm==='1'){
+    const p = placeList.find(x=>x.id===id);
+    placeList = placeList.filter(x=>x.id!==id);
+    renderPlaceTable();
+    showToast('已刪除地點' + (p ? '「'+p.name+'」' : ''));
+  } else {
+    btnEl.dataset.confirm = '1';
+    btnEl.textContent = '確定刪除？';
+    setTimeout(()=>{ if(btnEl){ btnEl.dataset.confirm=''; btnEl.textContent='刪除'; } }, 3000);
+  }
+}
+
+function openCourtManage(e, placeId){
+  currentPlaceId = placeId;
+  const p = placeList.find(x=>x.id===placeId);
+  const name = p ? p.name : '';
+  document.getElementById('court-place-name').textContent = name;
+  document.getElementById('court-place-name-ctx').textContent = name;
+  renderCourtTable();
+  showPage(e, 'page-court-tool', venueEntryFrom.fitem);
+}
+
+function renderCourtTable(){
+  const body = document.getElementById('court-table-body');
+  if(!body) return;
+  const p = placeList.find(x=>x.id===currentPlaceId);
+  const courts = p ? p.courts : [];
+  if(courts.length===0){
+    body.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--ink-500);padding:24px 0">此地點尚未新增任何場地，請點擊右上方「＋ 新增場地」</td></tr>`;
+    return;
+  }
+  body.innerHTML = courts.map((c,i)=>`
+    <tr>
+      <td>${i+1}</td>
+      <td>${c.name}</td>
+      <td>${c.note||'-'}</td>
+      <td>
+        <div class="row-actions">
+          <button class="btn-venue" onclick="openCourtForm(${c.id})">編輯</button>
+          <button class="btn-del" onclick="deleteCourt(${c.id},this)">刪除</button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+function openCourtForm(id){
+  courtEditingId = (typeof id === 'number') ? id : null;
+  const mask = document.getElementById('court-modal-mask');
+  const title = document.getElementById('court-form-title');
+  const p = placeList.find(x=>x.id===currentPlaceId);
+  if(courtEditingId!==null && p){
+    const c = p.courts.find(x=>x.id===courtEditingId);
+    title.textContent = '編輯場地';
+    document.getElementById('court-name').value = c ? c.name : '';
+    document.getElementById('court-note').value = c ? c.note : '';
+  } else {
+    title.textContent = '新增場地';
+    document.getElementById('court-name').value = '';
+    document.getElementById('court-note').value = '';
+  }
+  mask.classList.add('show');
+  document.getElementById('court-name').focus();
+}
+
+function closeCourtForm(){
+  document.getElementById('court-modal-mask').classList.remove('show');
+  courtEditingId = null;
+}
+
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape'){
+    const placeMask = document.getElementById('place-modal-mask');
+    if(placeMask && placeMask.classList.contains('show')) closePlaceForm();
+    const courtMask = document.getElementById('court-modal-mask');
+    if(courtMask && courtMask.classList.contains('show')) closeCourtForm();
+  }
+});
+
+function saveCourt(){
+  const name = document.getElementById('court-name').value.trim();
+  const note = document.getElementById('court-note').value.trim();
+  if(!name){ showToast('請先填寫場地名稱'); return; }
+  const p = placeList.find(x=>x.id===currentPlaceId);
+  if(!p) return;
+  if(courtEditingId!==null){
+    const c = p.courts.find(x=>x.id===courtEditingId);
+    if(c){ c.name=name; c.note=note; }
+    showToast('已更新場地「'+name+'」');
+  } else {
+    p.courts.push({id:courtNextId++, name, note});
+    showToast('已新增場地「'+name+'」');
+  }
+  closeCourtForm();
+  renderCourtTable();
+}
+
+function deleteCourt(id, btnEl){
+  const p = placeList.find(x=>x.id===currentPlaceId);
+  if(!p) return;
+  if(btnEl.dataset.confirm==='1'){
+    const c = p.courts.find(x=>x.id===id);
+    p.courts = p.courts.filter(x=>x.id!==id);
+    renderCourtTable();
+    showToast('已刪除場地' + (c ? '「'+c.name+'」' : ''));
+  } else {
+    btnEl.dataset.confirm = '1';
+    btnEl.textContent = '確定刪除？';
+    setTimeout(()=>{ if(btnEl){ btnEl.dataset.confirm=''; btnEl.textContent='刪除'; } }, 3000);
+  }
+}
+
+/* ---------- 場地時間表（每個賽事項目的比賽時段設定＋拖曳排點看板） ---------- */
+let sportTimetableConfig = {};
+let ttCurrentSport = null;
+let ttSelectedDate = null;
+let ttScale = 1;
+let ttAssignments = {};
+let ttMatches = {};
+let ttSessionNextId = 1;
+let ttDrawerGroup = {};
+let ttBlankBlocks = {};
+let ttBlankNextId = 1;
+let ttBlankListCollapsed = false;
+const TT_GROUPS = ['女子組','男子組','混合組'];
+const TT_GROUP_COLORS = { '女子組':'#d1477e', '男子組':'#2f6fed', '混合組':'#d97e06' };
+const TT_BLANK_COLOR = '#64748b';
+
+function ttDefaultConfig(){
+  const s1 = ttSessionNextId++;
+  const s2 = ttSessionNextId++;
+  return {
+    duration: 30,
+    generated: false,
+    sessions: [
+      { id: s1, date:'2026-08-19', start:'08:00', end:'12:00' },
+      { id: s2, date:'2026-08-20', start:'08:00', end:'12:00' },
+    ]
+  };
+}
+
+function ttFormatDate(d){ return d ? d.replace(/-/g,'/') : ''; }
+
+function openSportTimetable(e, sportName){
+  ttCurrentSport = sportName;
+  if(!sportTimetableConfig[sportName]) sportTimetableConfig[sportName] = ttDefaultConfig();
+  document.getElementById('tt-settings-sport-name').textContent = sportName;
+  ttRenderSettings();
+  const cfg = sportTimetableConfig[sportName];
+  if(cfg.generated){
+    document.getElementById('tt-board-wrap').style.display = '';
+    document.getElementById('tt-board-panel').style.display = '';
+    ttRenderBoard();
+  } else {
+    document.getElementById('tt-board-wrap').style.display = 'none';
+    document.getElementById('tt-board-panel').style.display = 'none';
+  }
+  showPage(e, 'page-timetable-settings', 'fitem-venue-settings');
+}
+
+function ttRenderSettings(){
+  const cfg = sportTimetableConfig[ttCurrentSport];
+  document.getElementById('tt-duration').value = cfg.duration;
+  ttRenderSessionList();
+}
+
+function ttRenderSessionList(){
+  const cfg = sportTimetableConfig[ttCurrentSport];
+  const box = document.getElementById('tt-session-list');
+  box.innerHTML = cfg.sessions.map(s=>`
+    <div class="tt-session-row" data-id="${s.id}">
+      <div><label>日期</label><input type="date" value="${s.date}" onchange="ttUpdateSession(${s.id},'date',this.value)"></div>
+      <div><label>開始時間</label><input type="time" value="${s.start}" onchange="ttUpdateSession(${s.id},'start',this.value)"></div>
+      <div><label>結束時間</label><input type="time" value="${s.end}" onchange="ttUpdateSession(${s.id},'end',this.value)"></div>
+      <button class="btn-del" onclick="ttRemoveSession(${s.id})">刪除</button>
+    </div>`).join('');
+}
+
+function ttUpdateSession(id, field, value){
+  const cfg = sportTimetableConfig[ttCurrentSport];
+  const s = cfg.sessions.find(x=>x.id===id);
+  if(s) s[field] = value;
+}
+
+function ttAddSession(){
+  const cfg = sportTimetableConfig[ttCurrentSport];
+  const last = cfg.sessions[cfg.sessions.length-1];
+  cfg.sessions.push({ id: ttSessionNextId++, date: last?last.date:'2026-08-19', start:'13:00', end:'17:00' });
+  ttRenderSessionList();
+}
+
+function ttRemoveSession(id){
+  const cfg = sportTimetableConfig[ttCurrentSport];
+  if(cfg.sessions.length<=1){ showToast('至少需保留一組比賽時間'); return; }
+  cfg.sessions = cfg.sessions.filter(x=>x.id!==id);
+  ttRenderSessionList();
+}
+
+function ttGenerateBoard(e){
+  const cfg = sportTimetableConfig[ttCurrentSport];
+  const duration = +document.getElementById('tt-duration').value || 30;
+  cfg.duration = duration;
+  if(cfg.sessions.length===0){ showToast('請至少新增一組比賽時間'); return; }
+  cfg.generated = true;
+  ttSelectedDate = cfg.sessions[0].date;
+  ttScale = 1;
+  document.getElementById('tt-board-wrap').style.display = '';
+  document.getElementById('tt-board-panel').style.display = '';
+  ttRenderBoard();
+}
+
+function ttFlattenCourts(){
+  const list = [];
+  placeList.forEach(p=>{
+    p.courts.forEach(c=>{
+      list.push({ id: p.id+'-'+c.id, label: p.name+'－'+c.name });
+    });
+  });
+  return list;
+}
+
+function ttBuildSlots(sport, date){
+  const cfg = sportTimetableConfig[sport];
+  const duration = cfg.duration;
+  const daySessions = cfg.sessions.filter(s=>s.date===date).sort((a,b)=>a.start.localeCompare(b.start));
+  const slots = [];
+  daySessions.forEach(s=>{
+    const [sh,sm] = s.start.split(':').map(Number);
+    const [eh,em] = s.end.split(':').map(Number);
+    let cur = sh*60+sm;
+    const end = eh*60+em;
+    while(cur + duration <= end){
+      const hh = String(Math.floor(cur/60)).padStart(2,'0');
+      const mm = String(cur%60).padStart(2,'0');
+      slots.push(`${hh}:${mm}`);
+      cur += duration;
+    }
+  });
+  return slots;
+}
+
+function ttGenerateMatches(sport){
+  if(ttMatches[sport]) return ttMatches[sport];
+  const perGroup = 6;
+  const data = {};
+  let counter = 0;
+  TT_GROUPS.forEach(g=>{
+    const list = [];
+    for(let i=0;i<perGroup;i++){
+      list.push({
+        id: sport+'-'+g+'-m'+(i+1),
+        num: i+1,
+        teamA: schedTeamName(counter*2),
+        teamB: schedTeamName(counter*2+1),
+        groupName: g,
+      });
+      counter++;
+    }
+    data[g] = list;
+  });
+  ttMatches[sport] = data;
+  return data;
+}
+
+function ttFindMatch(sport, matchId){
+  const data = ttGenerateMatches(sport);
+  for(const g in data){
+    const m = data[g].find(x=>x.id===matchId);
+    if(m) return m;
+  }
+  return null;
+}
+
+function ttAssignedAt(sport, date, courtId, slot){
+  const assigns = ttAssignments[sport] || {};
+  for(const mid in assigns){
+    const a = assigns[mid];
+    if(a.date===date && a.courtId===courtId && a.slot===slot) return mid;
+  }
+  return null;
+}
+
+function ttIsBlank(id){ return String(id).indexOf('blank-')===0; }
+
+function ttSpanFor(sport, id){
+  const cfg = sportTimetableConfig[sport];
+  if(!cfg) return 1;
+  if(ttIsBlank(id)){
+    const b = ttBlankBlocks[sport] && ttBlankBlocks[sport][id];
+    const dur = b ? b.duration : cfg.duration;
+    return Math.max(1, Math.ceil(dur / cfg.duration));
+  }
+  return 1;
+}
+
+function ttBuildBoardLayout(sport, date, courts, slots){
+  const slotIndex = {};
+  slots.forEach((s,i)=>{ slotIndex[s] = i; });
+  const startMap = {};
+  const consumed = {};
+  courts.forEach(c=>{ startMap[c.id] = {}; consumed[c.id] = new Set(); });
+  const assigns = ttAssignments[sport] || {};
+  Object.keys(assigns).forEach(id=>{
+    const a = assigns[id];
+    if(a.date !== date || !startMap[a.courtId]) return;
+    const idx = slotIndex[a.slot];
+    if(idx===undefined) return;
+    const span = Math.max(1, Math.min(ttSpanFor(sport, id), slots.length - idx));
+    startMap[a.courtId][idx] = { id, span };
+  });
+  courts.forEach(c=>{
+    Object.keys(startMap[c.id]).forEach(idxStr=>{
+      const idx = +idxStr;
+      const span = startMap[c.id][idx].span;
+      for(let k=1;k<span;k++) consumed[c.id].add(idx+k);
+    });
+  });
+  return { startMap, consumed };
+}
+
+function ttCanPlace(sport, date, courtId, startIdx, span, slots, excludeId){
+  if(startIdx<0 || startIdx+span>slots.length) return false;
+  const slotIndex = {};
+  slots.forEach((s,i)=>{ slotIndex[s] = i; });
+  const assigns = ttAssignments[sport] || {};
+  for(const id in assigns){
+    if(id===excludeId) continue;
+    const a = assigns[id];
+    if(a.date!==date || a.courtId!==courtId) continue;
+    const otherIdx = slotIndex[a.slot];
+    if(otherIdx===undefined) continue;
+    const otherSpan = Math.max(1, Math.min(ttSpanFor(sport, id), slots.length-otherIdx));
+    if(startIdx < otherIdx+otherSpan && otherIdx < startIdx+span) return false;
+  }
+  return true;
+}
+
+function ttEscape(s){
+  return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function ttOnDateChange(){
+  ttSelectedDate = document.getElementById('tt-date-select').value;
+  ttRenderBoard();
+}
+
+function ttOnScaleChange(){
+  ttScale = (+document.getElementById('tt-scale').value || 100) / 100;
+  ttRenderBoard();
+}
+
+function ttToggleDrawer(){
+  const mask = document.getElementById('tt-drawer-mask');
+  const show = !mask.classList.contains('show');
+  mask.classList.toggle('show', show);
+  document.body.classList.toggle('tt-drawer-open', show);
+}
+
+function ttDragStart(e, matchId){
+  e.dataTransfer.setData('text/plain', matchId);
+  e.dataTransfer.effectAllowed = 'move';
+}
+
+function ttAllowDrop(e){ e.preventDefault(); }
+
+function ttDrop(e, courtId, slot){
+  e.preventDefault();
+  const cell = e.currentTarget;
+  if(cell) cell.classList.remove('tt-drag-over');
+  const sport = ttCurrentSport;
+  const id = e.dataTransfer.getData('text/plain');
+  if(!id) return;
+  const slots = ttBuildSlots(sport, ttSelectedDate);
+  const startIdx = slots.indexOf(slot);
+  if(startIdx<0) return;
+  const span = ttSpanFor(sport, id);
+  if(!ttCanPlace(sport, ttSelectedDate, courtId, startIdx, span, slots, id)){
+    showToast(span>1 ? '此時段空間不足或已被其他場次佔用' : '此時段已安排其他場次');
+    return;
+  }
+  if(!ttAssignments[sport]) ttAssignments[sport] = {};
+  ttAssignments[sport][id] = { date: ttSelectedDate, courtId, slot };
+  ttRenderBoard();
+}
+
+function ttRemoveAssignment(id){
+  const sport = ttCurrentSport;
+  if(ttAssignments[sport]) delete ttAssignments[sport][id];
+  ttRenderBoard();
+}
+
+function ttOnDrawerGroupChange(){
+  ttDrawerGroup[ttCurrentSport] = document.getElementById('tt-drawer-group-select').value;
+  ttRenderDrawer();
+}
+
+function ttAddBlank(){
+  const sport = ttCurrentSport;
+  const input = document.getElementById('tt-blank-minutes');
+  const minutes = Math.max(5, +(input && input.value) || 30);
+  const id = 'blank-' + (ttBlankNextId++);
+  if(!ttBlankBlocks[sport]) ttBlankBlocks[sport] = {};
+  ttBlankBlocks[sport][id] = { duration: minutes, text: '' };
+  ttRenderBlankList();
+  showToast(`已新增 ${minutes} 分鐘空白格，可拖曳至時間表並輸入文字`);
+}
+
+function ttRemoveBlankFromPool(id){
+  const sport = ttCurrentSport;
+  if(ttBlankBlocks[sport]) delete ttBlankBlocks[sport][id];
+  if(ttAssignments[sport]) delete ttAssignments[sport][id];
+  ttRenderBlankList();
+  ttRenderBoard();
+}
+
+function ttUpdateBlankText(e){
+  const id = e.target.getAttribute('data-id');
+  const sport = e.target.getAttribute('data-sport');
+  if(!ttBlankBlocks[sport] || !ttBlankBlocks[sport][id]) return;
+  ttBlankBlocks[sport][id].text = e.target.textContent.trim();
+  ttRenderBlankList();
+}
+
+function ttToggleBlankList(){
+  ttBlankListCollapsed = !ttBlankListCollapsed;
+  ttApplyBlankListCollapse();
+}
+
+function ttApplyBlankListCollapse(){
+  const body = document.getElementById('tt-blank-body');
+  const arrow = document.getElementById('tt-blank-collapse-arrow');
+  if(body) body.classList.toggle('collapsed', ttBlankListCollapsed);
+  if(arrow) arrow.classList.toggle('collapsed', ttBlankListCollapsed);
+}
+
+function ttRenderBlankList(){
+  const sport = ttCurrentSport;
+  const box = document.getElementById('tt-blank-list');
+  if(!box) return;
+  const blanks = ttBlankBlocks[sport] || {};
+  const assigns = ttAssignments[sport] || {};
+  const ids = Object.keys(blanks);
+
+  const countBadge = document.getElementById('tt-blank-count');
+  if(countBadge) countBadge.textContent = ids.length ? `（${ids.length}）` : '';
+
+  if(ids.length===0){
+    box.innerHTML = `<div class="tt-blank-empty">尚未新增空白格</div>`;
+  } else {
+    box.innerHTML = ids.map(id=>{
+      const b = blanks[id];
+      const placed = assigns[id];
+      const label = b.text ? ttEscape(b.text) : '（未輸入文字）';
+      return `<div class="tt-drawer-card tt-blank-card ${placed?'tt-placed':''}" style="${placed?'':'border-color:'+TT_BLANK_COLOR}" draggable="true" ondragstart="ttDragStart(event,'${id}')">
+        <div class="tt-drawer-card-num" style="${placed?'':'color:'+TT_BLANK_COLOR}">空白格・${b.duration}分</div>
+        <div class="tt-drawer-card-teams">${label}</div>
+        ${placed ? `<span class="tt-drawer-card-tag">已排入・${ttFormatDate(placed.date)} ${placed.slot}</span>` : ''}
+        <span class="tt-blank-card-del" onclick="event.stopPropagation();ttRemoveBlankFromPool('${id}')">刪除</span>
+      </div>`;
+    }).join('');
+  }
+
+  ttApplyBlankListCollapse();
+}
+
+function ttRenderDrawer(){
+  const sport = ttCurrentSport;
+  const groupsData = ttGenerateMatches(sport);
+  const groupNames = Object.keys(groupsData);
+  if(!ttDrawerGroup[sport] || !groupsData[ttDrawerGroup[sport]]) ttDrawerGroup[sport] = groupNames[0];
+  const curGroup = ttDrawerGroup[sport];
+
+  const sel = document.getElementById('tt-drawer-group-select');
+  sel.innerHTML = groupNames.map(g=>`<option value="${g}" ${g===curGroup?'selected':''}>${g}</option>`).join('');
+
+  const assigns = ttAssignments[sport] || {};
+  const matches = groupsData[curGroup];
+  const color = TT_GROUP_COLORS[curGroup] || 'var(--teal)';
+  const list = document.getElementById('tt-drawer-list');
+  list.innerHTML = matches.map(m=>{
+    const placed = assigns[m.id];
+    return `<div class="tt-drawer-card ${placed?'tt-placed':''}" style="${placed?'':'border-color:'+color}" draggable="true" ondragstart="ttDragStart(event,'${m.id}')">
+      <div class="tt-drawer-card-num" style="${placed?'':'color:'+color}">第${m.num}場</div>
+      <div class="tt-drawer-card-teams">${m.teamA} V.S. ${m.teamB}</div>
+      ${placed ? `<span class="tt-drawer-card-tag">已排入・${ttFormatDate(placed.date)} ${placed.slot}</span>` : ''}
+    </div>`;
+  }).join('');
+
+  ttRenderBlankList();
+}
+
+function ttRenderBlockContent(sport, id, heightPx){
+  if(ttIsBlank(id)){
+    const b = (ttBlankBlocks[sport]||{})[id] || { duration: 0, text: '' };
+    return `<div class="tt-block tt-block-blank" style="background:${TT_BLANK_COLOR};min-height:${Math.max(heightPx-6,28)}px" draggable="true" ondragstart="ttDragStart(event,'${id}')">
+      <div class="tt-block-head"><span class="tt-block-title">空白格・${b.duration}分</span><span class="tt-block-remove" onclick="ttRemoveAssignment('${id}')">✕</span></div>
+      <div class="tt-block-text" contenteditable="true" draggable="false" data-id="${id}" data-sport="${sport}" onblur="ttUpdateBlankText(event)" data-placeholder="點擊輸入文字">${ttEscape(b.text)}</div>
+    </div>`;
+  }
+  const m = ttFindMatch(sport, id);
+  if(!m) return '';
+  const color = TT_GROUP_COLORS[m.groupName] || 'var(--teal)';
+  return `<div class="tt-block" style="background:${color};min-height:${Math.max(heightPx-6,28)}px" draggable="true" ondragstart="ttDragStart(event,'${id}')">
+    <div class="tt-block-head"><span class="tt-block-title">${m.groupName}・第${m.num}場</span><span class="tt-block-remove" onclick="ttRemoveAssignment('${id}')">✕</span></div>
+    <div class="tt-block-teams">${m.teamA} vs ${m.teamB}</div>
+  </div>`;
+}
+
+function ttRenderBoard(){
+  const sport = ttCurrentSport;
+  const cfg = sportTimetableConfig[sport];
+  ttGenerateMatches(sport);
+
+  const dates = [...new Set(cfg.sessions.map(s=>s.date))].sort();
+  if(!dates.includes(ttSelectedDate)) ttSelectedDate = dates[0];
+  const dateSel = document.getElementById('tt-date-select');
+  dateSel.innerHTML = dates.map(d=>`<option value="${d}" ${d===ttSelectedDate?'selected':''}>${ttFormatDate(d)}</option>`).join('');
+
+  document.getElementById('tt-legend').innerHTML = TT_GROUPS.map(g=>
+    `<div class="tt-legend-item"><span class="tt-legend-dot" style="background:${TT_GROUP_COLORS[g]}"></span>${g}</div>`
+  ).join('') + `<div class="tt-legend-item"><span class="tt-legend-dot" style="background:${TT_BLANK_COLOR}"></span>空白格</div>`;
+
+  const courts = ttFlattenCourts();
+  const slots = ttBuildSlots(sport, ttSelectedDate);
+  const rowH = Math.round(46 * ttScale);
+  const table = document.getElementById('tt-table');
+
+  if(courts.length===0){
+    table.innerHTML = `<tr><td class="tt-empty-hint">尚未設定任何場地，請先至「場地設定」新增地點與場地</td></tr>`;
+  } else if(slots.length===0){
+    table.innerHTML = `<tr><td class="tt-empty-hint">此日期尚無可用比賽時段，請至上方調整時段設定</td></tr>`;
+  } else {
+    const { startMap, consumed } = ttBuildBoardLayout(sport, ttSelectedDate, courts, slots);
+    const colgroup = `<colgroup><col style="width:66px">${courts.map(()=>'<col style="width:150px">').join('')}</colgroup>`;
+    let html = colgroup + '<thead><tr><th>時間</th>' + courts.map(c=>`<th title="${c.label}">${c.label}</th>`).join('') + '</tr></thead><tbody>';
+    slots.forEach((slot, rowIdx)=>{
+      html += `<tr><td style="height:${rowH}px">${slot}</td>`;
+      courts.forEach(c=>{
+        if(consumed[c.id].has(rowIdx)) return;
+        const start = startMap[c.id][rowIdx];
+        const dropAttrs = `ondragover="ttAllowDrop(event)" ondragenter="this.classList.add('tt-drag-over')" ondragleave="this.classList.remove('tt-drag-over')" ondrop="ttDrop(event,'${c.id}','${slot}')"`;
+        if(start){
+          const spanHeight = rowH*start.span + (start.span-1);
+          html += `<td class="tt-cell" rowspan="${start.span}" style="height:${spanHeight}px" ${dropAttrs}>${ttRenderBlockContent(sport, start.id, spanHeight)}</td>`;
+        } else {
+          html += `<td class="tt-cell" style="height:${rowH}px" ${dropAttrs}></td>`;
+        }
+      });
+      html += '</tr>';
+    });
+    html += '</tbody>';
+    table.innerHTML = html;
+  }
+
+  ttRenderDrawer();
+}
+
+function ttSave(){
+  showToast('已儲存場地時間表');
+}
+
+function ttCsvEscape(v){
+  const s = String(v==null?'':v);
+  if(/[",\n]/.test(s)) return '"' + s.replace(/"/g,'""') + '"';
+  return s;
+}
+
+function ttCellExportText(sport, id){
+  if(ttIsBlank(id)){
+    const b = (ttBlankBlocks[sport]||{})[id];
+    if(!b) return '';
+    return b.text ? `空白格：${b.text}` : `空白格（${b.duration}分）`;
+  }
+  const m = ttFindMatch(sport, id);
+  if(!m) return '';
+  return `${m.groupName}．第${m.num}場：${m.teamA} vs ${m.teamB}`;
+}
+
+function ttExportCSV(){
+  const sport = ttCurrentSport;
+  const cfg = sportTimetableConfig[sport];
+  if(!cfg){ showToast('請先產生時間表'); return; }
+  const courts = ttFlattenCourts();
+  if(courts.length===0){ showToast('尚未設定場地，無法匯出'); return; }
+  const dates = [...new Set(cfg.sessions.map(s=>s.date))].sort();
+  if(dates.length===0){ showToast('尚未設定比賽時間，無法匯出'); return; }
+
+  const rows = [['日期','時間', ...courts.map(c=>c.label)]];
+  dates.forEach(date=>{
+    const slots = ttBuildSlots(sport, date);
+    if(slots.length===0) return;
+    const { startMap, consumed } = ttBuildBoardLayout(sport, date, courts, slots);
+    slots.forEach((slot, rowIdx)=>{
+      const row = [ttFormatDate(date), slot];
+      courts.forEach(c=>{
+        if(consumed[c.id].has(rowIdx)){ row.push(''); return; }
+        const start = startMap[c.id][rowIdx];
+        row.push(start ? ttCellExportText(sport, start.id) : '');
+      });
+      rows.push(row);
+    });
+  });
+
+  const csv = '﻿' + rows.map(r=>r.map(ttCsvEscape).join(',')).join('\r\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `場地時間表_${sport}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url), 1000);
+  showToast('已匯出時程表 CSV');
+}
+
+function showToast(msg){
+  let t = document.getElementById('mockToast');
+  if(!t){ t = document.createElement('div'); t.id = 'mockToast'; t.className = 'mock-toast'; document.body.appendChild(t); }
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 2200);
+}
+
+function saveSchedule(){
+  showToast('已儲存賽程設定（示意稿，尚未串接後端）');
+}
+
+function downloadChart(){
+  const body = document.getElementById('chart-body');
+  if(!body || !body.innerHTML.trim()){ showToast('目前無可下載的賽程圖'); return; }
+  const html = '<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><title>賽程圖匯出</title></head><body>' + body.innerHTML + '</body></html>';
+  const blob = new Blob([html], {type:'text/html;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = '賽程圖.html';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('已下載賽程圖（示意稿）');
+}
+
+/* ---------- 賽程圖產生工具（內嵌自 wireframe-v3） ---------- */
+const SCHED_FORMATS = [
+  {key:'rr',   name:'循環賽',       desc:'全員捉對廝殺，依積分排名。可分組，畫面以分組循環賽圖呈現。'},
+  {key:'se',   name:'單淘汰',       desc:'輸一場即淘汰，賽程場次最少，晉級速度快。'},
+  {key:'de',   name:'雙淘汰',       desc:'輸兩場才淘汰，含勝部／敗部賽程，敗部可復活挑戰勝部。'},
+  {key:'sw',   name:'瑞士制',       desc:'不淘汰，依戰績動態配對，適合隊伍數多、時間有限的賽事。'},
+  {key:'rrrr', name:'循環賽＋循環賽', desc:'初賽分組循環賽，晉級隊伍再進行第二階段循環賽決定名次。'},
+  {key:'rrse', name:'循環賽＋單淘汰', desc:'初賽分組循環賽，晉級隊伍進入單淘汰賽程爭奪名次。'},
+  {key:'rrde', name:'循環賽＋雙淘汰', desc:'初賽分組循環賽，晉級隊伍進入雙淘汰賽程，含敗部復活。'},
+];
+
+const SCHED_TEAM_POOL = ['雷霆','飛鷹','藍鯨','疾風','火焰','星辰','蒼狼','赤兔','海潮','嵐風','奔雷','烈陽','寒冰','幻影','銀狐','金鵰','紫電','墨龍','翔鷹','霹靂','戰狼','獵鷹','蒼穹','幽靈','奇兵','旋風'];
+function schedTeamName(i){ return SCHED_TEAM_POOL[i % SCHED_TEAM_POOL.length] + '隊'; }
+const SCHED_CN = ['一','二','三','四','五','六','七','八','九','十','十一','十二','十三','十四','十五','十六','十七','十八','十九','二十'];
+function schedPlaceholderDate(i){
+  const days=[8,15,10,16,9,11,17,12,13,14]; const day=days[i%days.length];
+  const min = i%2?'30':'00';
+  return `10/${String(day).padStart(2,'0')} ${((8+i*2)%12)+1}:${min}`;
+}
+
+const schedState = { fmt:'rrse', teams:24, groups:8, finalTeams:16, advance:2, on34:true, on56:true, orientation:'portrait' };
+
+function schedDistributeGroups(teams, groups){
+  groups = Math.max(1, Math.min(groups, teams));
+  const base = Math.floor(teams/groups), rem = teams%groups;
+  const sizes = [];
+  for(let i=0;i<groups;i++) sizes.push(base + (i<rem?1:0));
+  return sizes;
+}
+function schedGroupLetters(n){ const L='ABCDEFGHIJKLMNOPQRSTUVWXYZ'; return Array.from({length:n},(_,i)=>L[i%26]); }
+function schedNextPow2(n){ let p=1; while(p<n) p*=2; return Math.max(2,p); }
+
+function schedCountRRMatches(teams, groups){
+  const sizes = schedDistributeGroups(teams, groups);
+  return sizes.reduce((sum,n)=>sum + n*(n-1)/2, 0);
+}
+function schedCountBracketMatches(numTeams, showExtra){
+  const n = schedNextPow2(numTeams);
+  return (n-1) + (showExtra?1:0);
+}
+function schedCountSwissMatches(teams){
+  const rounds = Math.ceil(Math.log2(teams));
+  return rounds * Math.floor(teams/2);
+}
+
+const schedSel = document.getElementById('fmt-select');
+SCHED_FORMATS.forEach(f=>{
+  const o = document.createElement('option');
+  o.value=f.key; o.textContent=f.name;
+  if(f.key===schedState.fmt) o.selected=true;
+  schedSel.appendChild(o);
+});
+schedSel.addEventListener('change', ()=>{ schedState.fmt = schedSel.value; schedRenderFields(); schedRenderChart(); });
+
+document.querySelectorAll('#page-schedule-tool .tab').forEach(t=>t.addEventListener('click',()=>{
+  document.querySelectorAll('#page-schedule-tool .tab').forEach(x=>x.classList.remove('on'));
+  t.classList.add('on');
+  schedState.orientation = t.dataset.o;
+  schedRenderChart();
+}));
+
+function schedNumInput(id, value, min){
+  return `<input type="number" id="${id}" value="${value}" min="${min||1}">`;
+}
+function schedToggleRow(id, label, hint, on){
+  return `<div class="toggle-row"><div><div class="t-label">${label}</div><div class="t-hint">${hint}</div></div>
+    <div class="switch ${on?'on':''}" id="${id}" onclick="this.classList.toggle('on');schedOnFieldChange();"><div class="knob"></div></div></div>`;
+}
+
+function schedRenderFields(){
+  const f = schedState.fmt;
+  const body = document.getElementById('fields-body');
+  document.getElementById('fields-sub').textContent = `目前賽制：${SCHED_FORMATS.find(x=>x.key===f).name}（欄位已依此賽制切換）`;
+  document.getElementById('fmt-desc').innerHTML = `<b>${SCHED_FORMATS.find(x=>x.key===f).name}</b>　${SCHED_FORMATS.find(x=>x.key===f).desc}`;
+
+  let html = '';
+  if(f==='rr'){
+    html = `<div class="field-group"><h4>賽事設定 <span class="chip">循環賽</span></h4>
+      <div class="field-grid">
+        <div><label>參賽隊伍數</label>${schedNumInput('in-teams', schedState.teams, 3)}</div>
+        <div><label>分組組數</label>${schedNumInput('in-groups', schedState.groups, 1)}</div>
+      </div>
+      <div class="formula-box" id="formula-box"></div>
+    </div>`;
+  } else if(f==='se'){
+    html = `<div class="field-group"><h4>賽事設定 <span class="chip">單淘汰</span></h4>
+      <div class="field-grid"><div><label>參賽隊伍數</label>${schedNumInput('in-finalTeams', schedState.finalTeams, 2)}</div></div>
+      ${schedToggleRow('in-on34','加開 3 / 4 名賽','開啟後，兩位準決賽敗方將加賽一場，爭奪季軍',schedState.on34)}
+    </div>`;
+  } else if(f==='de'){
+    html = `<div class="field-group"><h4>賽事設定 <span class="chip">雙淘汰</span></h4>
+      <div class="field-grid"><div><label>參賽隊伍數</label>${schedNumInput('in-finalTeams', schedState.finalTeams, 3)}</div></div>
+      ${schedToggleRow('in-on56','加開 5 / 6 名賽','開啟後，敗部準決賽敗方將加賽一場，爭奪第 5 名',schedState.on56)}
+      <div class="hint">＊含敗部復活賽程，畫面為簡化示意</div>
+    </div>`;
+  } else if(f==='sw'){
+    html = `<div class="field-group"><h4>賽事設定 <span class="chip">瑞士制</span></h4>
+      <div class="field-grid"><div><label>參賽隊伍數</label>${schedNumInput('in-finalTeams', schedState.finalTeams, 4)}</div></div>
+      <div class="hint">＊建議輪次數由系統依隊伍數自動計算（⌈log₂N⌉），此處為示意</div>
+    </div>`;
+  } else {
+    const stageName = f==='rrrr' ? '循環賽' : (f==='rrse' ? '單淘汰' : '雙淘汰');
+    const isRR2 = true;
+    html = `<div class="field-group"><h4>初賽設定 <span class="chip">循環賽</span></h4>
+      <div class="field-grid">
+        <div><label>初賽隊伍數</label>${schedNumInput('in-teams', schedState.teams, 3)}</div>
+        <div><label>分組組數</label>${schedNumInput('in-groups', schedState.groups, 1)}</div>
+      </div>
+      <div class="formula-box" id="formula-box"></div>
+    </div>
+    <div class="field-group"><h4>複賽設定 <span class="chip">${stageName}</span></h4>
+      <div class="field-grid">
+        ${isRR2 ? '' : `<div><label>每組晉級名額</label>
+          <select id="in-advance" onchange="schedOnFieldChange()">
+            <option value="1">前 1 名</option><option value="2">前 2 名</option><option value="3">前 3 名</option>
+          </select>
+        </div>`}
+        <div><label>複賽隊伍數${isRR2 ? '' : '（自動計算）'}</label><input type="number" id="in-finalTeams" value="${schedState.finalTeams}" min="3" ${isRR2 ? '' : 'readonly style="background:var(--canvas);color:var(--ink-500)"'}></div>
+      </div>
+      ${f==='rrse' ? schedToggleRow('in-on34','加開 3 / 4 名賽','開啟後，兩位準決賽敗方將加賽一場，爭奪季軍',schedState.on34) : ''}
+      ${f==='rrde' ? schedToggleRow('in-on56','加開 5 / 6 名賽','開啟後，敗部準決賽敗方將加賽一場，爭奪第 5 名',schedState.on56) : ''}
+    </div>`;
+  }
+  body.innerHTML = html;
+
+  ['in-teams','in-groups','in-finalTeams'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el && !el.readOnly) el.addEventListener('input', schedOnFieldChange);
+  });
+  const advEl = document.getElementById('in-advance');
+  if(advEl) advEl.value = String(schedState.advance);
+  schedUpdateFormula();
+}
+
+function schedUpdateFormula(){
+  const box = document.getElementById('formula-box');
+  if(!box) return;
+  const teams = +document.getElementById('in-teams').value;
+  const groups = +document.getElementById('in-groups').value;
+  const sizes = schedDistributeGroups(teams, groups);
+  const counts = {};
+  sizes.forEach(s=>counts[s]=(counts[s]||0)+1);
+  const desc = Object.keys(counts).sort((a,b)=>b-a).map(s=>`${counts[s]} 組 ${s} 人`).join('　＋　');
+  box.innerHTML = `分組演算法：隊伍數≥3、組數≥2。<code>${teams} 隊 ÷ ${groups} 組</code> → 系統自動分為 ${desc}（人數差距最多 1 人）`;
+}
+
+function schedOnFieldChange(){
+  schedState.teams = +(document.getElementById('in-teams')?.value || schedState.teams);
+  schedState.groups = +(document.getElementById('in-groups')?.value || schedState.groups);
+  schedState.on34 = document.getElementById('in-on34') ? document.getElementById('in-on34').classList.contains('on') : schedState.on34;
+  schedState.on56 = document.getElementById('in-on56') ? document.getElementById('in-on56').classList.contains('on') : schedState.on56;
+  const advEl = document.getElementById('in-advance');
+  if(advEl) schedState.advance = +advEl.value;
+
+  if(['rrrr','rrse','rrde'].includes(schedState.fmt)){
+    const finalTeamsEl = document.getElementById('in-finalTeams');
+    if(finalTeamsEl && finalTeamsEl.readOnly){
+      const groups = Math.max(1, schedState.groups);
+      const computedFinal = groups * schedState.advance;
+      schedState.finalTeams = computedFinal;
+      finalTeamsEl.value = computedFinal;
+    } else if(finalTeamsEl){
+      schedState.finalTeams = +finalTeamsEl.value;
+    }
+  } else {
+    const finalTeamsEl = document.getElementById('in-finalTeams');
+    if(finalTeamsEl) schedState.finalTeams = +finalTeamsEl.value;
+  }
+  schedUpdateFormula();
+  schedRenderChart();
+}
+
+function schedGroupPolygonSVG(groupLabel, teamCount){
+  const SIZE=190, cx=95, cy=100, r=46;
+  const pts=[];
+  for(let i=0;i<teamCount;i++){
+    // 3 隊＝正三角形（頂點朝上）；4 隊＝正方形（角對齊水平／垂直邊）
+    const angle = teamCount===4 ? (-Math.PI*3/4 + i*(Math.PI/2)) : (-Math.PI/2 + i*(2*Math.PI/teamCount));
+    pts.push({x:cx+r*Math.cos(angle), y:cy+r*Math.sin(angle)});
+  }
+  let edges='';
+  for(let i=0;i<teamCount;i++){
+    for(let j=i+1;j<teamCount;j++){
+      const p1=pts[i], p2=pts[j];
+      edges += `<line x1="${p1.x.toFixed(1)}" y1="${p1.y.toFixed(1)}" x2="${p2.x.toFixed(1)}" y2="${p2.y.toFixed(1)}" stroke="#333" stroke-width="1"/>`;
+    }
+  }
+  let vertex='';
+  pts.forEach(p=>{
+    vertex += `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="4" fill="#1c2a4a"/>`;
+  });
+  const svg = `<svg viewBox="0 0 ${SIZE} ${SIZE}" class="group-svg">${edges}${vertex}</svg>`;
+  return `<div class="group-diagram"><div class="group-diagram-label">${groupLabel} 組（${teamCount} 隊・共 ${schedCountRRMatches(teamCount,1)} 場）</div>${svg}</div>`;
+}
+
+function schedGroupMatrixHTML(groupLabel, teamCount){
+  let headerCells = '<th class="gm-corner"></th>';
+  for(let j=1;j<=teamCount;j++) headerCells += `<th>T${j}</th>`;
+  let rows = '';
+  for(let i=1;i<=teamCount;i++){
+    let cells = `<th>T${i}</th>`;
+    for(let j=1;j<=teamCount;j++){
+      cells += (i===j) ? '<td class="gm-diag"></td>' : '<td></td>';
+    }
+    rows += `<tr>${cells}</tr>`;
+  }
+  return `<div class="group-diagram"><div class="group-diagram-label">${groupLabel} 組（${teamCount} 隊・共 ${schedCountRRMatches(teamCount,1)} 場）</div>
+    <table class="group-matrix"><thead><tr>${headerCells}</tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+
+function schedGroupDiagram(groupLabel, teamCount){
+  // 3 人＝三角形、4 人＝正方形、5 人以上＝對戰表格
+  return teamCount>=5 ? schedGroupMatrixHTML(groupLabel, teamCount) : schedGroupPolygonSVG(groupLabel, teamCount);
+}
+
+function schedGroupsChartHTML(teams, groups, orientation){
+  const sizes = schedDistributeGroups(teams, groups);
+  const letters = schedGroupLetters(sizes.length);
+  const cards = sizes.map((sz,gi)=>schedGroupDiagram(letters[gi], sz));
+  return `<div class="groups-wrap ${orientation}">${cards.join('')}</div>`;
+}
+
+function schedMatchBoxSVG(x,y,w,h,label){
+  return `<g>
+    <rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w}" height="${h}" fill="#fff" stroke="#333" stroke-width="1.1"/>
+    <text x="${(x+w/2).toFixed(1)}" y="${(y+h/2+4).toFixed(1)}" font-size="11" text-anchor="middle" fill="#1c1f2b">第${label}場</text>
+  </g>`;
+}
+
+function schedBracketLandscapeSVG(numTeams, showExtra, extraLabel, matchStart){
+  numTeams = schedNextPow2(numTeams);
+  const rounds = Math.round(Math.log2(numTeams));
+  const boxW=94, boxH=34, vGap=20, roundGapX=52;
+  let counts=[]; let c=numTeams/2; for(let r=0;r<rounds;r++){counts.push(c); c/=2;}
+  const unit = boxH+vGap;
+  const positions=[[]];
+  for(let i=0;i<counts[0];i++) positions[0][i]=i*unit+boxH/2;
+  for(let r=1;r<rounds;r++){ positions[r]=[]; for(let i=0;i<counts[r];i++){ positions[r][i]=(positions[r-1][2*i]+positions[r-1][2*i+1])/2; } }
+  const totalH=(counts[0]-1)*unit+boxH;
+  let matchNum=matchStart||0;
+  let boxes='', lines='';
+  for(let r=0;r<rounds;r++){
+    for(let i=0;i<counts[r];i++){
+      const x=r*(boxW+roundGapX), y=positions[r][i]-boxH/2;
+      boxes += schedMatchBoxSVG(x,y,boxW,boxH, SCHED_CN[matchNum]||(matchNum+1));
+      if(r>0){
+        const x1=(r-1)*(boxW+roundGapX)+boxW, x2=x, midx=(x1+x2)/2;
+        const y1=positions[r-1][2*i], y2=positions[r-1][2*i+1];
+        lines += `<path d="M${x1.toFixed(1)},${y1.toFixed(1)} H${midx.toFixed(1)} M${midx.toFixed(1)},${y1.toFixed(1)} V${y2.toFixed(1)} M${x1.toFixed(1)},${y2.toFixed(1)} H${midx.toFixed(1)} M${midx.toFixed(1)},${positions[r][i].toFixed(1)} H${x2.toFixed(1)}" stroke="#333" fill="none" stroke-width="1.1"/>`;
+      }
+      matchNum++;
+    }
+  }
+  let seeds='';
+  for(let i=0;i<counts[0];i++) seeds += `<text x="-16" y="${(positions[0][i]+3).toFixed(1)}" font-size="10" text-anchor="middle" fill="#6b7086">${i+1}</text>`;
+
+  let extraSvg='', extraH=0;
+  if(showExtra!==undefined){
+    const finalR=rounds-1, fx=finalR*(boxW+roundGapX), ey=positions[finalR][0]+boxH+34;
+    if(showExtra){
+      extraSvg = `<text x="${(fx+boxW/2).toFixed(1)}" y="${(ey-8).toFixed(1)}" font-size="9.5" text-anchor="middle" fill="#0d9488">${extraLabel}</text>` + schedMatchBoxSVG(fx,ey,boxW,boxH, SCHED_CN[matchNum]||(matchNum+1));
+      matchNum++;
+    } else {
+      extraSvg = `<text x="${(fx+boxW/2).toFixed(1)}" y="${(ey+6).toFixed(1)}" font-size="10" text-anchor="middle" fill="#c07a12">並列第三</text>`;
+    }
+    extraH = 60;
+  }
+  const totalW = rounds*boxW + (rounds-1)*roundGapX + 30;
+  const totalHeight = totalH + extraH + 20;
+  const svg = `<svg viewBox="-24 -10 ${totalW} ${totalHeight}" width="${totalW.toFixed(0)}" class="bracket-svg">${seeds}${lines}${boxes}${extraSvg}</svg>`;
+  return {svg, matchEnd: matchNum, width: totalW, height: totalHeight};
+}
+
+function schedBracketPortraitSVG(numTeams, showExtra, extraLabel, matchStart){
+  numTeams = schedNextPow2(numTeams);
+  const rounds = Math.round(Math.log2(numTeams));
+  const boxW=72, boxH=34, hGap=14, roundGapY=42;
+  let counts=[]; let c=numTeams/2; for(let r=0;r<rounds;r++){counts.push(c); c/=2;}
+  const unit = boxW+hGap;
+  const positions=[[]];
+  for(let i=0;i<counts[0];i++) positions[0][i]=i*unit+boxW/2;
+  for(let r=1;r<rounds;r++){ positions[r]=[]; for(let i=0;i<counts[r];i++){ positions[r][i]=(positions[r-1][2*i]+positions[r-1][2*i+1])/2; } }
+  const totalW=(counts[0]-1)*unit+boxW;
+  const baseBottom = (rounds-1)*(boxH+roundGapY) + boxH;
+  let matchNum=matchStart||0;
+  let boxes='', lines='';
+  const yTop = r => baseBottom - boxH - r*(boxH+roundGapY);
+  for(let r=0;r<rounds;r++){
+    const yt = yTop(r);
+    for(let i=0;i<counts[r];i++){
+      const cx=positions[r][i], x=cx-boxW/2;
+      boxes += schedMatchBoxSVG(x,yt,boxW,boxH, SCHED_CN[matchNum]||(matchNum+1));
+      if(r>0){
+        const childYt = yTop(r-1);
+        const cx0=positions[r-1][2*i], cx1=positions[r-1][2*i+1];
+        const midY = childYt - roundGapY/2;
+        const parentBottom = yt + boxH;
+        lines += `<path d="M${cx0.toFixed(1)},${childYt.toFixed(1)} V${midY.toFixed(1)} M${cx1.toFixed(1)},${childYt.toFixed(1)} V${midY.toFixed(1)} M${cx0.toFixed(1)},${midY.toFixed(1)} H${cx1.toFixed(1)} M${cx.toFixed(1)},${midY.toFixed(1)} V${parentBottom.toFixed(1)}" stroke="#333" fill="none" stroke-width="1.1"/>`;
+      }
+      matchNum++;
+    }
+  }
+  let seeds='';
+  for(let i=0;i<counts[0];i++) seeds += `<text x="${positions[0][i].toFixed(1)}" y="${(baseBottom+16).toFixed(1)}" font-size="10" text-anchor="middle" fill="#6b7086">${i+1}</text>`;
+
+  let extraSvg='', extraW=0;
+  if(showExtra!==undefined){
+    const finalYt = yTop(rounds-1);
+    const ex = positions[rounds-1][0] + boxW/2 + 26;
+    if(showExtra){
+      extraSvg = `<text x="${(ex+boxW/2).toFixed(1)}" y="${(finalYt-6).toFixed(1)}" font-size="9" text-anchor="middle" fill="#0d9488">${extraLabel}</text>` + schedMatchBoxSVG(ex,finalYt,boxW,boxH, SCHED_CN[matchNum]||(matchNum+1));
+      matchNum++;
+    } else {
+      extraSvg = `<text x="${(ex+boxW/2).toFixed(1)}" y="${(finalYt+boxH/2+4).toFixed(1)}" font-size="10" text-anchor="middle" fill="#c07a12">並列第三</text>`;
+    }
+    extraW = boxW+40;
+  }
+  const totalWidth = totalW + extraW + 20;
+  const totalHeight = baseBottom + 44;
+  const svg = `<svg viewBox="-10 -24 ${totalWidth} ${totalHeight}" width="${totalWidth.toFixed(0)}" class="bracket-svg">${seeds}${lines}${boxes}${extraSvg}</svg>`;
+  return {svg, matchEnd: matchNum, width: totalWidth, height: totalHeight};
+}
+
+function schedBracketMatchList(numTeams, showExtra, extraLabel){
+  numTeams = schedNextPow2(numTeams);
+  const rounds = Math.round(Math.log2(numTeams));
+  let counts=[]; let c=numTeams/2; for(let r=0;r<rounds;r++){counts.push(c); c/=2;}
+  let matchNum = 0;
+  const rows=[]; const roundNums=[];
+  let prevRefs=[];
+  for(let r=0;r<rounds;r++){
+    const refs=[], nums=[];
+    for(let i=0;i<counts[r];i++){
+      let leftRef, rightRef;
+      if(r===0){ leftRef = `T${2*i+1}`; rightRef = `T${2*i+2}`; }
+      else { leftRef = prevRefs[2*i]; rightRef = prevRefs[2*i+1]; }
+      const arabicNum = matchNum+1;
+      rows.push({num: arabicNum, label: `${leftRef}-${rightRef}`});
+      refs.push(`${arabicNum}W`);
+      nums.push(arabicNum);
+      matchNum++;
+    }
+    prevRefs = refs;
+    roundNums.push(nums);
+  }
+  if(showExtra && rounds>=2){
+    const semiNums = roundNums[rounds-2];
+    if(semiNums && semiNums.length>=2){
+      const arabicNum = matchNum+1;
+      rows.push({num:arabicNum, label:`${semiNums[0]}L-${semiNums[1]}L`, extra:true, extraLabel});
+      matchNum++;
+    }
+  }
+  return {rows, total: matchNum};
+}
+
+function schedMatchListTableHTML(rows){
+  const body = rows.map(r=>{
+    if(r.extra){
+      return `<tr class="ml-extra"><td>${r.num}</td><td>${r.label}<span class="ml-extra-note">（${r.extraLabel}）</span></td></tr>`;
+    }
+    return `<tr><td>${r.num}</td><td>${r.label}</td></tr>`;
+  }).join('');
+  return `<div class="match-list">
+    <div class="match-list-count">場次數：${rows.length}</div>
+    <table class="match-list-table"><thead><tr><th>場次</th><th>對戰組合</th></tr></thead><tbody>${body}</tbody></table>
+    <div class="hint">＊「T1」代表籤位 1 號隊伍；「1W」代表第 1 場獲勝隊伍，「1L」代表第 1 場落敗隊伍；本表為理想籤表示意，實際輪空（bye）情形未列入</div>
+  </div>`;
+}
+
+function schedBracketChartHTML(numTeams, showExtra, extraLabel, orientation){
+  const fn = orientation==='landscape' ? schedBracketLandscapeSVG : schedBracketPortraitSVG;
+  const r = fn(numTeams, showExtra, extraLabel, 0);
+  const ml = schedBracketMatchList(numTeams, showExtra, extraLabel);
+  return `<div class="bracket-scroll">${r.svg}</div>${schedMatchListTableHTML(ml.rows)}`;
+}
+
+function schedSwissChartHTML(teams){
+  const rounds = Math.ceil(Math.log2(teams));
+  let rows='';
+  for(let r=1;r<=Math.min(rounds,5);r++){
+    rows += `<tr><td>第 ${r} 輪</td><td>${r<=2?'已完成':'待進行'}</td></tr>`;
+  }
+  return `<table class="swiss-table"><tr><th>輪次</th><th>狀態</th></tr>${rows}</table>
+    <div class="hint">＊瑞士制建議進行 ${rounds} 輪（⌈log₂${teams}⌉），不淘汰，最終依總戰績排名</div>`;
+}
+
+function schedDoubleElimChartHTML(numTeams, showExtra, orientation){
+  const winners = schedBracketChartHTML(numTeams, false, '', orientation);
+  const loserTeams = Math.max(2, schedNextPow2(numTeams)/2);
+  const losers = schedBracketChartHTML(loserTeams, showExtra, '5/6 名賽', orientation);
+  return `<div class="de-section-title">勝部賽程</div>${winners}
+    <div class="de-section-title">敗部賽程（簡化示意，含敗部復活）</div>${losers}
+    <div class="note-inline">＊實際敗部賽程需與勝部交叉對戰，此處為簡化呈現，完整規則詳見 SRS 文件</div>`;
+}
+
+function schedTotalMatches(){
+  const f = schedState.fmt;
+  if(f==='rr') return schedCountRRMatches(schedState.teams, schedState.groups);
+  if(f==='se') return schedCountBracketMatches(schedState.finalTeams, schedState.on34);
+  if(f==='de') return schedCountBracketMatches(schedState.finalTeams, false) + schedCountBracketMatches(Math.max(2,schedNextPow2(schedState.finalTeams)/2), schedState.on56);
+  if(f==='sw') return schedCountSwissMatches(schedState.finalTeams);
+  if(f==='rrrr') return schedCountRRMatches(schedState.teams, schedState.groups) + schedCountRRMatches(schedState.finalTeams, Math.max(1,Math.round(schedState.finalTeams/3)));
+  if(f==='rrse') return schedCountRRMatches(schedState.teams, schedState.groups) + schedCountBracketMatches(schedState.finalTeams, schedState.on34);
+  if(f==='rrde') return schedCountRRMatches(schedState.teams, schedState.groups) + schedCountBracketMatches(schedState.finalTeams, false) + schedCountBracketMatches(Math.max(2,schedNextPow2(schedState.finalTeams)/2), schedState.on56);
+  return 0;
+}
+
+function schedRenderChart(){
+  const f = schedState.fmt, o = schedState.orientation;
+  const body = document.getElementById('chart-body');
+  const frameClass = o==='portrait' ? 'chart-frame portrait' : 'chart-frame landscape';
+  const frameTitle = o==='portrait' ? '直向預覽（適合手機／直式海報公告）' : '橫向預覽（適合網頁／寬螢幕看板）';
+  let inner='';
+  if(f==='rr'){
+    inner = schedGroupsChartHTML(schedState.teams, schedState.groups, o);
+  } else if(f==='se'){
+    inner = schedBracketChartHTML(schedState.finalTeams, schedState.on34, '季軍賽（3/4名）', o);
+  } else if(f==='de'){
+    inner = schedDoubleElimChartHTML(schedState.finalTeams, schedState.on56, o);
+  } else if(f==='sw'){
+    inner = schedSwissChartHTML(schedState.finalTeams);
+  } else if(f==='rrrr'){
+    inner = `<div class="de-section-title">初賽・循環賽分組</div>${schedGroupsChartHTML(schedState.teams, schedState.groups, o)}
+      <div class="de-section-title">複賽・循環賽（晉級隊伍再分組）</div>${schedGroupsChartHTML(schedState.finalTeams, Math.max(1,Math.round(schedState.finalTeams/3)), o)}`;
+  } else if(f==='rrse'){
+    inner = `<div class="de-section-title">初賽・循環賽分組</div>${schedGroupsChartHTML(schedState.teams, schedState.groups, o)}
+      <div class="de-section-title">複賽・單淘汰賽程</div>${schedBracketChartHTML(schedState.finalTeams, schedState.on34, '季軍賽（3/4名）', o)}`;
+  } else if(f==='rrde'){
+    inner = `<div class="de-section-title">初賽・循環賽分組</div>${schedGroupsChartHTML(schedState.teams, schedState.groups, o)}
+      <div class="de-section-title">複賽・雙淘汰賽程</div>${schedDoubleElimChartHTML(schedState.finalTeams, schedState.on56, o)}`;
+  }
+  const totalMatches = schedTotalMatches();
+  body.innerHTML = `<div class="${frameClass}"><div class="chart-title">${frameTitle}</div><div class="chart-total">本賽程共 ${totalMatches} 場比賽</div>${inner}</div>`;
+}
+
+/* ---------- 抽籤設定（種子隊與抽籤開放時間） ---------- */
+const drawState = { open:true };
+const DRAW_TEAM_POOL_SIZE = 16; // 示意用：模擬該組別參賽隊伍總數
+const DRAW_GROUPS = ['女子組', '男子組', '混合組'];
+let drawSelectedGroup = DRAW_GROUPS[0];
+let drawSeedByGroup = {}; // 組別 -> {seedCount, mode, teams}：種子隊設定依組別各自獨立
+
+function openSportDraw(e, sportName){
+  document.getElementById('draw-group-name').textContent = sportName;
+  showPage(e, 'page-draw-tool', 'fitem-draw-settings');
+  drawInit();
+}
+
+function drawSeedDefault(){
+  const count = 4;
+  return { seedCount: count, mode: 'system', teams: Array.from({length:count}, (_,i)=>({team:schedTeamName(i), position:i+1})) };
+}
+
+function drawGetSeedState(group){
+  if(!drawSeedByGroup[group]) drawSeedByGroup[group] = drawSeedDefault();
+  return drawSeedByGroup[group];
+}
+
+function drawInit(){
+  drawSelectedGroup = DRAW_GROUPS[0];
+  const groupSel = document.getElementById('draw-seed-group-select');
+  if(groupSel) groupSel.value = drawSelectedGroup;
+  drawRenderSeedPanel();
+}
+
+function drawOnSeedGroupChange(){
+  drawSelectedGroup = document.getElementById('draw-seed-group-select').value;
+  drawRenderSeedPanel();
+}
+
+function drawRenderSeedPanel(){
+  const state = drawGetSeedState(drawSelectedGroup);
+  document.getElementById('draw-seed-count').value = state.seedCount;
+  document.getElementById('draw-mode-system').classList.toggle('on', state.mode==='system');
+  document.getElementById('draw-mode-manual').classList.toggle('on', state.mode==='manual');
+  drawRenderSeedTable();
+}
+
+function drawToggleOpen(){
+  const sw = document.getElementById('draw-open-switch');
+  sw.classList.toggle('on');
+  drawState.open = sw.classList.contains('on');
+  document.getElementById('draw-time-block').classList.toggle('disabled-block', !drawState.open);
+}
+
+function drawSetMode(mode){
+  const state = drawGetSeedState(drawSelectedGroup);
+  state.mode = mode;
+  document.getElementById('draw-mode-system').classList.toggle('on', mode==='system');
+  document.getElementById('draw-mode-manual').classList.toggle('on', mode==='manual');
+  drawRenderSeedTable();
+}
+
+function drawOnSeedCountChange(){
+  const state = drawGetSeedState(drawSelectedGroup);
+  const countEl = document.getElementById('draw-seed-count');
+  const count = Math.max(0, +countEl.value || 0);
+  countEl.value = count;
+  const oldTeams = state.teams;
+  state.seedCount = count;
+  state.teams = Array.from({length:count}, (_,i)=> oldTeams[i] || {team:schedTeamName(i), position:i+1});
+  drawRenderSeedTable();
+}
+
+function drawUpdateTeam(idx, val){ drawGetSeedState(drawSelectedGroup).teams[idx].team = val; }
+function drawUpdatePosition(idx, val){ drawGetSeedState(drawSelectedGroup).teams[idx].position = +val; }
+
+function drawTeamOptions(selected){
+  let opts = '<option value="">請選擇隊伍</option>';
+  for(let i=0;i<DRAW_TEAM_POOL_SIZE;i++){
+    const name = schedTeamName(i);
+    opts += `<option value="${name}" ${name===selected?'selected':''}>${name}</option>`;
+  }
+  return opts;
+}
+
+function drawRenderSeedTable(){
+  const state = drawGetSeedState(drawSelectedGroup);
+  const wrap = document.getElementById('draw-seed-table-wrap');
+  const hint = document.getElementById('draw-seed-hint');
+  if(state.seedCount === 0){
+    wrap.innerHTML = '';
+    hint.textContent = '＊尚未設定種子隊，抽籤時將以完全隨機方式排定所有隊伍籤位';
+    return;
+  }
+  const manual = state.mode === 'manual';
+  hint.textContent = manual
+    ? '＊請為每個種子隊指定籤位（建議不重複），其餘非種子隊將於抽籤時隨機分配至剩餘籤位'
+    : '＊已選擇由系統安排，籤位欄位僅供預覽，實際籤位將於抽籤執行時由系統隨機決定';
+
+  let rows='';
+  state.teams.forEach((t,i)=>{
+    let posOptions='';
+    for(let p=0;p<state.seedCount;p++){
+      posOptions += `<option value="${p+1}" ${t.position===p+1?'selected':''}>T${p+1}</option>`;
+    }
+    rows += `<tr>
+      <td>種子 ${i+1}</td>
+      <td><select onchange="drawUpdateTeam(${i}, this.value)">${drawTeamOptions(t.team)}</select></td>
+      <td><select onchange="drawUpdatePosition(${i}, this.value)" ${manual?'':'disabled'} style="${manual?'':'background:var(--canvas);color:var(--ink-500)'}">${posOptions}</select></td>
+    </tr>`;
+  });
+  wrap.innerHTML = `<table class="seed-table"><tr><th style="width:80px">種子序</th><th>隊伍</th><th style="width:140px">籤位</th></tr>${rows}</table>`;
+}
+
+function saveDrawSettings(){
+  showToast('已儲存抽籤設定（示意稿，尚未串接後端）');
+}
+
+drawInit();
+
+/* ---------- 賽程管理（依賽程設定產生場次，逐場次設定日期／時間／場地） ---------- */
+const MG_DATE_OPTIONS = ['2026/08/22 (六)','2026/08/23 (日)'];
+const MG_VENUE_OPTIONS = ['第一球場','第二球場','中央球場','訓練場'];
+const mgState = { rows: [] };
+
+function mgTeamCountForCurrentSchedule(){
+  // 依「賽程設定」目前所選賽制推算場次所需隊伍數；若該格式為分組賽只取複賽晉級隊數，尚未設定則預設 10 隊
+  if(['se','de','sw','rrrr','rrse','rrde'].includes(schedState.fmt)){
+    return schedState.finalTeams || 10;
+  }
+  return schedState.teams || 10;
+}
+
+function mgNextPow2(n){ let p=1; while(p<n) p*=2; return Math.max(2,p); }
+
+function mgGenMatches(n){
+  n = Math.max(2, n);
+  const bracket = mgNextPow2(n);
+  const half = bracket/2;
+  const byes = bracket - n;
+  const prelimCount = (n - byes)/2;
+  const matches = [];
+  let seed = 1;
+  let roundSlots = [];
+  for(let i=0;i<byes;i++){ roundSlots.push({type:'team', label:'T'+seed}); seed++; }
+  for(let i=0;i<prelimCount;i++){
+    const a = 'T'+seed; seed++;
+    const b = 'T'+seed; seed++;
+    matches.push({home:{type:'team',label:a}, away:{type:'team',label:b}});
+    roundSlots.push({type:'winnerRef', idx:matches.length-1});
+  }
+  let current = roundSlots;
+  while(current.length > 1){
+    const next = [];
+    for(let i=0;i<current.length;i+=2){
+      matches.push({home:current[i], away:current[i+1]});
+      next.push({type:'winnerRef', idx:matches.length-1});
+    }
+    current = next;
+  }
+  matches.forEach((m,i)=> m.num = i+1);
+  function labelOf(slot){ return slot.type==='team' ? slot.label : matches[slot.idx].num+'W'; }
+  return matches.map(m=>({num:m.num, matchup: labelOf(m.home)+' V.S. '+labelOf(m.away)}));
+}
+
+function mgDateOptionsHTML(selected){
+  let opts = '<option value="">請選擇日期</option>';
+  MG_DATE_OPTIONS.forEach(d=>{ opts += `<option value="${d}" ${d===selected?'selected':''}>${d}</option>`; });
+  return opts;
+}
+function mgVenueOptionsHTML(selected){
+  let opts = '<option value="">請選擇場地</option>';
+  MG_VENUE_OPTIONS.forEach(v=>{ opts += `<option value="${v}" ${v===selected?'selected':''}>${v}</option>`; });
+  return opts;
+}
+
+function mgRenderTable(){
+  const body = document.getElementById('mg-table-body');
+  body.innerHTML = mgState.rows.map((r,i)=>`
+    <tr>
+      <td class="match-no">${r.num}</td>
+      <td><select onchange="mgState.rows[${i}].date=this.value">${mgDateOptionsHTML(r.date)}</select></td>
+      <td><input type="time" value="${r.time||''}" onchange="mgState.rows[${i}].time=this.value"></td>
+      <td><select onchange="mgState.rows[${i}].venue=this.value">${mgVenueOptionsHTML(r.venue)}</select></td>
+      <td class="matchup">${r.matchup}</td>
+      <td><input type="text" placeholder="備註" value="${r.note||''}" onchange="mgState.rows[${i}].note=this.value"></td>
+    </tr>`).join('');
+}
+
+function openGroupScheduleManage(e, groupName){
+  document.getElementById('mg-group-name').textContent = groupName;
+  const n = mgTeamCountForCurrentSchedule();
+  const generated = mgGenMatches(n);
+  mgState.rows = generated.map(m=>({num:m.num, matchup:m.matchup, date:'', time:'', venue:'', note:''}));
+  mgRenderTable();
+  showPage(e, 'page-schedule-manage-tool', 'fitem-schedule-manage');
+}
+
+function saveScheduleManage(){
+  showToast('已儲存賽程管理設定（示意稿，尚未串接後端）');
+}
+
+/* ---------- 賽程結果（整合賽程設定／場地設定的示意資料，逐場次呈現對戰、時間、地點；賽程圖壓上隊伍與時間） ---------- */
+const resultState = { orientation:'portrait' };
+
+function openGroupResult(e, groupName){
+  document.getElementById('result-group-name').textContent = groupName;
+  showPage(e, 'page-result-tool', 'fitem-schedule-result');
+  resultRenderAll();
+}
+
+function resultVenueFlat(){
+  const flat=[];
+  placeList.forEach(p=>{ p.courts.forEach(c=>{ flat.push({place:p.name, court:c.name}); }); });
+  return flat;
+}
+function resultVenueFor(i){
+  const flat = resultVenueFlat();
+  if(flat.length===0) return {place:'－', court:'－'};
+  return flat[i % flat.length];
+}
+
+function resultRRMatches(teams, groups, nameOffset){
+  nameOffset = nameOffset||0;
+  const sizes = schedDistributeGroups(teams, groups);
+  const letters = schedGroupLetters(sizes.length);
+  let startIdx=0, matchNum=0;
+  const rows=[]; const groupInfo=[];
+  sizes.forEach((sz,gi)=>{
+    const names=[]; for(let k=0;k<sz;k++) names.push(schedTeamName(nameOffset+startIdx+k));
+    groupInfo.push({label:letters[gi], teamCount:sz, names});
+    for(let i=0;i<sz;i++){
+      for(let j=i+1;j<sz;j++){
+        matchNum++;
+        rows.push({ num:matchNum, notation:`${letters[gi]}組 T${i+1}-T${j+1}`, teamA:names[i], teamB:names[j] });
+      }
+    }
+    startIdx += sz;
+  });
+  return {rows, groupInfo, total:matchNum};
+}
+
+function resultBracketMatches(numTeams, showExtra, extraLabel, nameOffset){
+  nameOffset = nameOffset||0;
+  const n = schedNextPow2(numTeams);
+  const rounds = Math.round(Math.log2(n));
+  let counts=[]; let c=n/2; for(let r=0;r<rounds;r++){counts.push(c); c/=2;}
+  let matchNum=0;
+  const rows=[]; const byNum={};
+  let prevWinners=[], roundsWinners=[];
+  for(let r=0;r<rounds;r++){
+    const winners=[];
+    for(let i=0;i<counts[r];i++){
+      let teamA, teamB, notationA, notationB;
+      if(r===0){
+        teamA = schedTeamName(nameOffset+2*i); teamB = schedTeamName(nameOffset+2*i+1);
+        notationA = `T${2*i+1}`; notationB = `T${2*i+2}`;
+      } else {
+        const wA = prevWinners[2*i], wB = prevWinners[2*i+1];
+        teamA = wA.team; teamB = wB.team;
+        notationA = `${wA.matchNum}W`; notationB = `${wB.matchNum}W`;
+      }
+      const arabicNum = matchNum+1;
+      const row = { num:arabicNum, notation:`${notationA}-${notationB}`, teamA, teamB };
+      rows.push(row); byNum[arabicNum] = row;
+      winners.push({team:teamA, matchNum:arabicNum, loser:teamB});
+      matchNum++;
+    }
+    roundsWinners.push(winners);
+    prevWinners = winners;
+  }
+  if(showExtra && rounds>=2){
+    const semis = roundsWinners[rounds-2];
+    if(semis && semis.length>=2){
+      const arabicNum = matchNum+1;
+      const row = { num:arabicNum, notation:`${semis[0].matchNum}L-${semis[1].matchNum}L`, teamA:semis[0].loser, teamB:semis[1].loser, extra:true, extraLabel };
+      rows.push(row); byNum[arabicNum] = row;
+      matchNum++;
+    }
+  }
+  return {rows, byNum, total:matchNum};
+}
+
+function resultSwissMatches(teams){
+  const rounds = Math.min(Math.ceil(Math.log2(Math.max(2,teams))), 5);
+  const n = teams % 2 === 0 ? teams : teams+1;
+  let arr = Array.from({length:n}, (_,i)=> i<teams ? i : null);
+  const rows=[]; let matchNum=0;
+  for(let r=0;r<rounds;r++){
+    for(let i=0;i<n/2;i++){
+      const a = arr[i], b = arr[n-1-i];
+      if(a===null || b===null) continue;
+      matchNum++;
+      rows.push({ num:matchNum, notation:`第 ${r+1} 輪`, teamA:schedTeamName(a), teamB:schedTeamName(b) });
+    }
+    const fixed = arr[0];
+    const rest = arr.slice(1);
+    rest.unshift(rest.pop());
+    arr = [fixed].concat(rest);
+  }
+  return rows;
+}
+
+function resultAssignTimeVenue(rows, counterRef){
+  rows.forEach(r=>{
+    r.time = schedPlaceholderDate(counterRef.i);
+    const v = resultVenueFor(counterRef.i);
+    r.place = v.place; r.court = v.court;
+    counterRef.i++;
+  });
+  return rows;
+}
+
+function resultBuildSections(){
+  const f = schedState.fmt;
+  const counter = {i:0};
+  const sections = [];
+  if(f==='rr'){
+    const rr = resultRRMatches(schedState.teams, schedState.groups);
+    resultAssignTimeVenue(rr.rows, counter);
+    sections.push({title:'循環賽', rows:rr.rows, diagram:{type:'rr', teams:schedState.teams, groups:schedState.groups, nameOffset:0}});
+  } else if(f==='se'){
+    const br = resultBracketMatches(schedState.finalTeams, schedState.on34, '季軍賽（3/4名）');
+    resultAssignTimeVenue(br.rows, counter);
+    sections.push({title:'單淘汰賽', rows:br.rows, diagram:{type:'bracket', numTeams:schedState.finalTeams, showExtra:schedState.on34, extraLabel:'季軍賽（3/4名）', byNum:br.byNum}});
+  } else if(f==='de'){
+    const loserTeams = Math.max(2, schedNextPow2(schedState.finalTeams)/2);
+    const winners = resultBracketMatches(schedState.finalTeams, false, '');
+    const losers = resultBracketMatches(loserTeams, schedState.on56, '5/6 名賽');
+    resultAssignTimeVenue(winners.rows, counter);
+    resultAssignTimeVenue(losers.rows, counter);
+    sections.push({title:'勝部賽程', rows:winners.rows, diagram:{type:'bracket', numTeams:schedState.finalTeams, showExtra:false, extraLabel:'', byNum:winners.byNum}});
+    sections.push({title:'敗部賽程', rows:losers.rows, diagram:{type:'bracket', numTeams:loserTeams, showExtra:schedState.on56, extraLabel:'5/6 名賽', byNum:losers.byNum}});
+  } else if(f==='sw'){
+    const sw = resultSwissMatches(schedState.finalTeams);
+    resultAssignTimeVenue(sw, counter);
+    sections.push({title:'瑞士制', rows:sw, diagram:{type:'swiss'}});
+  } else if(f==='rrrr'){
+    const r1 = resultRRMatches(schedState.teams, schedState.groups);
+    const r2 = resultRRMatches(schedState.finalTeams, Math.max(1,Math.round(schedState.finalTeams/3)), schedState.teams);
+    resultAssignTimeVenue(r1.rows, counter);
+    resultAssignTimeVenue(r2.rows, counter);
+    sections.push({title:'初賽・循環賽分組', rows:r1.rows, diagram:{type:'rr', teams:schedState.teams, groups:schedState.groups, nameOffset:0}});
+    sections.push({title:'複賽・循環賽', rows:r2.rows, diagram:{type:'rr', teams:schedState.finalTeams, groups:Math.max(1,Math.round(schedState.finalTeams/3)), nameOffset:schedState.teams}});
+  } else if(f==='rrse'){
+    const r1 = resultRRMatches(schedState.teams, schedState.groups);
+    const r2 = resultBracketMatches(schedState.finalTeams, schedState.on34, '季軍賽（3/4名）', schedState.teams);
+    resultAssignTimeVenue(r1.rows, counter);
+    resultAssignTimeVenue(r2.rows, counter);
+    sections.push({title:'初賽・循環賽分組', rows:r1.rows, diagram:{type:'rr', teams:schedState.teams, groups:schedState.groups, nameOffset:0}});
+    sections.push({title:'複賽・單淘汰賽程', rows:r2.rows, diagram:{type:'bracket', numTeams:schedState.finalTeams, showExtra:schedState.on34, extraLabel:'季軍賽（3/4名）', byNum:r2.byNum}});
+  } else if(f==='rrde'){
+    const r1 = resultRRMatches(schedState.teams, schedState.groups);
+    const loserTeams = Math.max(2, schedNextPow2(schedState.finalTeams)/2);
+    const winners = resultBracketMatches(schedState.finalTeams, false, '', schedState.teams);
+    const losers = resultBracketMatches(loserTeams, schedState.on56, '5/6 名賽', schedState.teams);
+    resultAssignTimeVenue(r1.rows, counter);
+    resultAssignTimeVenue(winners.rows, counter);
+    resultAssignTimeVenue(losers.rows, counter);
+    sections.push({title:'初賽・循環賽分組', rows:r1.rows, diagram:{type:'rr', teams:schedState.teams, groups:schedState.groups, nameOffset:0}});
+    sections.push({title:'複賽・勝部賽程', rows:winners.rows, diagram:{type:'bracket', numTeams:schedState.finalTeams, showExtra:false, extraLabel:'', byNum:winners.byNum}});
+    sections.push({title:'複賽・敗部賽程', rows:losers.rows, diagram:{type:'bracket', numTeams:loserTeams, showExtra:schedState.on56, extraLabel:'5/6 名賽', byNum:losers.byNum}});
+  }
+  return sections;
+}
+
+function resultRenderTable(sections){
+  const body = document.getElementById('result-table-body');
+  if(!body) return;
+  const multi = sections.length > 1;
+  let html = '';
+  sections.forEach(sec=>{
+    if(multi){
+      html += `<tr class="result-section-row"><td colspan="5">${sec.title}</td></tr>`;
+    }
+    sec.rows.forEach(r=>{
+      html += `<tr>
+        <td>${r.num}</td>
+        <td><div class="matchup-cell"><span class="matchup-notation">${r.notation}${r.extra?'（'+r.extraLabel+'）':''}</span><span class="matchup-teams">${r.teamA} V.S. ${r.teamB}</span></div></td>
+        <td>${r.time}</td>
+        <td>${r.place}</td>
+        <td>${r.court}</td>
+      </tr>`;
+    });
+  });
+  body.innerHTML = html || `<tr><td colspan="5" style="text-align:center;color:var(--ink-500);padding:24px 0">尚無場次資料</td></tr>`;
+}
+
+function resultMatchBoxSVG(x,y,w,h,label,teamA,teamB,time){
+  const midX = x+w/2;
+  return `<g>
+    <rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w}" height="${h}" fill="#fff" stroke="#333" stroke-width="1.1"/>
+    <text x="${midX.toFixed(1)}" y="${(y+13).toFixed(1)}" font-size="8.5" text-anchor="middle" fill="#6b7086">第${label}場</text>
+    <text x="${midX.toFixed(1)}" y="${(y+28).toFixed(1)}" font-size="10.5" text-anchor="middle" fill="#1c1f2b" font-weight="700">${teamA||''}</text>
+    <text x="${midX.toFixed(1)}" y="${(y+40).toFixed(1)}" font-size="8.5" text-anchor="middle" fill="#6b7086">vs</text>
+    <text x="${midX.toFixed(1)}" y="${(y+52).toFixed(1)}" font-size="10.5" text-anchor="middle" fill="#1c1f2b" font-weight="700">${teamB||''}</text>
+    <text x="${midX.toFixed(1)}" y="${(y+65).toFixed(1)}" font-size="8.5" text-anchor="middle" fill="#0d9488">${time||''}</text>
+  </g>`;
+}
+
+function resultBracketLandscapeSVG(numTeams, showExtra, extraLabel, byNum){
+  numTeams = schedNextPow2(numTeams);
+  const rounds = Math.round(Math.log2(numTeams));
+  const boxW=118, boxH=76, vGap=26, roundGapX=60;
+  let counts=[]; let c=numTeams/2; for(let r=0;r<rounds;r++){counts.push(c); c/=2;}
+  const unit = boxH+vGap;
+  const positions=[[]];
+  for(let i=0;i<counts[0];i++) positions[0][i]=i*unit+boxH/2;
+  for(let r=1;r<rounds;r++){ positions[r]=[]; for(let i=0;i<counts[r];i++){ positions[r][i]=(positions[r-1][2*i]+positions[r-1][2*i+1])/2; } }
+  const totalH=(counts[0]-1)*unit+boxH;
+  let matchNum=0;
+  let boxes='', lines='';
+  for(let r=0;r<rounds;r++){
+    for(let i=0;i<counts[r];i++){
+      const x=r*(boxW+roundGapX), y=positions[r][i]-boxH/2;
+      const info = byNum[matchNum+1] || {};
+      boxes += resultMatchBoxSVG(x,y,boxW,boxH, SCHED_CN[matchNum]||(matchNum+1), info.teamA, info.teamB, info.time);
+      if(r>0){
+        const x1=(r-1)*(boxW+roundGapX)+boxW, x2=x, midx=(x1+x2)/2;
+        const y1=positions[r-1][2*i], y2=positions[r-1][2*i+1];
+        lines += `<path d="M${x1.toFixed(1)},${y1.toFixed(1)} H${midx.toFixed(1)} M${midx.toFixed(1)},${y1.toFixed(1)} V${y2.toFixed(1)} M${x1.toFixed(1)},${y2.toFixed(1)} H${midx.toFixed(1)} M${midx.toFixed(1)},${positions[r][i].toFixed(1)} H${x2.toFixed(1)}" stroke="#333" fill="none" stroke-width="1.1"/>`;
+      }
+      matchNum++;
+    }
+  }
+  let extraSvg='', extraH=0;
+  if(showExtra!==undefined){
+    const finalR=rounds-1, fx=finalR*(boxW+roundGapX), ey=positions[finalR][0]+boxH+34;
+    if(showExtra){
+      const info = byNum[matchNum+1] || {};
+      extraSvg = `<text x="${(fx+boxW/2).toFixed(1)}" y="${(ey-8).toFixed(1)}" font-size="9.5" text-anchor="middle" fill="#0d9488">${extraLabel}</text>` + resultMatchBoxSVG(fx,ey,boxW,boxH, SCHED_CN[matchNum]||(matchNum+1), info.teamA, info.teamB, info.time);
+      matchNum++;
+    } else {
+      extraSvg = `<text x="${(fx+boxW/2).toFixed(1)}" y="${(ey+6).toFixed(1)}" font-size="10" text-anchor="middle" fill="#c07a12">並列第三</text>`;
+    }
+    extraH = 70;
+  }
+  const totalW = rounds*boxW + (rounds-1)*roundGapX + 20;
+  const totalHeight = totalH + extraH + 20;
+  const svg = `<svg viewBox="-10 -10 ${totalW} ${totalHeight}" width="${totalW.toFixed(0)}" class="bracket-svg">${lines}${boxes}${extraSvg}</svg>`;
+  return {svg};
+}
+
+function resultBracketPortraitSVG(numTeams, showExtra, extraLabel, byNum){
+  numTeams = schedNextPow2(numTeams);
+  const rounds = Math.round(Math.log2(numTeams));
+  const boxW=92, boxH=76, hGap=18, roundGapY=48;
+  let counts=[]; let c=numTeams/2; for(let r=0;r<rounds;r++){counts.push(c); c/=2;}
+  const unit = boxW+hGap;
+  const positions=[[]];
+  for(let i=0;i<counts[0];i++) positions[0][i]=i*unit+boxW/2;
+  for(let r=1;r<rounds;r++){ positions[r]=[]; for(let i=0;i<counts[r];i++){ positions[r][i]=(positions[r-1][2*i]+positions[r-1][2*i+1])/2; } }
+  const totalW=(counts[0]-1)*unit+boxW;
+  const baseBottom = (rounds-1)*(boxH+roundGapY) + boxH;
+  let matchNum=0;
+  let boxes='', lines='';
+  const yTop = r => baseBottom - boxH - r*(boxH+roundGapY);
+  for(let r=0;r<rounds;r++){
+    const yt = yTop(r);
+    for(let i=0;i<counts[r];i++){
+      const cx=positions[r][i], x=cx-boxW/2;
+      const info = byNum[matchNum+1] || {};
+      boxes += resultMatchBoxSVG(x,yt,boxW,boxH, SCHED_CN[matchNum]||(matchNum+1), info.teamA, info.teamB, info.time);
+      if(r>0){
+        const childYt = yTop(r-1);
+        const cx0=positions[r-1][2*i], cx1=positions[r-1][2*i+1];
+        const midY = childYt - roundGapY/2;
+        const parentBottom = yt + boxH;
+        lines += `<path d="M${cx0.toFixed(1)},${childYt.toFixed(1)} V${midY.toFixed(1)} M${cx1.toFixed(1)},${childYt.toFixed(1)} V${midY.toFixed(1)} M${cx0.toFixed(1)},${midY.toFixed(1)} H${cx1.toFixed(1)} M${cx.toFixed(1)},${midY.toFixed(1)} V${parentBottom.toFixed(1)}" stroke="#333" fill="none" stroke-width="1.1"/>`;
+      }
+      matchNum++;
+    }
+  }
+  let extraSvg='', extraW=0;
+  if(showExtra!==undefined){
+    const finalYt = yTop(rounds-1);
+    const ex = positions[rounds-1][0] + boxW/2 + 30;
+    if(showExtra){
+      const info = byNum[matchNum+1] || {};
+      extraSvg = `<text x="${(ex+boxW/2).toFixed(1)}" y="${(finalYt-6).toFixed(1)}" font-size="9" text-anchor="middle" fill="#0d9488">${extraLabel}</text>` + resultMatchBoxSVG(ex,finalYt,boxW,boxH, SCHED_CN[matchNum]||(matchNum+1), info.teamA, info.teamB, info.time);
+      matchNum++;
+    } else {
+      extraSvg = `<text x="${(ex+boxW/2).toFixed(1)}" y="${(finalYt+boxH/2+4).toFixed(1)}" font-size="10" text-anchor="middle" fill="#c07a12">並列第三</text>`;
+    }
+    extraW = boxW+44;
+  }
+  const totalWidth = totalW + extraW + 20;
+  const totalHeight = baseBottom + 20;
+  const svg = `<svg viewBox="-10 -10 ${totalWidth} ${totalHeight}" width="${totalWidth.toFixed(0)}" class="bracket-svg">${lines}${boxes}${extraSvg}</svg>`;
+  return {svg};
+}
+
+function resultGroupPolygonSVG(groupLabel, teamCount, names){
+  const SIZE=190, cx=95, cy=95, r=46;
+  const pts=[];
+  for(let i=0;i<teamCount;i++){
+    const angle = teamCount===4 ? (-Math.PI*3/4 + i*(Math.PI/2)) : (-Math.PI/2 + i*(2*Math.PI/teamCount));
+    pts.push({x:cx+r*Math.cos(angle), y:cy+r*Math.sin(angle)});
+  }
+  let edges='';
+  for(let i=0;i<teamCount;i++){
+    for(let j=i+1;j<teamCount;j++){
+      const p1=pts[i], p2=pts[j];
+      edges += `<line x1="${p1.x.toFixed(1)}" y1="${p1.y.toFixed(1)}" x2="${p2.x.toFixed(1)}" y2="${p2.y.toFixed(1)}" stroke="#333" stroke-width="1"/>`;
+    }
+  }
+  let vertex='';
+  pts.forEach((p,i)=>{
+    const dx=p.x-cx, dy=p.y-cy, len=Math.sqrt(dx*dx+dy*dy)||1;
+    const lx=p.x+(dx/len)*20, ly=p.y+(dy/len)*20;
+    vertex += `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="4" fill="#1c2a4a"/><text x="${lx.toFixed(1)}" y="${(ly+3).toFixed(1)}" font-size="9" text-anchor="middle" fill="#1c1f2b" font-weight="700">${names[i]}</text>`;
+  });
+  const svg = `<svg viewBox="-24 -24 ${SIZE+48} ${SIZE+48}" class="group-svg">${edges}${vertex}</svg>`;
+  return `<div class="group-diagram"><div class="group-diagram-label">${groupLabel} 組（${teamCount} 隊・共 ${schedCountRRMatches(teamCount,1)} 場）</div>${svg}</div>`;
+}
+
+function resultGroupMatrixHTML(groupLabel, teamCount, names){
+  let headerCells = '<th class="gm-corner"></th>';
+  for(let j=1;j<=teamCount;j++) headerCells += `<th>T${j}</th>`;
+  let rows = '';
+  for(let i=1;i<=teamCount;i++){
+    let cells = `<th>T${i}</th>`;
+    for(let j=1;j<=teamCount;j++){
+      cells += (i===j) ? '<td class="gm-diag"></td>' : '<td></td>';
+    }
+    rows += `<tr>${cells}</tr>`;
+  }
+  const legend = names.map((n,i)=>`T${i+1}=${n}`).join('　');
+  return `<div class="group-diagram"><div class="group-diagram-label">${groupLabel} 組（${teamCount} 隊・共 ${schedCountRRMatches(teamCount,1)} 場）</div>
+    <table class="group-matrix"><thead><tr>${headerCells}</tr></thead><tbody>${rows}</tbody></table>
+    <div class="hint" style="text-align:left">${legend}</div></div>`;
+}
+
+function resultGroupsChartHTML(teams, groups, nameOffset, orientation){
+  const sizes = schedDistributeGroups(teams, groups);
+  const letters = schedGroupLetters(sizes.length);
+  let startIdx=0;
+  const cards = sizes.map((sz,gi)=>{
+    const names=[]; for(let k=0;k<sz;k++) names.push(schedTeamName(nameOffset+startIdx+k));
+    startIdx += sz;
+    return sz>=5 ? resultGroupMatrixHTML(letters[gi], sz, names) : resultGroupPolygonSVG(letters[gi], sz, names);
+  });
+  return `<div class="groups-wrap ${orientation}">${cards.join('')}</div>`;
+}
+
+function resultSwissDiagramHTML(rows){
+  const body = rows.map(r=>`<tr><td>${r.notation}</td><td>${r.teamA} vs ${r.teamB}</td><td>${r.time}</td></tr>`).join('');
+  return `<table class="swiss-table"><tr><th>輪次</th><th>對戰組合</th><th>時間</th></tr>${body}</table>
+    <div class="hint">＊瑞士制實際對戰依每輪戰績動態配對，此處為示意排法</div>`;
+}
+
+function resultDiagramHTML(section, orientation){
+  if(section.diagram.type === 'rr'){
+    return resultGroupsChartHTML(section.diagram.teams, section.diagram.groups, section.diagram.nameOffset||0, orientation);
+  }
+  if(section.diagram.type === 'bracket'){
+    const fn = orientation==='landscape' ? resultBracketLandscapeSVG : resultBracketPortraitSVG;
+    const r = fn(section.diagram.numTeams, section.diagram.showExtra, section.diagram.extraLabel, section.diagram.byNum);
+    return `<div class="bracket-scroll">${r.svg}</div>`;
+  }
+  if(section.diagram.type === 'swiss'){
+    return resultSwissDiagramHTML(section.rows);
+  }
+  return '';
+}
+
+let resultSections = [];
+
+function resultRenderChart(){
+  const body = document.getElementById('result-chart-body');
+  if(!body) return;
+  const o = resultState.orientation;
+  const frameClass = o==='portrait' ? 'chart-frame portrait' : 'chart-frame landscape';
+  const frameTitle = o==='portrait' ? '直向預覽（適合手機／直式海報公告）' : '橫向預覽（適合網頁／寬螢幕看板）';
+  const totalMatches = resultSections.reduce((sum,s)=>sum+s.rows.length,0);
+  const multi = resultSections.length > 1;
+  const inner = resultSections.map(sec=>{
+    const title = multi ? `<div class="de-section-title">${sec.title}</div>` : '';
+    return title + resultDiagramHTML(sec, o);
+  }).join('');
+  body.innerHTML = `<div class="${frameClass}"><div class="chart-title">${frameTitle}</div><div class="chart-total">本賽程共 ${totalMatches} 場比賽</div>${inner}</div>`;
+}
+
+function resultRenderAll(){
+  resultSections = resultBuildSections();
+  resultRenderTable(resultSections);
+  resultRenderChart();
+}
+
+document.querySelectorAll('#page-result-tool .tab').forEach(t=>t.addEventListener('click',()=>{
+  document.querySelectorAll('#page-result-tool .tab').forEach(x=>x.classList.remove('on'));
+  t.classList.add('on');
+  resultState.orientation = t.dataset.ro;
+  resultRenderChart();
+}));
+
+function downloadResultChart(){
+  const body = document.getElementById('result-chart-body');
+  if(!body || !body.innerHTML.trim()){ showToast('目前無可下載的賽程圖'); return; }
+  const html = '<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><title>賽程結果圖匯出</title></head><body>' + body.innerHTML + '</body></html>';
+  const blob = new Blob([html], {type:'text/html;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = '賽程結果圖.html';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('已下載賽程結果圖（示意稿）');
+}
+
+schedRenderFields();
+schedRenderChart();
+renderPlaceTable();
+schedRenderGroupTable();
+</script>
+</body>
+</html>
 
