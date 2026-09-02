@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>競賽咖金流申請功能正式開放</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #00B888; display: flex; align-items: center; justify-content: center; min-height: 100vh; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
+    #__bundler_loading { position: fixed; bottom: 20px; right: 20px; font: 13px/1.4 -apple-system, BlinkMacSystemFont, sans-serif; color: #666; background: #fff; padding: 8px 14px; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.12); z-index: 10000; }
+    #__bundler_thumbnail { position: fixed; inset: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #00B888; z-index: 9999; }
+    #__bundler_thumbnail svg { width: 100%; height: 100%; object-fit: contain; }
+    #__bundler_placeholder { color: #999; font-size: 14px; }
+  </style>
+  <noscript>
+    <style>#__bundler_loading { display: none; }</style>
+    <div style="position:fixed;bottom:12px;left:12px;font:13px/1.4 -apple-system,BlinkMacSystemFont,sans-serif;color:#999;background:rgba(255,255,255,0.9);padding:6px 12px;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,0.08);z-index:10000;">
+      This page requires JavaScript to display.
+    </div>
+  </noscript>
+</head>
+<body>
+  <div id="__bundler_thumbnail">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1200" height="800" fill="#00B888"></rect>
+    <rect x="360" y="240" width="480" height="320" rx="24" fill="#FFFFFF"></rect>
+    <rect x="360" y="240" width="480" height="72" rx="24" fill="#F79521"></rect>
+    <rect x="404" y="360" width="392" height="26" rx="13" fill="#D7EFE6"></rect>
+    <rect x="404" y="410" width="300" height="26" rx="13" fill="#D7EFE6"></rect>
+    <rect x="404" y="474" width="180" height="44" rx="22" fill="#00B888"></rect>
+  </svg>
+</div>
+  <div id="__bundler_loading">Unpacking...</div>
+
+  <script>
+    
+document.addEventListener('DOMContentLoaded', async function() {
+  const loading = document.getElementById('__bundler_loading');
+  function setStatus(msg) { if (loading) loading.textContent = msg; }
+
+  const FONT_MIME = /^(font[/]|application[/](x-)?font-|application[/]vnd\.ms-fontobject)/i;
+  const MIME_TOKEN = /^[\w.+-]+[/][\w.+-]+$/;
+  function toBase64(bytes) {
+    let bin = '';
+    for (let i = 0; i < bytes.length; i += 0x8000) {
+      bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+    }
+    return btoa(bin);
+  }
+
+  // Error sink persists across replaceWith since it's on window, not the DOM.
+  window.addEventListener('error', function(e) {
+    // Failed resource loads (CSP-blocked links, scripts, images) fire plain
+    // events at the element — warn only; real JS errors carry message/error.
+    if (!e.message && !e.error && e.target && e.target !== window) {
+      console.warn('[bundle] resource failed to load:',
+        e.target.tagName, String(e.target.src || e.target.href || ''));
+      return;
+    }
+    var p = document.body || document.documentElement;
+    var d = document.getElementById('__bundler_err') || p.appendChild(document.createElement('div'));
+    d.id = '__bundler_err';
+    d.style.cssText = 'position:fixed;bottom:12px;left:12px;right:12px;font:12px/1.4 ui-monospace,monospace;background:#2a1215;color:#ff8a80;padding:10px 14px;border-radius:8px;border:1px solid #5c2b2e;z-index:99999;white-space:pre-wrap;max-height:40vh;overflow:auto';
+    d.textContent = (d.textContent ? d.textContent + String.fromCharCode(10) : '') +
+      '[bundle] ' + (e.message || e.type) +
+      (e.filename ? ' (' + e.filename.slice(0, 60) + ':' + e.lineno + ')' : '');
+  }, true);
+
+  try {
+    const manifestEl = document.querySelector('script[type="__bundler/manifest"]');
+    const templateEl = document.querySelector('script[type="__bundler/template"]');
+    if (!manifestEl || !templateEl) {
+      setStatus('Error: missing bundle data');
+      console.error('[bundler] Missing script tags — manifestEl:', !!manifestEl, 'templateEl:', !!templateEl);
+      return;
+    }
+
+    const manifest = JSON.parse(manifestEl.textContent);
+    let template = JSON.parse(templateEl.textContent);
+
+    // Nested page bundles (iframe targets). Each ships ONCE, in the ROOT
+    // document's manifest; frame srcs carry an about:blank#<uuid> marker
+    // instead of a substitutable uuid. Every document mints the blobs for
+    // its OWN frames — from local text at the root, or text obtained from
+    // its DIRECT parent over the relay protocol below — so each frame
+    // navigation stays same-origin with its initiator and a deduped page
+    // loads at any depth on any host, including a file:// download's
+    // opaque origins (where a blob minted by one document cannot be
+    // navigated to by another).
+    const pageOrderEl = document.querySelector('script[type="__bundler/page_order"]');
+    const pageOrder = pageOrderEl ? JSON.parse(pageOrderEl.textContent) : [];
+    const pageSet = new Set(pageOrder);
+    const pageTexts = {};
+
+    // ── Nested-page text protocol (parent-chain relay) ──
+    // Page bundles ship once, in the ROOT document's manifest. Every
+    // document mints the blobs for its OWN frames, obtaining page text
+    // through a strict parent-chain relay: a document only ever SENDS to
+    // its direct parent (which, for every document the publisher's own
+    // runtime minted, is another publisher document) and only ACCEPTS
+    // text from that direct parent; requests from below are honored only
+    // for the document's own child frames, and the ROOT never sends
+    // upward at all. That last rule is load-bearing: the artifact host's
+    // frame-ancestors allows claude.ai (and friends) to frame an
+    // artifact, so window.top can be a FOREIGN document — a top-addressed
+    // protocol would hand page uuids to that ancestor and accept forged
+    // "page text" from it, minting attacker HTML as an artifact-origin
+    // blob document. The chain never touches the ancestor: requests stop
+    // at the root, replies are origin-addressed per hop (never '*' when
+    // an origin exists), and both directions are origin-gated (on https
+    // a foreign sender's origin can never equal this document's; in
+    // opaque contexts — file:// — everything serializes as 'null', where
+    // an embedded EXTERNAL frame still fails the gate by carrying its
+    // own real origin, and a sandboxed child of such a frame is excluded
+    // by the own-child-frames check plus uuid unguessability). Shape is
+    // deny-by-default: one request form, one reply form, no error
+    // replies.
+    // window.origin is the SERIALIZED SECURITY origin ('null' in opaque
+    // contexts such as a sandboxed preview iframe) — location.origin is
+    // computed from the URL and stays 'https://…' even when the document
+    // is sandboxed, which would misgate every opaque chain.
+    const OWN_TARGET = /^https?:[/][/]/.test(window.origin || '')
+      ? window.origin
+      : '*';
+    function trustedOrigin(e) {
+      if (e.origin === window.origin) return true; // https chains; opaque==opaque
+      // file:// trees: Chrome serializes the file document's origin as
+      // 'file://' while the blob: documents it mints serialize as 'null',
+      // so the two legitimate shapes can never string-match — accept the
+      // pair in both directions. https origins never serialize as either,
+      // and sender identity (own child frame / direct parent) is checked
+      // separately.
+      return (
+        (e.origin === 'null' &&
+          (window.origin === 'file://' ||
+            window.location.protocol === 'file:')) ||
+        (/^file:/.test(e.origin) && window.origin === 'null')
+      );
+    }
+    // Non-empty only in the root document (nested bundles ship an empty
+    // island), so it doubles as the root marker: the root answers from
+    // local text and treats a miss as authoritative — never relaying to
+    // its (possibly foreign) parent.
+    const isPageRoot = pageOrder.length > 0;
+    const blobUrls = {};
+    const resourceBlobs = {};
+    const UUID_SHAPE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+    const pendingFrames = {}; // uuid -> [{el, frag}] awaiting text for own frames
+    const pendingRelays = {}; // uuid -> [childWindow] awaiting text to pass down
+    function mountPage(el, frag, text) {
+      const pageBlob = new Blob([text], { type: 'text/html' });
+      const u = URL.createObjectURL(pageBlob);
+      resourceBlobs[u] = pageBlob;
+      el.src = u + frag;
+    }
+    function deliverPage(uuid, text) {
+      const frames = pendingFrames[uuid];
+      delete pendingFrames[uuid];
+      if (frames) for (const f of frames) mountPage(f.el, f.frag, text);
+      const relays = pendingRelays[uuid];
+      delete pendingRelays[uuid];
+      if (relays) {
+        for (const cw of relays) {
+          try { cw.postMessage({ __bundler_page: uuid, __bundler_text: text }, OWN_TARGET); } catch (err) { /* gone */ }
+        }
+      }
+    }
+    function ownFrameWindows() {
+      const out = [];
+      for (const f of Array.from(document.querySelectorAll('iframe'))) {
+        try { if (f.contentWindow) out.push(f.contentWindow); } catch (err) { /* detached */ }
+      }
+      return out;
+    }
+    window.addEventListener('message', function (e) {
+      const d = e.data;
+      if (!d || typeof d !== 'object' || !e.source) return;
+      // Origin gate first; the structural checks below (own-child-frames
+      // for requests, direct-parent + solicited-uuid for replies, the
+      // root's never-relay rule) are what hold in fully opaque chains
+      // where origin strings can't discriminate — a sandboxed root's
+      // FOREIGN wrapper still fails all three even though both serialize
+      // as real-vs-'null' rather than matching.
+      if (!trustedOrigin(e)) return;
+      if (typeof d.__bundler_need === 'string' && UUID_SHAPE.test(d.__bundler_need)) {
+        // Requests are honored only for this document's own child frames.
+        if (ownFrameWindows().indexOf(e.source) < 0) return;
+        const uuid = d.__bundler_need;
+        const text = pageTexts[uuid];
+        if (typeof text === 'string') {
+          try { e.source.postMessage({ __bundler_page: uuid, __bundler_text: text }, OWN_TARGET); } catch (err) { /* gone */ }
+          return;
+        }
+        if (isPageRoot || window.parent === window) return; // authoritative miss
+        const waiting = pendingRelays[uuid];
+        if (waiting) {
+          if (waiting.indexOf(e.source) < 0) waiting.push(e.source);
+          return;
+        }
+        // Never-answered uuids would otherwise accumulate forever under a
+        // request spray; past the cap (far above any real page count) new
+        // relays are dropped rather than remembered.
+        if (Object.keys(pendingRelays).length >= 128) return;
+        pendingRelays[uuid] = [e.source];
+        window.parent.postMessage({ __bundler_need: uuid }, OWN_TARGET);
+      } else if (
+        typeof d.__bundler_page === 'string' &&
+        UUID_SHAPE.test(d.__bundler_page) &&
+        typeof d.__bundler_text === 'string'
+      ) {
+        // The shape test is load-bearing beyond tidiness: the solicited
+        // check below uses the in operator, which matches prototype keys
+        // ('__proto__', 'constructor') — an unshaped key would reach
+        // deliverPage and throw, painting the error banner.
+        // Text is accepted only from the direct parent — the document
+        // that minted this one.
+        if (e.source !== window.parent || window.parent === window) return;
+        if (!(d.__bundler_page in pendingFrames) && !(d.__bundler_page in pendingRelays)) return;
+        deliverPage(d.__bundler_page, d.__bundler_text);
+      }
+    });
+
+    const uuids = Object.keys(manifest);
+    setStatus('Unpacking ' + uuids.length + ' assets...');
+
+    await Promise.all(uuids.map(async (uuid) => {
+      const entry = manifest[uuid];
+      try {
+        const binaryStr = atob(entry.data);
+        const bytes = new Uint8Array(binaryStr.length);
+        for (let i = 0; i < binaryStr.length; i++) bytes[i] = binaryStr.charCodeAt(i);
+
+        let finalBytes = bytes;
+        if (entry.compressed) {
+          if (typeof DecompressionStream !== 'undefined') {
+            const ds = new DecompressionStream('gzip');
+            const writer = ds.writable.getWriter();
+            const reader = ds.readable.getReader();
+            writer.write(bytes);
+            writer.close();
+            const chunks = [];
+            let totalLen = 0;
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
+              chunks.push(value);
+              totalLen += value.length;
+            }
+            finalBytes = new Uint8Array(totalLen);
+            let offset = 0;
+            for (const chunk of chunks) { finalBytes.set(chunk, offset); offset += chunk.length; }
+          } else {
+            console.warn('DecompressionStream not available, asset ' + uuid + ' may not render');
+          }
+        }
+
+        if (pageSet.has(uuid)) {
+          pageTexts[uuid] = new TextDecoder().decode(finalBytes);
+          return;
+        }
+        if (FONT_MIME.test(entry.mime) && MIME_TOKEN.test(entry.mime)) {
+          // Strict artifact hosts allow font-src data: but not blob:.
+          blobUrls[uuid] = 'data:' + entry.mime + ';base64,' +
+            (entry.compressed ? toBase64(finalBytes) : entry.data);
+        } else {
+          const blob = new Blob([finalBytes], { type: entry.mime });
+          blobUrls[uuid] = URL.createObjectURL(blob);
+          resourceBlobs[blobUrls[uuid]] = blob;
+        }
+      } catch (err) {
+        console.error('Failed to decode asset ' + uuid + ':', err);
+        const blob = new Blob([], { type: entry.mime });
+        blobUrls[uuid] = URL.createObjectURL(blob);
+        resourceBlobs[blobUrls[uuid]] = blob;
+      }
+    }));
+
+    const extResEl = document.querySelector('script[type="__bundler/ext_resources"]');
+    const extResources = extResEl ? JSON.parse(extResEl.textContent) : [];
+    const resourceMap = {};
+    for (const entry of extResources) {
+      if (blobUrls[entry.uuid]) resourceMap[entry.id] = blobUrls[entry.uuid];
+    }
+
+    // Artifact-host CSP (connect-src 'self') refuses fetch() of blob: URLs —
+    // consumers read these Blobs directly. Survives the swap like the error sink.
+    window.__resourceBlobs = resourceBlobs;
+
+    setStatus('Rendering...');
+    // Page uuids have no blob here — they ride inside about:blank#<uuid>
+    // frame markers the pass below resolves after the swap.
+    for (const uuid of uuids) {
+      if (pageSet.has(uuid)) continue;
+      template = template.split(uuid).join(blobUrls[uuid]);
+    }
+
+    // Strip integrity + crossorigin — blob URLs from a file:// document inherit
+    // a null origin, so crossorigin forces a CORS fetch that SRI then rejects.
+    // The manifest bytes are ours; SRI protects against CDN compromise, not this.
+    template = template.replace(/\s+integrity="[^"]*"/gi, '').replace(/\s+crossorigin="[^"]*"/gi, '');
+
+    const resourceScript = '<script>window.__resources = ' +
+      JSON.stringify(resourceMap).replace(/<\//g, '<\\/') +
+      ';</' + 'script>';
+    // Inject after <head> so the DOCTYPE stays first; prepending the script
+    // would push the parser into quirks mode. DOMParser always emits a <head>
+    // (synthesizing one if the source HTML omitted it) but may carry
+    // attributes through, so match the full opening tag. slice() rather than
+    // replace() keeps us clear of $-pattern substitution in resourceScript.
+    const headOpen = template.match(/<head[^>]*>/i);
+    if (headOpen) {
+      const i = headOpen.index + headOpen[0].length;
+      template = template.slice(0, i) + resourceScript + template.slice(i);
+    }
+
+    // Parse the template and swap the root element. Scripts inserted via
+    // DOMParser/replaceWith are inert per spec — re-create each with
+    // createElement so they execute, awaiting onload for src scripts to
+    // preserve ordering (React before ReactDOM before Babel before text/babel).
+    const doc = new DOMParser().parseFromString(template, 'text/html');
+    document.documentElement.replaceWith(doc.documentElement);
+
+    // Resolve page-frame markers: mint this document's own blob for each
+    // framed page — from local text when this is the root, otherwise by
+    // asking the direct parent over the relay protocol above. An
+    // unanswered request leaves the frame on about:blank, the same
+    // degraded state as a refused embed.
+    {
+      const MARKER = /^about:blank#([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(#.*)?$/;
+      const needed = [];
+      for (const el of Array.from(document.querySelectorAll('iframe'))) {
+        const m = MARKER.exec(el.getAttribute('src') || '');
+        if (!m) continue;
+        const text = pageTexts[m[1]];
+        if (typeof text === 'string') {
+          mountPage(el, m[2] || '', text);
+        } else if (window.parent !== window && !isPageRoot) {
+          const had = pendingFrames[m[1]];
+          (pendingFrames[m[1]] = had || []).push({ el: el, frag: m[2] || '' });
+          if (!had) needed.push(m[1]);
+        }
+      }
+      for (const uuid of needed) {
+        window.parent.postMessage({ __bundler_need: uuid }, OWN_TARGET);
+      }
+    }
+
+    const dead = Array.from(document.scripts);
+    for (const old of dead) {
+      const s = document.createElement('script');
+      for (const a of old.attributes) s.setAttribute(a.name, a.value);
+      s.textContent = old.textContent;
+      // text/babel scripts with a src: read and inline. transformScriptTags
+      // does XHR against the src, but blob:null/ from a file:// origin is
+      // silently dropped. Inlining makes it a plain inline babel script,
+      // which transformScriptTags handles unconditionally.
+      if ((s.type === 'text/babel' || s.type === 'text/jsx') && s.src) {
+        const pre = resourceBlobs[s.src.split('#')[0]];
+        s.textContent = pre ? await pre.text() : await (await fetch(s.src)).text();
+        s.removeAttribute('src');
+      }
+      const p = s.src ? new Promise(function(r) { s.onload = s.onerror = r; }) : null;
+      old.replaceWith(s);
+      if (p) await p;
+    }
+    // Babel standalone auto-transforms type=text/babel on DOMContentLoaded,
+    // which fired before we swapped the document. Trigger manually if present.
+    if (window.Babel && typeof window.Babel.transformScriptTags === 'function') {
+      window.Babel.transformScriptTags();
+    }
+  } catch (err) {
+    setStatus('Error unpacking: ' + err.message);
+    console.error('Bundle unpack error:', err);
+  }
+});
+
+  </script>
+
+  <script type="__bundler/manifest">
+{"50ad7537-6fea-4e2d-ac91-7910fc640b35":{"mime":"image/png","compressed":false,"data":"iVBORw0KGgoAAAANSUhEUgAAAggAAABPCAYAAACOPj2eAAAACXBIWXMAAAsSAAALEgHS3X78AAAgAElEQVR4nO2df5BsVX3gPxMeCPiSmQBW4q99fa/e2LHIvqGwdtcM1muzEqmA5RiI5S663biuS0SXYQpKEhQado2mcNvBRMNuTOiulSpdQYaAKdxYS7/SiWaNYV6By1iN3T2LiaH4NbM+H29HdPaPc+7Mne5zb59zf3a/OZ+qrvfm9rnnnPujz/me7/n+mNre3sZisVgsFoslyM8V3QGLxWKxWCzjhxUQLBaLxWKxDGEFBIvFYrFYLENYAcFisVgsFssQB4ruQBFMrbRmgNnAodXtuepGUf2xWCwWi2XcmNpPXgxTK60SUAeqiq9bwIIVFCwWi8Vi2UcCwtRKaxZoA9MRxTaByvZcdTWXTlksFovFMqbsCwFBag5WiRYOfDaBktUkWCwWi2U/s1+MFOvoCQfIckvZdcVisVgslvFnvxgpqmwOopjPpBcWi2VicFyv4v+/1+20c2y3BJTkn6u9bueU0WY6rjcLzMg/T6lrM0XeiwXgaeAzvW6nX2yPhjnltximVloV4OEYp15gbREslv2H43ozwBrwS4HDzwBe1hOa43r3AJcCZ8pDx4Hf6nU7X8+y3ayR9/Qx4JWBw6fEtcXBcb2bgY8Ap8tDLwBvHbd7MVKDIF0Ca4zHqrqPsCVo5zB5z4wuYrEY0iiXEC62s0BFHp1leAvsGLDB7ju/yuJaO48uWngfe4UDgPPk8U9m1ajUHASFA4CDwGeBX8uq3Zx4kL3CAYhrWwbOzb87hbPIrnAAcBbwceCiYrqjJlJAkJb/y8ChfLozkiPI7YKpldYm0ASWtueq/Yhz4kr8UXVaLPo0yrPsCtm6v6XD8t+dd55GGeB+xG9ymcW1fauezZjzDY+nRYm9woHPz2fcbh68KuT4frGD20FqU16i+CrsHhVG6MORmoNxEg4GmQauBXpTK62m7O8QUtOwaVj3+gihw2KJplGeoVGu0Sj3gUcQ72oav6W3A3cBz9MoN2mUKynUabFY8mMWtSA4dkRpEGqMr3AwSBWYn1pp1bbnqsuK75eAWwzqa6bSK8v+pFGuI4yPdD1n4lIFqjTKR4G63YKwJEEaZdYyqj5sG+GA43rNjNoE+CvgK/vZGDIJoUaKUyutNkK9OWlctT1XbQYPSO3CKnoCzzFEsCT7QlnMEKv5JsUJ1i1gwW49DOO43mXAv0dvL/9cxP74IMeBZ0ec2wbqvkW643q3A5egt01wJsO2DwAvAn+vcT5AF2j0up0HNcv796YFnKN7zoRxHLiz1+3cUHRHYEcQUxnOr/e6nVK+vYkmSkDYIPsVUFbcuj1XrQcPSHuKJrt7uyqscGAxp1GeQWipTN1ps2ATqLG4ptKk7UvkBPjfEYZgefBMr9t5meN6DwCX5dRmkBeBa3rdzn8dVdBxvTcBXyW/e1MUW8Cn4wgJ0ni0DlxItKDXBv5slCfCJAkIUQYik+zid8vUSqsWPCBtESrArcD6QPl1hFAxa4UDixHCAHGV8RAOQAj199EoN4vuyBhxBflOgOfJSaCSY5tBDgD/RrPsZzn1hQOAM4APmJ4khbzHEb/v8xHawbBPFfia43p/Jw0RJ54oG4RVJnOLweeuqZXWatAdUk7+dflhaqVV2Z6rtgvpnWXyaZTnEVqpcdS0VaXwUrFbDrmzhfCe2iq6IxqUiu5AjpztuF5FN+iV3B4y1QCdAVwA/DfgbYbnxsZAy/Ej4DvAUq/bGakEiBIQlhAGK+M4+OnSZG9a5z1Y4cASm0a5hvAmGGcOA20a5f0uJPwZ8E7yWyk/3et2Vh3X+2uK2WL4KfAnowrJSH4qdzsQgXv+DnhCo71fBd7AXo30PyAMBE05iHAHPi1BXW8jHXuKf5fg3N90XK9kGB3xB3EaklqOt6DvGXE+cKXjel/vdTu/EVUwMpKiVNOP+yA4iiGjRYslEZMhHAQ5xj7XJMi99n8bOHQ5w4aITwEPjajqIuA1A8eOA/cG/l7wreYd17uevfETKgwbsQ6eH4aqz+uIve8g9+gYKUbshW8Bl+saOjqu9yjDMSKe63U7xgGQHNe7E2FMGuREr9t5qUEdM8CTqA1N36yjQZDC098gNAJxeXev27lbemlcyt4FuWoL4jjCfiTIFEIb1SbwXgX6qbpfJrR63U4t7MvIQEnbc9Xm1EprFeGyNc9kahPqWLdFS1oIT4UshINNdu1+0t7aO4yIaVJJud6JQRqO7RiPOa53IcOT2mlRg6U8r8mwgLAVdl6v29kTeVGqra9XlItsV577dsXhts65IYSpmE+YeEGgVmnHDYCkWgUbbdX0up0Nx/WeRS0g6DJDMuEA4GLH9V6Hvn1SWH+nZR2XO643GJr6yiQdZESE5JGhluUefi1hJxIjcyrMY77tccjaGlhSQYRJTsM7YF3W00aEUO6HtFdhNySzanIw4QiNcim0rf3HQwwLCGdqqIUrimOPG7R7N/Af2Dv5nDFqb1yuaM9WfBVHjQ/sTKSh30vvjys0qlJpCuLGN1CFGjap6691vDcScBL44sCxqC0NXWNRHQ4C/8NxvZfLZzdLciHmLMf1ZsPsESYmm6Oc4NtTK60lxOAa5a44yDzDajiLxZRlkmnRjgJL2i6IIvBRG1iSrpQ1hDYvbpyFClab5qOaqA8Cc0SHWX+Z4tg3dRuVtglbA+2egVBBtyNOVa1ot4Dv6rZtgjR6S+IaepD0PHtM6rrScb1/SKldFV8c1Ng4rjcP3Jdhm0HOZDcnSBpajjOIyDs0MQKCz/ZctS+1CbqBj2CMVKtyf6yG6NMMYlBY1rEotRSIiI5oIpQGOYYIYNSO3b6wH1hCCAsLiK0zU2GlFLv9U4yQiRrgYoTwMIT87f5M8dVXDJtXqb/fOOKcmuLYiQzHjRKT6f54AD2tR5pE2fb8gPQDpx1hdNKw5xAeCz7nECOnx0QmypDuijWDU+IO7KkiJc0+8CmEyvgIIgT0IxmHG7UkQbgLmoTqDnIri2uzqYZBXlxbQmw9HDU80wqhe1FFRaxElJ9leGI/rus2F+BRxbFRY9RrFccGDdriEFZHn8lw01TxWNEdCHAZ+lEwdRkVDfSZXrdzbq/bKQU+v4BIWW7ERAoIsLPlMBjwKBSpdSgMuV90H+Grvqrjeks5dsmiT5znsgm8mcW1esp9ESyu9VlcqyBC5Or2p51JXyYX1UQdFeCmpjg2KvSyijXVwRHBdV6nOPa9GG0P8mPFsRelHcaHEGPsqI9KyDipee7g57iirhMG57ekYei3VNdF/Oy+seh1Oxu9budVwJsDn6+GFL8uUOZB1PdChzCNlqmma/K2GAZoMz4R7EahM8lc67he0243jBHCUNDUq2AT4VaY/XNcXKvRKLcZ7VlR389ujiEcZThOwWmO682EJPepKI6phIxRfIVhT4aDCA1FO+Qc1VidhsFsA/g9dr0HXkDYuSCN/XTCNfcZVqOfjBM2WGpSB8f0rRh13Yiw6/A1PlvAt4saW4NaJsf1aiHFVgPl2mEeL3ky6QJCv+gO6CBXBrqTzDxWFTxO1A3L5ycc+CyuNWmUIVxIuFVuS+xLHNe7GZFuW0djehDohVj3q3zxK47rPR/4+2fAl3rdztVysnubZrsADziuF6byV2kXbnJc7ybF8TOA/9nrdkZG8ut1O7c5rvcXCHe5pxAxFPqa/R1bet1O33G9VyOEhDcCn5vAhZdKkIR4QmksJl1AKGXdgLTmrSCkez8q44z89OXffflph+xHhkZzzAO5vVFB3K+oa1hFXEOhP6RAf2fZfcb+AOmv7FbZvefZ9Dee9qCWq3DgI4SENrsGsCBWo83CXBv9UM+azzGL+ybfpeAKWQeTOPoq3/X3Oq73CsxD7Zr67Uf18zLH9W7XSU4kfz9D914Gl/oyo+cJ1b09a0Bw0kXVlm5dZwIf73U7t4FQ7yMMTpVGpxNMnG2tWEy6gFDJolIpFNTkJ8oC1f/On0RucVxvE6H6a8YwXkoNeQ1+gCvda6jKc/1r0IrXnQYG/fXZmbgd1/PjCiylvPqpGZa/o9AsikIQqBfWPvixIhbQj1eyK4A1yjvPMUWhZgYz4SANTifHOPwR/A6QJMXxZ4HzYp77EsLDOGdZ1w3AbSm1myd+/o6xYmIFBBkGWtt9RCdQUiDhRRK7Bj/qVdVxvaPkPGBndQ1ZCTtyhbdEsuiBhxAq5Gsd12sh+ttP1DERd8DkHq5T9ORcJELbUiel50ij3ELYTfQT960YnkUdQChPYsX2D/DLqfTCokOWLquxmUgvhqmV1gxmluXHRhVwXK9O+ml7jyBinf+nFOsMRV5DjwyuwXG9ZpopTB3Xm5FeG4+QbmjhKmIPuZ6wv5EhSBXsTyPARnmGRnkJ8Z6n/hxplP0gUbGQgu1TqfVKj6cQyYuey7ndICeBDyas4ybGcFUbwRYaY/0YoHJZHUsmToMwtdKaxTzFbjvsCzmJLJNtauu5DOv2tQam0SVNqSIMsuaTSrpSa7BM+gFEgtwCzDuuV4vZ34pB2XUW15ox2phshI1B1s/xWqBCoxzbtqPX7fyyTEz0LrLfbmgirNE3HNd7DcL+opZxm4PcA3wjxBNDG9+LQd67KL4A/NLAsQ3gHTGavRF4a8y6NsZxFa7gVUV3QJeJERBkHIMa8VbHTdVBOVG1mcwkVEDu13AIEdTpql6304xTgXTxWSKf/h5GuAtVYgwcFYOy+89DQGS0zPU5yrTVcYWENjnHgZATdO7tps2o7UXH9U7GOS+krlpadVmSk7mAIFf8fw5ckHVbIazLhFN7sMJBIu5yXA9TIUH++PNOkzyNEGre0et29AwIhUrbZFVcnGFiERST7noaeIRG+R2FGoKeYkjt4zWoc0zoMk7JmqLIzeg6BmlExUydTAUEaUiY90AySH3wgBUOUuEux/U2dCddqaYs8l1oGmgSTNxSj02wIZ05jfI8BT/HJJoEAMf17kRY+Kdlg3UA4ar5iV63E5bH4f3Afyb9ieAAIhriJwdTS49CZmu8l+QJf1QUlawpin/tuN6f97qdq1OoKwmqeBqqiJZ555QYIjMBYWqlVaJ44eDo9ly1GTwgbQ6aTLZw4NtNFH0NTTR8xgM2EkUyjdhuKGnszZoICO34XZowhAtjs+BeTCO2G0pxjEId17sHuDz9bnE+QmieHYw94Lje9cAfINwfs+Ag8DHH9f5Fr9sxmVSuIBvhYFw5Hbik6E6gP++GxcV4Oq2OjCJLL4Y/yLBuHTaRIUMHqDMmyZsS0CRbwzBdpmUCqlGMgzADog86goqJ1fy4qiyzYNKe4x6koHpp6r3Z5XTggwrvmVvJTjjwOQO4VF6jJZwfjS5SCCb9Ms6pEJcsBYR/lmHdOiwM2h5INfe1xXQnHeSE/Pai+xEgcrXtuN4C4yWQHYmIhe5jIiD043dlghAppsfqOcrtDhOuIHsvhjMJCCFyzDk74zaDbV9jUH4BkfnwOMJTQPejNEpEJFUyqUfnE5aw6EWDOvzPM8AHNO9NJkjhUaVB+E7efdEhSxuEIoNsXDW4tSCpx6zPjyy4jAjtu6PalAPAPPoRAJMS12Je5xpqpLhClD+GeoIqWsBy0M5B1llBDG5xXVPrRKvKTbYYTn2E0WY95tmbiHu9PJTyWgRXSvLeLWGmSTg/4rsTmKU3jhIiL2Y3vO8bUmzT52zCtwa0jQ3lGDAqdfAOUjvxAPAriq9/CvyhH+Y4LaSt1TcZFuwOyGO397qdm9NsM2NmMQ+pXRhZCghrwIUZ1h+GUjiQk2CcCaUFLITtWwfcpxbkarlORmpYufKNI4TcgYguGHkNMtDSAiKGgC5RKvYF4t2LdUAZb0FewzKwLJ9pHLX3IRkfoRmjb5OHsB2YZTcvAgjNR3No0lYT9zneigibrLYVEG23aZTriN+NqXbvkIyP0IzRtyAPA+81ib7puN6VwKeBc0YUDRNKHgPeE8eqPqc4IsH2ZhDC2OWoJ7efArelLRyAyBPhuN5vAn+paPtM4KOO610DfAZoJI39UCC52RWYkKWA8CD5CgibwHxESOV6jDqN/P173c6S43ptxIopC3WsyqYiik2gputpIH9cdcf1ltHzkFgfUXdNp10FC8CMRoAWEM/1UzHaqFO8wV02iABGvkBQQT2RiNwbjXKLxbXaiBrjvHf6ngZCgFigUfY1XCbCSJ3kz/E209DcvW7nbjlRx03H+4m4Lndy0rwJ+HzMtrUIhG0PEwxACAdPAW5KrohhrDAcQMnnHOCjwHWO6x0DPjLGcRPCbGBUdgVFLLD3kKWAsITY70niX6vLHUB9e66qlB7li26qPYgVDEj+eCuIlXVqEr4cjEyFjjgBgoLX0CZ6sK6FfSFtJeJe/30xzzPhkLQ4V92fVbKNrJkuQlUfFAhMJtgqjfIGi2tqIUDs85vUFz/d9eJaW15L26DNQzTKs4Vk0AxPx6vD3ydsO+n5oUjtyI2IrYRRXg6nAa8g3fDucTmIiFr7Vcf1jgOPA38CfGWMNAsm8+HPK46dIEe7p8wEhO256sbUSuudCPVdFuxkftueq/ZHlDU1Zro1ifpZhlmdR+QZSAvTa7guSVAQKSTMIlZng5PlOkIz0Y6owrS/RVBDvTo2GUxKqfREF2EPEBQG0hBkrqVRDsugaPock6W7XlxblVsOJlqhGuZaDksAKRT8LmJLZBw8VZJwBkKrMCc/Lziu92PgW8CHUs74aooqD8Nx9L2htvLsf6aBkrbnqu2pldYdmO8tbqBOurGKzB2vio4YQcWg7Hqv26kblFciJ9hbMdvPj6JiUPZor9uJa8y4g3wRK1JQKMnDfU3Bo5K0/RyohBw3ERDyM2gUE2dce4BR1FBvw1UM6rg/lSiHi2tLUnOhK/xUEre5D5Ga1c9zaggFUZwlP5cB/9JxvXf2up0HC+qLKg/Di2Ok4dhD5qGWt+eqCzKPgol6fAZY3p6rJp7kJCaDeD2lNkFss6QlIJisFNO6b4AQdjDw95dGTeMQp2EUYe9kVsJnfBrlJtmqcYd/I+Yhp+tpdUbWpat9LMr98pUFnZsY+RtdJZlg8AzqCIBZ8lLgvATnnwV8HGEjVwQq75fTcu+FJnkla6phrm7/1NRKy1RTEEYhcfXlVsP9JIxbYBj8ZFM750B2TLqboMk7d1hG9etn1Rm5ms56j7eiOGbyHI+lagcg7BHW0f3tJrNDuNFxvVWTVZycYG+M2Z7fZpK98aQp5G9CTzh4EfU8sdLrdlR5EzLHcb1voM6Qu4VQ14/yLCkE+c6ohIGwtOCqHBe5kouAsD1XXZ1aaV2HubV5k4STjaYlvM/RDFQ9bZIHNioZtlc0UT7i48Sm8uji2obR5CT26VPV2gxQy7Bun2nFJFsyOL+dbnd26tQVjJK8c28Feo7rmZ4X1uZfaZx7PvCk43pxczNk/Rs7AXwJYfinCk19j+HYmib3oBYQftjrdkoytPUHESmoB+MnbCFc14sgLAbCoyHlVe9Grkmdckv3vD1XXZpaaZnsKwIcnlppLW3PVfMyQMrCEjpv6+oirLkHmRQNQpSmpY3+5LRAtgJCJcO6B9uJKyD00+xIhnWGkeaEG/QwaBL+HmURMOcxzXIfQwieQXX9ccQ9b/mJnyJcF+O4FueC7PsnA5kqL2HXI+Ah06RWKRLm4visQR25bunkJiBIapjve107tdJajohvkCZjaShiyYRNovfM2+gLCGkF7CmaJILdOAimo1gCriTbcW9zwLtnFRGaOOsQz8h27tEpKDWlLwtqAcY4dkAspJH1DfIzDrwx5Hgzz06YkGUuhiGkO2ItxqnNqZVWHmrrSVGNW5KxjogR0Y8oY2rHUZdGfVmQ1+RbSXDu2GuNpLHt32TYxBbwpwNtbiBU2nFCKpvytRgBn9r+J5sunXJcqEjG9UHNc1XGtMq4BlJwK3w+yluDwPZcdXlqpWVquHcIIf3XMunULlkMcnkPnOMwUPcNym6S3wTYR+ShaI4sKewQWphoEYRGIovtsCb5BG46NGBw2Y8oO0gp9d5kUGev27lIqs3fhljVp5FI6QRi9f4ZVV6AXrdzteN6TwC/h/DRT3NrYQt4AZGzpJZivaN4ivCkTVlzJsK+oAjOZ9heZeRErhAqfH5iKNT9wKBsYnIXECQ1xOBjFPFNbjUYrex63U7bwPgoi0G4kkIdJlsfabSXlL5J2V63U8moH0lpYuY9cC2NcjuVWABBFteaNMo18hESZtl9fv3wYkNU0u5IRnXiT6Ryj7oE/AXDUeu+CnxC/n8W9Z77dcjYLKMG+cC+uB/o6gsMT3JPAe8K/H0fw5PPYJmNJAHREvCuorQOcnWdVQA+HXRX9kF7kPehFgxNt7WfMCyfiEIEBBllcR7zh9ycWmmVwkIqR7CJpjCSZhIfORgkTs0sgy7pFp92XG++YFfHvkHZw47rldKMDiYHkAV2ww4fQ0bdNPJSEa52RzGbmJs0yvFCDUczT3hCo02EoZObQjsVdrdX+gbnpevuKUIu67sn6yWd2oN85/qO600pvv5HfwKM+O2tmk6S8v1rO673UsXXTwTrC2n35JhsB8zG8PpIre0c2lhFaGbOinn+FvC1wN9hEUnbIcdrMdtNlaI0CHGjLE4jBq+KYXNt9CfqOukZjaSpbjaZqBZIMZ5DYNUDequlvuN6Jm6CdVL6QciMl3cNHD4sP/OO61UMXVnrmAmy04gMhekKCbsJjZYQ738JMYGvIp7N4DXHpRJos0+jrC1ck+JzxCzokirqqhZSi6CyxdJxVYzb5izwEsVXua4OEzK2XgxpIGPYrAEXxKzihwOanbB6MnvP0iBXI0UFdcx/3EemVlqmE2/boOwhmbY5EXIQSFNAaBuUPSInykQ4rjcj92ufR0ySDyP239ry+qJoGzRVTcOnWua/iJooD2Pqry9WpkcNu7IrJKTN4lqfxbUmi2t16TWxQHrCAQhNQFCFaiJoVlO5ZrMwy5AsBsMVDNshbAHfTVDnKK4ETlccH+vJYh/y2wjXT1O2gPf4f8g8Fypbl+OoszhCeJCkXN+RQgUEuVVQi3FqfWqlZaJmMl1Nf0pjAgxFrribpBvf3PQallK4hlXUe/BHEGrSqPpN+7tsGDFyD4HEUqM4LAUJE+IIetPAwzJ/Qvo0yiUa5TbZRFgMPte24bnLNMql2C2LVNVNw7NMywdRCSJbcff1Hde7zHG9Rx3X6zuu940Q47T3KI5FTRaWApCa0lcjUk2fQNgLRH02ZdnX9bqdrweq+t2QJk5GaDN/LeR4Zlk8VRStQUCGUr7V8LRpDAYF+aBNV4HtOKtaOSC0STk+vByw1g1OmWb0JK5EntMmeovA3+5RIm0g1JEKw+tL2l9dgaxi1IDYKjB9R31uoVFeTVWbIISOVbIzWqzs/E9oKYyfo5zozRDntDETrNcTbuX8uuLYU6aVSG3bPYjog+cjfjtzDMT8l0Kw6vqiJgvdPrxfCiePylVrloyaLLP+5EKv29nodTsX9bqdl/a6nV8c8ZmRZfv++XI+uDCk+nsjmlbZqOROYTYIQbbnqnWZ0Mk0ymJ9e65a1yzfNKx/GnhYZmTUMm6Tav0lssuMVsdMnTwNPGJ4DQuyHZ1rODTCIHIJs2RVhxBCQl03G6XjenXDNiCOkdPiWl2qvuMIfocR2oSjwFIsLweh9q8htBlZJ8KqDPwd6znSKNdZXNN6jlLoiZPYTK9+BY7rfQB13P77DOt5E/Bl1EmEBrP3fRl10KRvmbSp6MP7gT9CuFECNB3X28wwa+HHiopIOAZeDCYsoX7ePwHujDhPNTcrYyZkyVgICJIa5lEWb5EJndqjCva6naacTEwH11uABbkX3xxUPcoVwTw5DNwJr6Emr2E55WuYJVyTsIR5euJpxBbPgjy/rejvrOxvLUZ/If6e9TzJMuAdAY7IPA9txH1bDbX8F1qHWcSEndgbxoBBQTr2c6RR3nmOQyt9oTFI8hw3ibm9IFd2/1Hx1UngM5rVvF4uCv4VuxPzIDt+647rXYZadXwS+JBmm2H8/kAfDiCSSWUlIHzYcb2/zajuUTQKatcI+Y79TsjXJ8O2seR4rHqftjS9vcLsF4zjb4yNgLA9V+1L40NTg6vm1EprVtP1sUY8yXMa4W1xrXTtWUeouYpIM1snnlHaIYSgcEte1yAtgU1Xnz6HkJbSsr++MWsa/Y2nkhZW/RXMM5MOcghhOyDsBxpl2A0YNUM2z+QY4AC/YHymCBqV+DnK6zyGuMY0hOkF6d0Rhy+g1h48YeByezvRgZa2gHfDzmTxRdRj7lMpuPmqbB0GtRdxCMvtcB7jt4oPS3pUFEuEvx9Rmq9SxHk6vMlxvZmgxli+f28xrahwG4Qg23PVJnC/4Wl+BLuRSP9h0/rD2iwkB72M0WBqT6EirWuInGx73U6dBG5oAXxXxaQcTRQjQqyCr0qhH4NMI1buWQkHFfQH9GFbl8W1Ouk9xzSEg6Nxc184rncz8BuKr7YQ0Q51iRrEXwDeIl1+Z4Dvh5R/Ef1QvVFsp1CHis+RT5jopGwB/6XoTvhILYAqCyYIg9QoLUgt5LhuJsdpRKbQ5/0P8CQxNJ9jJSBIapgZRYFI6DRvUL+Jsd84Mo/5PcqCTfTU9TXGp7+1xLWIiSkLISELhHAgVtq6glFYuRoT/hylcHAzajfDH6a0Z38CeGuv2/m63A77PmptBcCjGdoJJF5Ry1XoXYy/kPDtDO9jHL5GuEr/3jB7sBGCxT8atH8QoVXyP7HCe4+dgCC3CnQn+yBaCZ3kgxmXCTYW8hoqRfcDWNAxfJR7bQs59GcU86lFbBRCwjsY7/coKBz4fR6lBQjPcim0J2PxHONEbHRc727go8Bpiq+3iDfuDPJ94JVSOLgN+CbhwsEJ1JqMKIas26UQotJOmKQRDqXX7VyNsJF4jvHKeHsc0adWr9u5qOjO+DiudyfwmpCvTyB/Q9Lz5QHpEtt3XO9p4HHCJ/OHBv7ekBEETnwAAAZLSURBVPUlwXffVDK1vZ2VZioZUyutJcyiLAK0tueqNZ2CMVzj8uJWqZYfSUjUwLy4yjQk9aT1V4tdv/1CtpwiaLG4Vhs6KrwhllF79KwjJt9oGw2RF6Kw52i6tSBV/H9L+KC9BXy61+0o0wLLsWKU3ckLiGRNN0hjxD8GXk648eJx4LcG/OUH232eYdsCP4jT54D/DVwKXI16Uvlk2DUlIeD+PYMwov11wEPsnZ+QfTwL4Rr8TcPq34iwdfmJ/PsgwnL/IUQmzn6g7GpS19C0kc/+XtTP/f8BH+l1O35Ojv/DcA6QME4Cvzq4wHFc71nCBVAdnut1O2FGjWMtIMwg9rdN9ysdmVZ6dMHxFBK0BQTYiR7YJN9riD3ZFiQkZCMc+IhJd4lsghaZItTvo1wphctmBTHAryK8KZrareQvJGwijBKbJifJgbiD2gXR5+FetxO5ko8YiLeAHyLu5RzwMeAVqLcwfF4Aru91O58d0aZKQNBlC/jnSRM5yTFyBngDIr7DaxHGjzMITUyU6jpy8glpL2rCOwH8DKEZ+QEiNPVjCOGvqKRVe3Bc7/8SPumv97qdkixXwczI83u9bqesaO824MOEC6JRbAE3Rbmrjq2AACCjJZpajL9Zx+3RJxCBb1xWgEYCAuxcwzLZ+8dvArWkiaDkj2OZ7IWadcS2Qj4Dh/BwaJL9cwjjfoRwkM+qSlxvbs8xTkAkx/WuR3gbhPFkr9v5Jxr1XAn8KXuT9zwHfFyuCK9HZH9UbV8E0RIOZJtJVodak7Ps9/vY66t/LrsGcWcTb/IBON7rdnRXyP7+++Oo4waMYou96vafAT8aKPMlRPyGTH4fsv/fRb3d8wLwel8D4LjeHwPXaFa951xFu3ciFicm9+04cLfcPgpl7GwQgsSMsmiEnDwqwB0ZNpOG9Xco8hpmyfYa7gdKaWSJlN4kJdLxKAmjBczmuqpYXGuzuFZCpAHO0zbhKPBmFtfmcxMOwM9TUSKH55ggWuJgSuUgTwL/VKeSXrdzN/B62Z8WcEOv2zk3sPr6MKOFgy3gnTrCgeRxzXIqHhhVQMZFuR14HUKo9T9BA7e4wgHAT00Kywkw7p76Gew1yjuHvdd0CLiehAGpRjCD2o11C7Hd0w8cu0ezTl+g7IcVkJP8y4Eb2H0/oz7vBl49SjiAMdcg+EyttFbRX+FfIAULY6QE2CS9ELbrQF0GONK90dfpRhFUIVfnddK7hmMIY8R2SvXtIYP+HkXc83ZK9cVDbDvMI64tK41CC2jGSXWcOkKbUCfl55j02uRv+nvsneh+AnwD+O20VpOO6/2YaLfHZ4CLTQRWze0RFUp1tKL+p2PUrcNxRLjqq6JsLEL6VEJEhHwTYpsmSTwAFRu9bucXU65zB8U93UJsYV2iUTbICeBp4D2m9zBNJkVAKKEXwW59e65aStqefEnriAE+jvr0fkTUxZ3VtuN6y+hFw3PSsLR3drNJxr2GFuIa2kn7ooMUFGrE6+8mQtWdW3+NEIaMNcS1JRUW7kdc63Ku2gJdhKBQI549xs5zTFPokWGIfx9hG/A94BNSI5Aajus9itijH2QLsZp/XxxhRAoJNyHu6QHUNglb8vMUcKduCOSIPptwAiFwbSDsuVL7DcpxeA64GKHlnSG50JC1gFACPo9Y0J4E/qjX7dwWUtZ/tpcg7BZ8u4r/Bfxlah5XCZgIAQFgaqVVY7RRlJH9gQ6BsL6+sc4seyewY+z+OFYRoYGHBgL54owScoztD3SQk2+F3WsYXOX5gZfaCMvgxNsISQj0tyIPqfq7we79bufUteSITIezgc8MQk0/KDj471WfXSPCdk69TAdhCDmL5nOcuOsLIPMxLLO7bXsA+Dbw3jQH+pAEcrEM9DTsM4L43gkvIvzxv4NIPbyS50Qmx1F/TL4QeBnC9fPn0BMcvt/rdl6bWQdPMSZGQIAdIWGJ4Ul2E6htz1ULndhGMcKYMBPhwGKxWMKQxpdV4FcCh/2VLOx6CfTHYUUbhhQcSux6W4AQIIJGkg8i3AzHT/M2pkyUgAA77o/ziJcBxAprWTMXw1ggXRNn5Z8biARK/eJ6ZLFYLBbLXiZOQLBYLBaLxZI9Y+3maLFYLBaLpRisgGCxWCwWi2UIKyBYLBaLxWIZ4v8DEo3XBQBTHEIAAAAASUVORK5CYII="}}
+  </script>
+
+  <script type="__bundler/ext_resources">
+[]
+  </script>
+
+  <script type="__bundler/page_order">
+[]
+  </script>
+
+  <script type="__bundler/template">
+"<!DOCTYPE html>\n<html lang=\"zh-Hant\"><head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<meta name=\"color-scheme\" content=\"light\">\n<meta name=\"supported-color-schemes\" content=\"light\">\n<title>競賽咖金流申請功能正式開放<\u002Ftitle>\n<!--[if mso]>\n<style>body,table,td,a{font-family:Arial,sans-serif !important;}<\u002Fstyle>\n<![endif]-->\n<style>\n  @media only screen and (max-width:620px){\n    .px{padding-left:24px !important;padding-right:24px !important;}\n    .h1{font-size:27px !important;line-height:38px !important;}\n    .col{display:block !important;width:100% !important;}\n    .colgap{height:12px !important;line-height:12px !important;font-size:12px !important;}\n  }\n<\u002Fstyle>\n<\u002Fhead><body style=\"margin:0;padding:0;background-color:#F4F6F5;\">\n<span style=\"display:none;font-size:1px;color:#F4F6F5;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;\">報名費直接入帳、支援信用卡、免申辦費免年費，一次申請終身適用。<\u002Fspan>\n\n<table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" style=\"background-color:#F4F6F5;\">\n<tbody><tr><td align=\"center\" style=\"padding:28px 12px;\">\n<table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"600\" style=\"width:600px;max-width:600px;background-color:#FFFFFF;\">\n\n  <!-- top rule -->\n  <tbody><tr><td style=\"background-color:#00B888;font-size:0;line-height:0;height:5px;\">&nbsp;<\u002Ftd><\u002Ftr>\n\n  <!-- brand -->\n  <tr><td class=\"px\" style=\"padding:22px 36px 0 36px;\">\n    <table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\">\n      <tbody><tr>\n        <td align=\"left\" style=\"font-family:'Helvetica Neue',Helvetica,Arial,'PingFang TC','Microsoft JhengHei',sans-serif;\"><img src=\"50ad7537-6fea-4e2d-ac91-7910fc640b35\" width=\"190\" height=\"29\" alt=\"競賽咖 RaceGo\" style=\"display:block;width:190px;height:29px;border:0;outline:none;text-decoration:none;\"><\u002Ftd>\n        <td align=\"right\" style=\"font-family:'Helvetica Neue',Helvetica,Arial,'PingFang TC','Microsoft JhengHei',sans-serif;font-size:12px;line-height:22px;mso-line-height-rule:exactly;color:#8A9C96;letter-spacing:1px;\">主辦單位公告<\u002Ftd>\n      <\u002Ftr>\n    <\u002Ftbody><\u002Ftable>\n  <\u002Ftd><\u002Ftr>\n\n  <!-- headline -->\n  <tr><td class=\"px\" style=\"padding:34px 36px 0 36px;\">\n    <table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\">\n      <tbody><tr><td style=\"font-family:'Helvetica Neue',Helvetica,Arial,'PingFang TC','Microsoft JhengHei',sans-serif;font-size:12px;line-height:16px;mso-line-height-rule:exactly;color:#F79521;font-weight:bold;letter-spacing:3px;padding-bottom:14px;\">功能正式開放<\u002Ftd><\u002Ftr>\n      <tr><td class=\"h1\" style=\"font-family:'Helvetica Neue',Helvetica,Arial,'PingFang TC','Microsoft JhengHei',sans-serif;font-size:33px;line-height:47px;mso-line-height-rule:exactly;color:#14332C;font-weight:bold;letter-spacing:-0.4px;\">\n        競賽咖金流申請功能正式開放！<br>報名費收款更輕鬆 💳\n      <\u002Ftd><\u002Ftr>\n    <\u002Ftbody><\u002Ftable>\n  <\u002Ftd><\u002Ftr>\n\n  <!-- benefits: 2x2 grid -->\n  <tr><td class=\"px\" style=\"padding:44px 36px 0 36px;\">\n    <table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" style=\"width:100%;\">\n      <tbody><tr><td style=\"border-top:1px solid #E4EBE8;padding-top:26px;font-family:'Helvetica Neue',Helvetica,Arial,'PingFang TC','Microsoft JhengHei',sans-serif;font-size:22px;line-height:32px;mso-line-height-rule:exactly;color:#14332C;font-weight:bold;padding-bottom:22px;\">為什麼要申請金流？<\u002Ftd><\u002Ftr>\n    <\u002Ftbody><\u002Ftable>\n\n    <table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" style=\"width:100%;\">\n      <tbody><tr>\n        <td class=\"col\" width=\"49%\" valign=\"top\" style=\"width:49%;height:100%;\">\n          <table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" height=\"100%\" style=\"width:100%;height:100%;background-color:#F1FBF7;\">\n            <tbody><tr><td valign=\"top\" height=\"150\" style=\"height:150px;padding:20px 18px;font-family:'Helvetica Neue',Helvetica,Arial,'PingFang TC','Microsoft JhengHei',sans-serif;\">\n              <div style=\"font-size:12px;line-height:16px;mso-line-height-rule:exactly;color:#00B888;font-weight:bold;letter-spacing:2px;padding-bottom:8px;\">01<\u002Fdiv>\n              <div style=\"font-size:16px;line-height:24px;mso-line-height-rule:exactly;color:#14332C;font-weight:bold;padding-bottom:6px;\">免申辦費、免年費<\u002Fdiv>\n              <div style=\"font-size:14px;line-height:24px;mso-line-height-rule:exactly;color:#556E67;\">申請與使用完全不收費，零成本升級收款方式。<\u002Fdiv>\n            <\u002Ftd><\u002Ftr>\n          <\u002Ftbody><\u002Ftable>\n        <\u002Ftd>\n        <td class=\"colgap\" width=\"2%\" style=\"width:2%;font-size:1px;line-height:1px;\">&nbsp;<\u002Ftd>\n        <td class=\"col\" width=\"49%\" valign=\"top\" style=\"width:49%;height:100%;\">\n          <table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" height=\"100%\" style=\"width:100%;height:100%;background-color:#F1FBF7;\">\n            <tbody><tr><td valign=\"top\" height=\"150\" style=\"height:150px;padding:20px 18px;font-family:'Helvetica Neue',Helvetica,Arial,'PingFang TC','Microsoft JhengHei',sans-serif;\">\n              <div style=\"font-size:12px;line-height:16px;mso-line-height-rule:exactly;color:#00B888;font-weight:bold;letter-spacing:2px;padding-bottom:8px;\">02<\u002Fdiv>\n              <div style=\"font-size:16px;line-height:24px;mso-line-height-rule:exactly;color:#14332C;font-weight:bold;padding-bottom:6px;\">一次申請，終身適用<\u002Fdiv>\n              <div style=\"font-size:14px;line-height:24px;mso-line-height-rule:exactly;color:#556E67;\">只需申請一次，後續舉辦的所有賽事都能直接沿用，不必重複申請。<\u002Fdiv>\n            <\u002Ftd><\u002Ftr>\n          <\u002Ftbody><\u002Ftable>\n        <\u002Ftd>\n      <\u002Ftr>\n      <tr><td colspan=\"3\" height=\"12\" style=\"height:12px;font-size:1px;line-height:12px;\">&nbsp;<\u002Ftd><\u002Ftr>\n      <tr>\n        <td class=\"col\" width=\"49%\" valign=\"top\" style=\"width:49%;height:100%;\">\n          <table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" height=\"100%\" style=\"width:100%;height:100%;background-color:#FFF7EC;\">\n            <tbody><tr><td valign=\"top\" height=\"150\" style=\"height:150px;padding:20px 18px;font-family:'Helvetica Neue',Helvetica,Arial,'PingFang TC','Microsoft JhengHei',sans-serif;\">\n              <div style=\"font-size:12px;line-height:16px;mso-line-height-rule:exactly;color:#F79521;font-weight:bold;letter-spacing:2px;padding-bottom:8px;\">03<\u002Fdiv>\n              <div style=\"font-size:16px;line-height:24px;mso-line-height-rule:exactly;color:#14332C;font-weight:bold;padding-bottom:6px;\">款項直接入您的帳戶<\u002Fdiv>\n              <div style=\"font-size:14px;line-height:24px;mso-line-height-rule:exactly;color:#6B5A44;\">報名費直接匯入主辦單位自己的銀行帳戶，不經過競賽咖代收代付，收款更安心、對帳更透明。<\u002Fdiv>\n            <\u002Ftd><\u002Ftr>\n          <\u002Ftbody><\u002Ftable>\n        <\u002Ftd>\n        <td class=\"colgap\" width=\"2%\" style=\"width:2%;font-size:1px;line-height:1px;\">&nbsp;<\u002Ftd>\n        <td class=\"col\" width=\"49%\" valign=\"top\" style=\"width:49%;height:100%;\">\n          <table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" height=\"100%\" style=\"width:100%;height:100%;background-color:#F1FBF7;\">\n            <tbody><tr><td valign=\"top\" height=\"150\" style=\"height:150px;padding:20px 18px;font-family:'Helvetica Neue',Helvetica,Arial,'PingFang TC','Microsoft JhengHei',sans-serif;\">\n              <div style=\"font-size:12px;line-height:16px;mso-line-height-rule:exactly;color:#00B888;font-weight:bold;letter-spacing:2px;padding-bottom:8px;\">04<\u002Fdiv>\n              <div style=\"font-size:16px;line-height:24px;mso-line-height-rule:exactly;color:#14332C;font-weight:bold;padding-bottom:6px;\">支援信用卡付款<\u002Fdiv>\n              <div style=\"font-size:14px;line-height:24px;mso-line-height-rule:exactly;color:#556E67;\">開通後，會員報名繳費時即可選擇信用卡付款，不必再侷限於轉帳，繳費更方便、報名轉換率更高。<\u002Fdiv>\n            <\u002Ftd><\u002Ftr>\n          <\u002Ftbody><\u002Ftable>\n        <\u002Ftd>\n      <\u002Ftr>\n    <\u002Ftbody><\u002Ftable>\n\n    <table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" style=\"width:100%;\">\n      <tbody><tr><td style=\"padding-top:20px;font-family:'Helvetica Neue',Helvetica,Arial,'PingFang TC','Microsoft JhengHei',sans-serif;font-size:16px;line-height:28px;mso-line-height-rule:exactly;color:#14332C;font-weight:bold;\">現在就提出金流申請，讓賽事收款更省心、會員繳費更順暢！<\u002Ftd><\u002Ftr>\n    <\u002Ftbody><\u002Ftable>\n  <\u002Ftd><\u002Ftr>\n\n  <!-- closing CTA -->\n  <tr><td class=\"px\" align=\"center\" style=\"padding:36px 36px 48px 36px;\">\n    <table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\">\n      <tbody><tr><td align=\"center\" bgcolor=\"#00B888\" style=\"background-color:#00B888;\">\n        <a href=\"https://www.racego.app/announcements?id=5\" style=\"display:block;padding:16px 40px;font-family:'Helvetica Neue',Helvetica,Arial,'PingFang TC','Microsoft JhengHei',sans-serif;font-size:16px;line-height:20px;mso-line-height-rule:exactly;color:#FFFFFF;font-weight:bold;text-decoration:none;\">了解更多 →<\u002Fa>\n      <\u002Ftd><\u002Ftr>\n    <\u002Ftbody><\u002Ftable>\n  <\u002Ftd><\u002Ftr>\n\n  <!-- footer -->\n  <tr><td class=\"px\" style=\"background-color:#F4F6F5;padding:24px 36px;\">\n    <table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\">\n      <tbody><tr><td style=\"font-family:'Helvetica Neue',Helvetica,Arial,'PingFang TC','Microsoft JhengHei',sans-serif;font-size:12px;line-height:22px;mso-line-height-rule:exactly;color:#7B8C86;\">\n        <strong style=\"color:#14332C;\">競賽咖 RaceGo<\u002Fstrong>｜賽事報名與管理平台<br>\n        如有任何疑問，歡迎來信至 <a href=\"mailto:service@racego.app\" style=\"color:#00A87C;text-decoration:underline;\">service@racego.app<\u002Fa>\n      <\u002Ftd><\u002Ftr>\n    <\u002Ftbody><\u002Ftable>\n  <\u002Ftd><\u002Ftr>\n\n<\u002Ftbody><\u002Ftable>\n<\u002Ftd><\u002Ftr>\n<\u002Ftbody><\u002Ftable>\n\n\n\n<\u002Fbody><\u002Fhtml>"
+  </script>
+</body>
+</html>
