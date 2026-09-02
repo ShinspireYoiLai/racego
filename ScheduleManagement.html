@@ -99,6 +99,12 @@
 
   /* ---------- 賽程設定（組別列表，依賽事項目篩選） ---------- */
   #page-schedule-settings .sport-filter-bar,  #page-result-settings .sport-filter-bar,  #page-venue-settings .sport-filter-bar,  #page-timetable-settings .sport-filter-bar,  #page-draw-settings .sport-filter-bar{display:flex;align-items:flex-end;gap:16px;margin-bottom:16px;}
+  #page-schedule-settings .sched-fmt-unset{color:var(--ink-500);}
+  #page-schedule-settings table tbody td:nth-child(4){white-space:nowrap;}
+  #page-schedule-settings table tbody td:nth-child(3){white-space:nowrap;}
+  /* 各欄改用固定比例（總和 100%）平均分配寬度，避免多餘版面空間全部集中堆在單一欄位
+     （不論是先前的「組別」欄，或是後來的「操作」欄），讓整體欄寬看起來更平衡 */
+  #page-schedule-settings .table-card table{table-layout:fixed;}
   #page-schedule-settings .sport-filter-bar label,  #page-result-settings .sport-filter-bar label,  #page-venue-settings .sport-filter-bar label,  #page-timetable-settings .sport-filter-bar label,  #page-draw-settings .sport-filter-bar label{display:block;font-size:14px;color:var(--ink-700);margin-bottom:6px;font-weight:600;}
   #page-schedule-settings .sport-tabs,  #page-result-settings .sport-tabs,  #page-venue-settings .sport-tabs,  #page-timetable-settings .sport-tabs,  #page-draw-settings .sport-tabs{display:flex;gap:28px;border-bottom:2px solid var(--ink-100);}
   #page-schedule-settings .sport-tabs .sport-tab,  #page-result-settings .sport-tabs .sport-tab,  #page-venue-settings .sport-tabs .sport-tab,  #page-timetable-settings .sport-tabs .sport-tab,  #page-draw-settings .sport-tabs .sport-tab{padding:0 2px 12px;font-size:15px;font-weight:600;color:var(--ink-500);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;user-select:none;transition:.15s;}
@@ -282,6 +288,8 @@
   #page-timetable-settings .tt-session-row{display:grid;grid-template-columns:1.1fr 1fr 1fr auto;gap:12px;align-items:end;padding:12px 0;border-bottom:1px solid var(--ink-100);}
   #page-timetable-settings .tt-session-row:last-child{border-bottom:none;padding-bottom:0;}
   #page-timetable-settings .tt-session-row:first-child{padding-top:0;}
+  #page-timetable-settings .tt-view-tabs-row{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px;}
+  #page-timetable-settings .tt-view-tabs-row .sport-tabs{margin-bottom:0;}
   #page-timetable-settings .tt-toolbar-row{display:flex;align-items:flex-end;gap:20px;flex-wrap:wrap;}
   #page-timetable-settings .tt-toolbar-field{min-width:150px;}
   #page-timetable-settings .tt-scale-field{min-width:140px;}
@@ -466,7 +474,7 @@
         <span class="chev-r">▸</span>
       </div>
       <div class="subnav show" id="scheduleFlyout">
-        <div class="f-item active" id="fitem-schedule-settings" onclick="showPage(event,'page-schedule-settings','fitem-schedule-settings')">賽程設定</div>
+        <div class="f-item active" id="fitem-schedule-settings" onclick="showPage(event,'page-schedule-settings','fitem-schedule-settings')">賽制管理</div>
         <div class="f-item" id="fitem-venue-settings" onclick="showPage(event,'page-venue-settings','fitem-venue-settings')">賽事場地</div>
         <div class="f-item" id="fitem-venue-timetable" onclick="showPage(event,'page-timetable-settings','fitem-venue-timetable')">場地時間表</div>
         <div class="f-item" id="fitem-draw-settings" onclick="showPage(event,'page-draw-settings','fitem-draw-settings')">抽籤設定</div>
@@ -540,7 +548,7 @@
         </div>
         <div class="table-card">
           <table>
-            <thead><tr><th style="width:70px">項次</th><th>地點名稱</th><th>地點說明</th><th style="width:90px">場地數量</th><th>備註</th><th style="width:310px">操作</th></tr></thead>
+            <thead><tr><th style="width:70px">項次</th><th>地點名稱</th><th>地點說明</th><th style="width:120px;white-space:nowrap">場地數量</th><th>備註</th><th style="width:310px">操作</th></tr></thead>
             <tbody id="place-table-body"></tbody>
           </table>
         </div>
@@ -560,7 +568,7 @@
       <div class="table-card">
         <table>
           <thead>
-            <tr><th style="width:90px">項次</th><th style="width:140px">賽事項目</th><th>組別</th><th style="width:200px">操作</th></tr>
+            <tr><th style="width:8%">項次</th><th style="width:16%">賽事項目</th><th style="width:16%">組別</th><th style="width:36%;white-space:nowrap">賽制</th><th style="width:24%">操作</th></tr>
           </thead>
           <tbody id="sched-group-table-body"></tbody>
         </table>
@@ -670,7 +678,10 @@
         <button class="btn-save" onclick="ttGenerateBoard(event)">更新時間表</button>
       </div>
 
-      <div class="sport-tabs" id="tt-view-tabs" role="tablist" style="margin-bottom:16px"></div>
+      <div class="tt-view-tabs-row">
+        <div class="sport-tabs" id="tt-view-tabs" role="tablist"></div>
+        <button class="btn-setting" onclick="ttExportGroupsWorkbook()">📤 匯出</button>
+      </div>
 
       <div id="tt-view-board">
         <div class="panel tt-toolbar" id="tt-board-wrap">
@@ -686,7 +697,6 @@
             <div class="tt-toolbar-spacer"></div>
             <div class="tt-legend" id="tt-legend"></div>
             <button class="btn-venue" onclick="ttToggleDrawer()">📋 賽程清單</button>
-            <button class="btn-setting" onclick="ttExportCSV()">📤 匯出</button>
             <button class="btn-setting" onclick="ttSave()">儲存</button>
           </div>
         </div>
@@ -706,7 +716,6 @@
               <h2>場次總覽</h2>
               <div class="sub">選擇組別即可查看該組所有場次的排定狀況；以下欄位皆由場地時間表資料自動帶入，僅供查看，無法於此修改</div>
             </div>
-            <button class="btn-setting" onclick="ttExportOverviewCSV()">📤 匯出</button>
           </div>
           <div class="tt-overview-group-btns" id="tt-overview-group-btns"></div>
           <div class="table-card">
@@ -1019,16 +1028,31 @@ const SCHED_EVENT_SPORTS = ['籃球', '排球'];
 const SCHED_GROUPS = ['女子組', '男子組', '混合組'];
 let schedSelectedSport = SCHED_EVENT_SPORTS[0];
 
+// 記錄各組別是否已完成賽制設定：key 為「賽事項目::組別」，value 為 {fmt, teamCount}；
+// teamCount 於單階段賽制為單一數字，於循環賽＋淘汰賽等含初賽/複賽的複合賽制則為 {initial, final} 物件（見 schedIsTwoStage）；
+// 於賽程圖工具頁按下「儲存」時寫入（見 saveSchedule），供本列表頁的「賽制」欄位顯示使用
+let schedConfiguredGroups = {};
+function schedConfigKey(sport, group){ return sport + '::' + group; }
+
 function schedRenderGroupTable(){
   const body = document.getElementById('sched-group-table-body');
   if(!body) return;
-  body.innerHTML = SCHED_GROUPS.map((g,i)=>`
-    <tr>
+  body.innerHTML = SCHED_GROUPS.map((g,i)=>{
+    const cfg = schedConfiguredGroups[schedConfigKey(schedSelectedSport, g)];
+    const fmtName = cfg ? SCHED_FORMATS.find(x=>x.key===cfg.fmt).name : '';
+    const fmtCell = !cfg
+      ? `<span class="sched-fmt-unset">未設定</span>`
+      : schedIsTwoStage(cfg.fmt)
+        ? `${fmtName}（初賽${cfg.teamCount.initial}・複賽${cfg.teamCount.final}）`
+        : `${fmtName}（${cfg.teamCount}）`;
+    return `<tr>
       <td>${i+1}</td>
       <td>${schedSelectedSport}</td>
       <td>${g}</td>
-      <td><div class="row-actions"><button class="btn-setting" onclick="openGroupSchedule(event,'${schedSelectedSport}','${g}')">賽制</button></div></td>
-    </tr>`).join('');
+      <td>${fmtCell}</td>
+      <td><div class="row-actions"><button class="btn-setting" onclick="openGroupSchedule(event,'${schedSelectedSport}','${g}')">賽制管理</button></div></td>
+    </tr>`;
+  }).join('');
 }
 
 function schedRenderSportTabs(){
@@ -1045,9 +1069,13 @@ function schedSelectSportTab(sport){
   schedRenderGroupTable();
 }
 
+let schedToolSport = null, schedToolGroup = null; // 目前賽程圖工具頁面所屬的賽事項目與組別，供儲存時寫入 schedConfiguredGroups
+
 function openGroupSchedule(e, sportName, groupName){
   document.getElementById('sched-group-name').textContent = groupName;
   document.getElementById('sched-sport-tag').textContent = '賽事項目：' + sportName;
+  schedToolSport = sportName;
+  schedToolGroup = groupName;
   showPage(e, 'page-schedule-tool', 'fitem-schedule-settings');
 }
 
@@ -1422,7 +1450,8 @@ function ttFlattenCourts(){
   const list = [];
   placeList.forEach(p=>{
     p.courts.forEach(c=>{
-      list.push({ id: p.id+'-'+c.id, label: p.name+'－'+c.name });
+      // placeName／courtName：保留地點與場地的原始名稱（不合併），供「場次總覽」匯出時分成獨立欄位使用
+      list.push({ id: p.id+'-'+c.id, label: p.name+'－'+c.name, placeName: p.name, courtName: c.name });
     });
   });
   return list;
@@ -1444,10 +1473,12 @@ function ttSelectOverviewGroup(g){
   ttRenderOverview();
 }
 
-function ttOverviewRows(){
+// group 省略時採用畫面目前選取的組別（ttOverviewGroup）；匯出時會分別傳入三個組別以取得各自的場次列表
+function ttOverviewRows(group){
   const sport = ttCurrentSport;
+  const g = group || ttOverviewGroup;
   const data = ttGenerateMatches(sport);
-  const list = data[ttOverviewGroup] || [];
+  const list = data[g] || [];
   const courts = ttFlattenCourts();
   const assigns = ttAssignments[sport] || {};
   return list.map((m, i) => {
@@ -1459,7 +1490,10 @@ function ttOverviewRows(){
       teams: `${m.teamA} V.S. ${m.teamB}`,
       date: a ? ttFormatDate(a.date) : '－',
       time: a ? `${ttFormatMinutes(a.startMin)}–${ttFormatMinutes(a.endMin)}` : '－',
+      startTime: a ? ttFormatMinutes(a.startMin) : '－',
       place: court ? court.label : '－',
+      placeName: court ? court.placeName : '－',
+      courtName: court ? court.courtName : '－',
     };
   });
 }
@@ -1484,19 +1518,35 @@ function ttRenderOverview(){
     </tr>`).join('');
 }
 
-function ttExportOverviewCSV(){
-  const rows = ttOverviewRows();
-  if(rows.length===0){ showToast('此組別尚無場次可匯出'); return; }
-  const csvRows = [['項次','場次','對戰組合','日期','時間','地點']];
-  rows.forEach(r=>csvRows.push([r.num, r.matchLabel, r.teams, r.date, r.time, r.place]));
-  const csv = csvRows.map(row=>row.map(ttCsvEscape).join(',')).join('\r\n');
-  const blob = new Blob(['﻿'+csv], {type:'text/csv;charset=utf-8'});
+// XML 特殊字元跳脫（& < > "），供 Excel 2003 XML Spreadsheet（SpreadsheetML）格式使用
+function ttXmlEscape(v){
+  return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function ttXmlCell(v){
+  return `<Cell><Data ss:Type="String">${ttXmlEscape(v)}</Data></Cell>`;
+}
+
+// 匯出「場次總覽」：女子組／男子組／混合組各自獨立成一個工作表（活頁簿頁籤），欄位比照
+// 場次／日期／開始時間／地點／場地／對戰組合。純前端、免外部套件即可產生多頁籤活頁簿，
+// 採用 Excel 2003 XML Spreadsheet（SpreadsheetML）格式，副檔名 .xls 即可由 Excel／LibreOffice 等開啟並顯示為多個頁籤
+function ttExportGroupsWorkbook(){
+  const sport = ttCurrentSport;
+  const header = ['場次','日期','開始時間','地點','場地','對戰組合'];
+  const sheets = TT_GROUPS.map(g=>{
+    const rows = ttOverviewRows(g);
+    const bodyXml = rows.length
+      ? rows.map(r=>`<Row>${[r.matchLabel, r.date, r.startTime, r.placeName, r.courtName, r.teams].map(ttXmlCell).join('')}</Row>`).join('')
+      : `<Row>${ttXmlCell('此組別尚無場次')}${header.slice(1).map(()=>ttXmlCell('')).join('')}</Row>`;
+    return `<Worksheet ss:Name="${ttXmlEscape(g)}"><Table><Row>${header.map(ttXmlCell).join('')}</Row>${bodyXml}</Table></Worksheet>`;
+  }).join('');
+  const xml = `<?xml version="1.0"?>\n<?mso-application progid="Excel.Sheet"?>\n<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">${sheets}</Workbook>`;
+  const blob = new Blob(['﻿'+xml], {type:'application/vnd.ms-excel;charset=utf-8'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url; a.download = `場次總覽_${ttCurrentSport}_${ttOverviewGroup}.csv`;
+  a.href = url; a.download = `場次總覽_${sport}.xls`;
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-  showToast('已匯出場次總覽（示意稿）');
+  setTimeout(()=>URL.revokeObjectURL(url), 1000);
+  showToast('已匯出場次總覽（示意稿，各組別各自一個頁籤）');
 }
 
 // 場地時間表左側時間軸永遠以整點（60 分鐘）為單位顯示，不受「每場比賽時間」設定影響；
@@ -1604,32 +1654,6 @@ function ttBuildBoardLayout(sport, date, courts, units){
     const startIdx = ttStartUnitIndex(units, a.startMin);
     const endIdx = ttEndUnitIndexExclusive(units, a.endMin);
     const span = Math.max(1, Math.min(endIdx - startIdx, units.length - startIdx));
-    startMap[a.courtId][startIdx] = { id, span };
-  });
-  courts.forEach(c=>{
-    Object.keys(startMap[c.id]).forEach(idxStr=>{
-      const idx = +idxStr;
-      const span = startMap[c.id][idx].span;
-      for(let k=1;k<span;k++) consumed[c.id].add(idx+k);
-    });
-  });
-  return { startMap, consumed };
-}
-
-// 依「整點」時間軸彙整每個場地在每個整點列要顯示哪一筆資料（僅供 CSV 匯出使用，維持每列一小時的匯出格式）
-function ttBuildHourLayout(sport, date, courts, slots){
-  const startMap = {};
-  const consumed = {};
-  courts.forEach(c=>{ startMap[c.id] = {}; consumed[c.id] = new Set(); });
-  const assigns = ttAssignments[sport] || {};
-  Object.keys(assigns).forEach(id=>{
-    const a = assigns[id];
-    if(a.date !== date || !startMap[a.courtId]) return;
-    let startIdx = 0;
-    for(let i=0;i<slots.length;i++){ if(ttMinutesOf(slots[i]) <= a.startMin) startIdx = i; else break; }
-    let endIdx = slots.length;
-    for(let i=0;i<slots.length;i++){ if(ttMinutesOf(slots[i]) + TT_HOUR_MINUTES >= a.endMin){ endIdx = i+1; break; } }
-    const span = Math.max(1, Math.min(endIdx-startIdx, slots.length-startIdx));
     startMap[a.courtId][startIdx] = { id, span };
   });
   courts.forEach(c=>{
@@ -1960,62 +1984,6 @@ function ttSave(){
   showToast('已儲存場地時間表');
 }
 
-function ttCsvEscape(v){
-  const s = String(v==null?'':v);
-  if(/[",\n]/.test(s)) return '"' + s.replace(/"/g,'""') + '"';
-  return s;
-}
-
-function ttCellExportText(sport, id){
-  const a = (ttAssignments[sport]||{})[id];
-  const timeStr = a ? `（${ttFormatMinutes(a.startMin)}-${ttFormatMinutes(a.endMin)}）` : '';
-  if(ttIsBlank(id)){
-    const b = (ttBlankBlocks[sport]||{})[id];
-    if(!b) return '';
-    return (b.text ? `空白格：${b.text}` : `空白格（${b.duration}分）`) + timeStr;
-  }
-  const m = ttFindMatch(sport, id);
-  if(!m) return '';
-  return `${m.groupName}．第${m.num}場：${m.teamA} vs ${m.teamB}${timeStr}`;
-}
-
-function ttExportCSV(){
-  const sport = ttCurrentSport;
-  const cfg = sportTimetableConfig[sport];
-  if(!cfg){ showToast('請先產生時間表'); return; }
-  const courts = ttFlattenCourts();
-  if(courts.length===0){ showToast('尚未設定場地，無法匯出'); return; }
-  const dates = [...new Set(cfg.sessions.map(s=>s.date))].sort();
-  if(dates.length===0){ showToast('尚未設定比賽時間，無法匯出'); return; }
-
-  const rows = [['日期','時間', ...courts.map(c=>c.label)]];
-  dates.forEach(date=>{
-    const slots = ttBuildSlots(sport, date);
-    if(slots.length===0) return;
-    const { startMap, consumed } = ttBuildHourLayout(sport, date, courts, slots);
-    slots.forEach((slot, rowIdx)=>{
-      const row = [ttFormatDate(date), slot];
-      courts.forEach(c=>{
-        if(consumed[c.id].has(rowIdx)){ row.push(''); return; }
-        const start = startMap[c.id][rowIdx];
-        row.push(start ? ttCellExportText(sport, start.id) : '');
-      });
-      rows.push(row);
-    });
-  });
-
-  const csv = '﻿' + rows.map(r=>r.map(ttCsvEscape).join(',')).join('\r\n');
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `場地時間表_${sport}.csv`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  setTimeout(()=>URL.revokeObjectURL(url), 1000);
-  showToast('已匯出時程表 CSV');
-}
 
 function showToast(msg){
   let t = document.getElementById('mockToast');
@@ -2026,7 +1994,25 @@ function showToast(msg){
   window.__toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 2200);
 }
 
+// 循環賽＋淘汰賽等複合賽制（rrrr／rrse／rrde）同時存在初賽（schedState.teams）與複賽（schedState.finalTeams）兩種隊伍數，
+// 兩者不同，故「賽制」欄位須將兩者都標示出來，不能只顯示其中一個
+function schedIsTwoStage(fmt){
+  return ['rrrr','rrse','rrde'].includes(fmt);
+}
+// 單一循環賽（rr）以參賽隊伍數（schedState.teams）代表規模；
+// 單淘汰／雙淘汰／瑞士制等單階段賽制，則以 schedState.finalTeams 代表參賽隊伍數
+function schedTeamCountForFmt(fmt){
+  return fmt === 'rr' ? schedState.teams : schedState.finalTeams;
+}
+
 function saveSchedule(){
+  if(schedToolSport && schedToolGroup){
+    const teamCount = schedIsTwoStage(schedState.fmt)
+      ? { initial: schedState.teams, final: schedState.finalTeams }
+      : schedTeamCountForFmt(schedState.fmt);
+    schedConfiguredGroups[schedConfigKey(schedToolSport, schedToolGroup)] = { fmt: schedState.fmt, teamCount };
+    schedRenderGroupTable();
+  }
   showToast('已儲存賽程設定（示意稿，尚未串接後端）');
 }
 
