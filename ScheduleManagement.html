@@ -131,7 +131,6 @@
   #page-schedule-tool .field-group h4,  #page-result-tool .field-group h4{margin:0 0 12px;font-size:14px;color:var(--ink-700);display:flex;align-items:center;gap:8px;}
   #page-schedule-tool .field-group h4 .chip,  #page-result-tool .field-group h4 .chip{font-size:14px;background:var(--teal-bg);color:var(--teal-text);padding:2px 8px;border-radius:999px;font-weight:700;}
   #page-schedule-tool .hint,  #page-result-tool .hint{font-size:14px;color:var(--ink-500);margin-top:8px;line-height:1.5;}
-  #page-schedule-tool .formula-box,  #page-result-tool .formula-box{margin-top:10px;background:#fdf1de;border:1px dashed #c07a12;border-radius:8px;padding:9px 12px;font-size:14px;color:#7a5209;}
   #page-schedule-tool .toggle-row,  #page-result-tool .toggle-row{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;background:var(--canvas);border-radius:8px;margin-top:10px;}
   #page-schedule-tool .toggle-row .t-label,  #page-result-tool .toggle-row .t-label{font-size:14px;font-weight:600;}
   #page-schedule-tool .toggle-row .t-hint,  #page-result-tool .toggle-row .t-hint{font-size:14px;color:var(--ink-500);margin-top:2px;}
@@ -202,19 +201,20 @@
   #page-result-tool .result-group-arrow{display:inline-block;margin-right:8px;transition:transform .15s;}
   #page-result-tool .result-group-arrow.collapsed{transform:rotate(-90deg);}
   #page-result-tool .result-group-count{float:right;color:var(--ink-500);font-weight:500;font-size:14px;}
-  #page-result-tool .stage-select-bar{display:flex;flex-direction:column;align-items:flex-start;gap:8px;margin-bottom:18px;}
-  #page-result-tool .stage-select-bar label{font-size:14px;color:var(--ink-700);font-weight:600;}
-  /* 賽事階段：改為頁籤樣式，比照「賽事項目」頁籤（.sport-tabs/.sport-tab）視覺 */
-  #page-result-tool .result-stage-tabs{display:flex;gap:28px;border-bottom:2px solid var(--ink-100);}
-  #page-result-tool .result-stage-tab{padding:0 2px 12px;font-size:15px;font-weight:600;color:var(--ink-500);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;user-select:none;transition:.15s;}
-  #page-result-tool .result-stage-tab:hover:not(.on){color:var(--ink-700);}
-  #page-result-tool .result-stage-tab.on{color:var(--teal-text);font-weight:800;border-bottom-color:var(--teal);}
+  #page-result-tool .stage-select-bar,  #page-schedule-tool .stage-select-bar{display:flex;flex-direction:column;align-items:flex-start;gap:8px;margin-bottom:18px;}
+  #page-result-tool .stage-select-bar label,  #page-schedule-tool .stage-select-bar label{font-size:14px;color:var(--ink-700);font-weight:600;}
+  /* 賽事階段：改為頁籤樣式，比照「賽事項目」頁籤（.sport-tabs/.sport-tab）視覺；賽程設定工具頁（page-schedule-tool）的賽程圖預覽
+     比照賽程結果頁（page-result-tool）已有的初賽／複賽階段頁籤，兩頁共用相同的 class 名稱與樣式 */
+  #page-result-tool .result-stage-tabs,  #page-schedule-tool .result-stage-tabs{display:flex;gap:28px;border-bottom:2px solid var(--ink-100);}
+  #page-result-tool .result-stage-tab,  #page-schedule-tool .result-stage-tab{padding:0 2px 12px;font-size:15px;font-weight:600;color:var(--ink-500);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;user-select:none;transition:.15s;}
+  #page-result-tool .result-stage-tab:hover:not(.on),  #page-schedule-tool .result-stage-tab:hover:not(.on){color:var(--ink-700);}
+  #page-result-tool .result-stage-tab.on,  #page-schedule-tool .result-stage-tab.on{color:var(--teal-text);font-weight:800;border-bottom-color:var(--teal);}
   /* 賽程圖／場次總覽 切換：比照「組別」按鈕的藥丸樣式，兩個檢視擇一顯示，不再上下堆疊 */
   #page-result-tool .result-view-btns{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;}
   #page-result-tool .result-view-btn{background:#fff;border:1.3px solid var(--ink-300);color:var(--ink-700);border-radius:8px;padding:7px 20px;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap;}
   #page-result-tool .result-view-btn:hover:not(.on){border-color:var(--teal);color:var(--teal-text);}
   #page-result-tool .result-view-btn.on{background:var(--teal);border-color:var(--teal);color:#fff;}
-  #page-result-tool .preview-head-actions{display:flex;gap:10px;flex-shrink:0;flex-wrap:wrap;}
+  #page-result-tool .preview-head-actions,  #page-schedule-tool .preview-head-actions{display:flex;gap:10px;flex-shrink:0;flex-wrap:wrap;}
   #page-result-tool .btn-publish{background:#fff;border:1.3px solid var(--ink-300);color:var(--ink-700);border-radius:8px;padding:8px 16px;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:6px;}
   #page-result-tool .btn-publish:hover:not(.on){border-color:var(--teal);color:var(--teal-text);}
   #page-result-tool .btn-publish.on{background:var(--teal);border-color:var(--teal);color:#fff;}
@@ -226,12 +226,10 @@
   .venue-modal-head h2{margin:0;font-size:16px;}
   .venue-modal-close{background:none;border:none;font-size:16px;color:var(--ink-500);cursor:pointer;line-height:1;padding:4px;border-radius:6px;}
   .venue-modal-close:hover{background:var(--canvas);color:var(--ink-900);}
-  #page-schedule-tool .chart-zoom-wrap{position:relative;cursor:zoom-in;}
-  #page-result-tool .chart-zoom-wrap{position:relative;}
-  #page-schedule-tool .chart-zoom-hint,  #page-result-tool .chart-zoom-hint{position:absolute;top:8px;right:8px;background:rgba(28,31,43,.72);color:#fff;font-size:14px;padding:4px 10px;border-radius:20px;opacity:0;transition:opacity .15s;pointer-events:none;}
-  #page-schedule-tool .chart-zoom-wrap:hover .chart-zoom-hint,  #page-result-tool .chart-zoom-wrap:hover .chart-zoom-hint{opacity:1;}
-  /* 賽程結果的賽程圖改為點擊另開新分頁檢視，故不隨容器寬度縮小；如超出容器寬度則由 .bracket-scroll 提供水平捲軸 */
-  #page-result-tool .bracket-svg{max-width:none;}
+  #page-schedule-tool .chart-zoom-wrap,  #page-result-tool .chart-zoom-wrap{position:relative;}
+  /* 賽程設定工具頁與賽程結果頁的賽程圖改為點擊「放大檢視」按鈕另開新分頁檢視，故不隨容器寬度縮小；
+     如超出容器寬度則由 .bracket-scroll 提供水平捲軸 */
+  #page-schedule-tool .bracket-svg,  #page-result-tool .bracket-svg{max-width:none;}
   /* 抽籤設定的賽程圖預覽比照賽程結果頁：文字放大至 14px 不隨容器縮小，超出寬度時由 .bracket-scroll 提供水平捲軸 */
   #page-draw-settings .bracket-svg{max-width:none;}
   /* 賽程結果：右側隊伍名單抽屜（樣式比照場地時間表的賽程清單抽屜，獨立實作） */
@@ -250,15 +248,6 @@
   .result-team-card-tag{display:inline-block;font-size:14px;font-weight:700;background:var(--teal-dark);color:#fff;border-radius:999px;padding:1px 8px;margin-top:6px;}
   /* 種子隊標籤：與「已指派」標籤（teal）區隔，改用琥珀色標示該隊伍為種子隊（資料取自抽籤設定） */
   .result-team-card-seed{display:inline-block;font-size:13px;font-weight:700;background:#c8811a;color:#fff;border-radius:999px;padding:1px 8px;margin-top:6px;margin-right:6px;}
-  .chart-lightbox-mask{display:none;position:fixed;inset:0;background:rgba(28,31,43,.65);z-index:210;align-items:center;justify-content:center;padding:24px;}
-  .chart-lightbox-mask.show{display:flex;}
-  .chart-lightbox{background:#fff;border-radius:14px;box-shadow:0 20px 60px rgba(28,31,43,.35);width:100%;max-width:min(1400px,96vw);height:min(920px,92vh);display:flex;flex-direction:column;overflow:hidden;}
-  .chart-lightbox-head{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--ink-100);flex:none;}
-  .chart-lightbox-head h2{margin:0;font-size:16px;color:var(--ink-900);}
-  .chart-lightbox-body{flex:1;overflow:auto;padding:24px;cursor:default;background:var(--canvas);}
-  .chart-lightbox-body .chart-frame{background:#fff;}
-  .chart-lightbox-body .bracket-svg{transform:scale(1.35);transform-origin:top left;}
-  .chart-lightbox-body .bracket-scroll{padding-bottom:40px;}
   .venue-modal .field-grid{margin-bottom:0;}
   .venue-modal label{display:block;font-size:14px;color:var(--ink-700);margin-bottom:6px;font-weight:600;}
   .venue-modal input[type=text],  .venue-modal input[type=time]{width:100%;padding:10px 12px;border:1.3px solid var(--ink-300);border-radius:8px;font-size:14px;color:var(--ink-900);background:#fff;}
@@ -288,7 +277,7 @@
   #page-timetable-settings .tt-session-row{display:grid;grid-template-columns:1.1fr 1fr 1fr auto;gap:12px;align-items:end;padding:12px 0;border-bottom:1px solid var(--ink-100);}
   #page-timetable-settings .tt-session-row:last-child{border-bottom:none;padding-bottom:0;}
   #page-timetable-settings .tt-session-row:first-child{padding-top:0;}
-  #page-timetable-settings .tt-view-tabs-row{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px;}
+  #page-timetable-settings .tt-view-tabs-row{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:20px;margin-bottom:16px;}
   #page-timetable-settings .tt-view-tabs-row .sport-tabs{margin-bottom:0;}
   #page-timetable-settings .tt-toolbar-row{display:flex;align-items:flex-end;gap:20px;flex-wrap:wrap;}
   #page-timetable-settings .tt-toolbar-field{min-width:150px;}
@@ -596,21 +585,28 @@
         <div id="fields-body"></div>
       </div>
 
+      <div class="stage-select-bar" id="sched-stage-bar" style="display:none">
+        <label>賽事階段</label>
+        <div class="result-stage-tabs" id="sched-stage-btns" role="tablist"></div>
+      </div>
+
       <div class="panel">
         <div class="preview-head">
           <div>
             <h2>賽程圖預覽</h2>
             <div class="sub">依上方資料即時產生，可切換直向／橫向檢視</div>
           </div>
-          <button class="btn-download" onclick="downloadChart()">⬇ 下載</button>
+          <div class="preview-head-actions">
+            <button class="btn-download" onclick="openScheduleChartNewTab()">🔍 放大檢視</button>
+            <button class="btn-download" onclick="downloadChart()">⬇ 下載</button>
+          </div>
         </div>
         <div class="tabs">
           <div class="tab on" data-o="portrait">直向</div>
           <div class="tab" data-o="landscape">橫向</div>
         </div>
-        <div class="chart-zoom-wrap" onclick="openChartLightbox('chart-body')" title="點擊放大檢視">
+        <div class="chart-zoom-wrap">
           <div id="chart-body"></div>
-          <div class="chart-zoom-hint">🔍 點擊放大檢視</div>
         </div>
       </div>
 
@@ -998,16 +994,6 @@
   </div>
 </div>
 
-<div class="chart-lightbox-mask" id="chart-lightbox-mask" onclick="if(event.target===this) closeChartLightbox()">
-  <div class="chart-lightbox">
-    <div class="chart-lightbox-head">
-      <h2>賽程圖放大檢視</h2>
-      <button type="button" class="venue-modal-close" onclick="closeChartLightbox()" aria-label="關閉">✕</button>
-    </div>
-    <div class="chart-lightbox-body" id="chart-lightbox-body"></div>
-  </div>
-</div>
-
 <script>
 function toggleGroup(e, itemId, subId){
   e.stopPropagation();
@@ -1261,25 +1247,23 @@ document.addEventListener('keydown', function(e){
     if(placeMask && placeMask.classList.contains('show')) closePlaceForm();
     const courtMask = document.getElementById('court-modal-mask');
     if(courtMask && courtMask.classList.contains('show')) closeCourtForm();
-    const chartMask = document.getElementById('chart-lightbox-mask');
-    if(chartMask && chartMask.classList.contains('show')) closeChartLightbox();
   }
 });
 
-function openChartLightbox(sourceId){
-  const source = document.getElementById(sourceId);
-  const target = document.getElementById('chart-lightbox-body');
-  if(!source || !target || !source.innerHTML.trim()) return;
-  const pageId = sourceId === 'chart-body' ? 'page-schedule-tool' : 'page-result-tool';
-  // Wrap in a div carrying the same id as the source page so that page-scoped
-  // CSS rules (e.g. #page-result-tool .group-svg) still apply to the clone.
-  target.innerHTML = `<div id="${pageId}">${source.innerHTML}</div>`;
-  document.getElementById('chart-lightbox-mask').classList.add('show');
-}
-
-function closeChartLightbox(){
-  document.getElementById('chart-lightbox-mask').classList.remove('show');
-  document.getElementById('chart-lightbox-body').innerHTML = '';
+// 賽程圖預覽的「放大檢視」改為另開新分頁呈現（比照賽程結果頁 openResultChartNewTab 的做法），
+// 不再於點擊圖片時彈出頁內燈箱
+function openScheduleChartNewTab(){
+  const body = document.getElementById('chart-body');
+  if(!body || !body.innerHTML.trim()){ showToast('目前無可檢視的賽程圖'); return; }
+  const styleEl = document.querySelector('style');
+  const styleHTML = styleEl ? styleEl.outerHTML : '';
+  const html = `<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><title>賽程圖－放大檢視</title>${styleHTML}
+    <style>body{margin:0;padding:28px;background:var(--canvas);}</style>
+  </head><body><div id="page-schedule-tool"><div class="panel">${body.innerHTML}</div></div></body></html>`;
+  const blob = new Blob([html], {type:'text/html;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const win = window.open(url, '_blank');
+  if(!win) showToast('瀏覽器已封鎖新分頁，請允許彈出視窗後再試一次');
 }
 
 function saveCourt(){
@@ -2120,7 +2104,6 @@ function schedRenderFields(){
         <div><label>參賽隊伍數</label>${schedNumInput('in-teams', schedState.teams, 3)}</div>
         <div><label>分組組數</label>${schedNumInput('in-groups', schedState.groups, 1)}</div>
       </div>
-      <div class="formula-box" id="formula-box"></div>
     </div>`;
   } else if(f==='se'){
     html = `<div class="field-group"><h4>賽事設定 <span class="chip">單淘汰</span></h4>
@@ -2146,7 +2129,6 @@ function schedRenderFields(){
         <div><label>初賽隊伍數</label>${schedNumInput('in-teams', schedState.teams, 3)}</div>
         <div><label>分組組數</label>${schedNumInput('in-groups', schedState.groups, 1)}</div>
       </div>
-      <div class="formula-box" id="formula-box"></div>
     </div>
     <div class="field-group"><h4>複賽設定 <span class="chip">${stageName}</span></h4>
       <div class="field-grid">
@@ -2169,19 +2151,6 @@ function schedRenderFields(){
   });
   const advEl = document.getElementById('in-advance');
   if(advEl) advEl.value = String(schedState.advance);
-  schedUpdateFormula();
-}
-
-function schedUpdateFormula(){
-  const box = document.getElementById('formula-box');
-  if(!box) return;
-  const teams = +document.getElementById('in-teams').value;
-  const groups = +document.getElementById('in-groups').value;
-  const sizes = schedDistributeGroups(teams, groups);
-  const counts = {};
-  sizes.forEach(s=>counts[s]=(counts[s]||0)+1);
-  const desc = Object.keys(counts).sort((a,b)=>b-a).map(s=>`${counts[s]} 組 ${s} 人`).join('　＋　');
-  box.innerHTML = `分組演算法：隊伍數≥3、組數≥2。<code>${teams} 隊 ÷ ${groups} 組</code> → 系統自動分為 ${desc}（人數差距最多 1 人）`;
 }
 
 function schedOnFieldChange(){
@@ -2206,7 +2175,6 @@ function schedOnFieldChange(){
     const finalTeamsEl = document.getElementById('in-finalTeams');
     if(finalTeamsEl) schedState.finalTeams = +finalTeamsEl.value;
   }
-  schedUpdateFormula();
   schedRenderChart();
 }
 
@@ -2461,44 +2429,83 @@ function schedDoubleElimChartHTML(numTeams, showExtra, orientation){
     <div class="note-inline">＊實際敗部賽程需與勝部交叉對戰，此處為簡化呈現，完整規則詳見 SRS 文件</div>`;
 }
 
-function schedTotalMatches(){
+// 依目前賽制拆出賽程圖預覽的區塊：單階段賽制（rr/se/de/sw）僅一個區塊、無需頁籤；
+// 含初賽/複賽兩階段的複合賽制（rrrr/rrse/rrde）則拆成「初賽」「複賽」兩個區塊，
+// 供下方賽事階段頁籤切換顯示（比照賽程結果頁 page-result-tool 已有的初賽／複賽頁籤作法）
+function schedBuildChartSections(o){
   const f = schedState.fmt;
-  if(f==='rr') return schedCountRRMatches(schedState.teams, schedState.groups);
-  if(f==='se') return schedCountBracketMatches(schedState.finalTeams, schedState.on34);
-  if(f==='de') return schedCountBracketMatches(schedState.finalTeams, false) + schedCountBracketMatches(Math.max(2,schedNextPow2(schedState.finalTeams)/2), schedState.on56);
-  if(f==='sw') return schedCountSwissMatches(schedState.finalTeams);
-  if(f==='rrrr') return schedCountRRMatches(schedState.teams, schedState.groups) + schedCountRRMatches(schedState.finalTeams, Math.max(1,Math.round(schedState.finalTeams/3)));
-  if(f==='rrse') return schedCountRRMatches(schedState.teams, schedState.groups) + schedCountBracketMatches(schedState.finalTeams, schedState.on34);
-  if(f==='rrde') return schedCountRRMatches(schedState.teams, schedState.groups) + schedCountBracketMatches(schedState.finalTeams, false) + schedCountBracketMatches(Math.max(2,schedNextPow2(schedState.finalTeams)/2), schedState.on56);
-  return 0;
+  if(f==='rr'){
+    return [{ key:'', title:'', html: schedGroupsChartHTML(schedState.teams, schedState.groups, o), count: schedCountRRMatches(schedState.teams, schedState.groups) }];
+  }
+  if(f==='se'){
+    return [{ key:'', title:'', html: schedBracketChartHTML(schedState.finalTeams, schedState.on34, '季軍賽（3/4名）', o), count: schedCountBracketMatches(schedState.finalTeams, schedState.on34) }];
+  }
+  if(f==='de'){
+    const loserTeams = Math.max(2, schedNextPow2(schedState.finalTeams)/2);
+    return [{ key:'', title:'', html: schedDoubleElimChartHTML(schedState.finalTeams, schedState.on56, o), count: schedCountBracketMatches(schedState.finalTeams, false) + schedCountBracketMatches(loserTeams, schedState.on56) }];
+  }
+  if(f==='sw'){
+    return [{ key:'', title:'', html: schedSwissChartHTML(schedState.finalTeams), count: schedCountSwissMatches(schedState.finalTeams) }];
+  }
+  if(f==='rrrr'){
+    return [
+      { key:'初賽', title:'初賽・循環賽分組', html: schedGroupsChartHTML(schedState.teams, schedState.groups, o), count: schedCountRRMatches(schedState.teams, schedState.groups) },
+      { key:'複賽', title:'複賽・循環賽（晉級隊伍再分組）', html: schedGroupsChartHTML(schedState.finalTeams, Math.max(1,Math.round(schedState.finalTeams/3)), o), count: schedCountRRMatches(schedState.finalTeams, Math.max(1,Math.round(schedState.finalTeams/3))) },
+    ];
+  }
+  if(f==='rrse'){
+    return [
+      { key:'初賽', title:'初賽・循環賽分組', html: schedGroupsChartHTML(schedState.teams, schedState.groups, o), count: schedCountRRMatches(schedState.teams, schedState.groups) },
+      { key:'複賽', title:'複賽・單淘汰賽程', html: schedBracketChartHTML(schedState.finalTeams, schedState.on34, '季軍賽（3/4名）', o), count: schedCountBracketMatches(schedState.finalTeams, schedState.on34) },
+    ];
+  }
+  if(f==='rrde'){
+    const loserTeams = Math.max(2, schedNextPow2(schedState.finalTeams)/2);
+    return [
+      { key:'初賽', title:'初賽・循環賽分組', html: schedGroupsChartHTML(schedState.teams, schedState.groups, o), count: schedCountRRMatches(schedState.teams, schedState.groups) },
+      { key:'複賽', title:'複賽・雙淘汰賽程', html: schedDoubleElimChartHTML(schedState.finalTeams, schedState.on56, o), count: schedCountBracketMatches(schedState.finalTeams, false) + schedCountBracketMatches(loserTeams, schedState.on56) },
+    ];
+  }
+  return [];
+}
+
+let schedStageKey = null;
+
+function schedRenderStageSelect(sections){
+  const bar = document.getElementById('sched-stage-bar');
+  const box = document.getElementById('sched-stage-btns');
+  if(!bar || !box) return;
+  if(sections.length <= 1 || !sections[0].key){
+    bar.style.display = 'none';
+    return;
+  }
+  if(!schedStageKey || !sections.some(s=>s.key===schedStageKey)){
+    schedStageKey = sections[0].key;
+  }
+  bar.style.display = 'flex';
+  box.innerHTML = sections.map(s=>
+    `<div class="result-stage-tab ${s.key===schedStageKey?'on':''}" role="tab" aria-selected="${s.key===schedStageKey}" onclick="schedSelectStage('${s.key}')">${s.key}</div>`
+  ).join('');
+}
+
+function schedSelectStage(key){
+  schedStageKey = key;
+  schedRenderChart();
 }
 
 function schedRenderChart(){
-  const f = schedState.fmt, o = schedState.orientation;
+  const o = schedState.orientation;
   const body = document.getElementById('chart-body');
   const frameClass = o==='portrait' ? 'chart-frame portrait' : 'chart-frame landscape';
   const frameTitle = o==='portrait' ? '直向預覽（適合手機／直式海報公告）' : '橫向預覽（適合網頁／寬螢幕看板）';
-  let inner='';
-  if(f==='rr'){
-    inner = schedGroupsChartHTML(schedState.teams, schedState.groups, o);
-  } else if(f==='se'){
-    inner = schedBracketChartHTML(schedState.finalTeams, schedState.on34, '季軍賽（3/4名）', o);
-  } else if(f==='de'){
-    inner = schedDoubleElimChartHTML(schedState.finalTeams, schedState.on56, o);
-  } else if(f==='sw'){
-    inner = schedSwissChartHTML(schedState.finalTeams);
-  } else if(f==='rrrr'){
-    inner = `<div class="de-section-title">初賽・循環賽分組</div>${schedGroupsChartHTML(schedState.teams, schedState.groups, o)}
-      <div class="de-section-title">複賽・循環賽（晉級隊伍再分組）</div>${schedGroupsChartHTML(schedState.finalTeams, Math.max(1,Math.round(schedState.finalTeams/3)), o)}`;
-  } else if(f==='rrse'){
-    inner = `<div class="de-section-title">初賽・循環賽分組</div>${schedGroupsChartHTML(schedState.teams, schedState.groups, o)}
-      <div class="de-section-title">複賽・單淘汰賽程</div>${schedBracketChartHTML(schedState.finalTeams, schedState.on34, '季軍賽（3/4名）', o)}`;
-  } else if(f==='rrde'){
-    inner = `<div class="de-section-title">初賽・循環賽分組</div>${schedGroupsChartHTML(schedState.teams, schedState.groups, o)}
-      <div class="de-section-title">複賽・雙淘汰賽程</div>${schedDoubleElimChartHTML(schedState.finalTeams, schedState.on56, o)}`;
-  }
-  const totalMatches = schedTotalMatches();
-  body.innerHTML = `<div class="${frameClass}"><div class="chart-title">${frameTitle}</div><div class="chart-total">本賽程共 ${totalMatches} 場比賽</div>${inner}</div>`;
+  const sections = schedBuildChartSections(o);
+  schedRenderStageSelect(sections);
+  const multi = sections.length > 1 && !!sections[0].key;
+  const shown = multi ? [sections.find(s=>s.key===schedStageKey) || sections[0]] : sections;
+  const inner = shown.map(s => (s.title && !multi ? `<div class="de-section-title">${s.title}</div>` : '') + s.html).join('');
+  const totalMatches = shown.reduce((sum,s)=>sum+s.count,0);
+  const totalLabel = multi ? '本階段共' : '本賽程共';
+  body.innerHTML = `<div class="${frameClass}"><div class="chart-title">${frameTitle}</div><div class="chart-total">${totalLabel} ${totalMatches} 場比賽</div>${inner}</div>`;
 }
 
 /* ---------- 抽籤設定（種子隊與抽籤開放時間；皆依賽事項目分別設定） ---------- */
