@@ -903,6 +903,7 @@
           </div>
           <div class="preview-head-actions">
             <button class="btn-setting" id="result-team-drawer-btn" onclick="resultToggleTeamDrawer()">👥 隊伍名單</button>
+            <button class="btn-setting" onclick="resultSaveChartAssignments()">💾 儲存</button>
             <button class="btn-publish" id="result-publish-btn" onclick="resultTogglePublish()">🌐 前台發布</button>
             <button class="btn-download" onclick="openResultChartNewTab()">🔍 放大檢視</button>
             <button class="btn-download" onclick="downloadResultChart()">⬇ 下載</button>
@@ -922,6 +923,9 @@
           <div>
             <h2>場次總覽</h2>
             <div class="sub">列出所有場次的對戰組合、比賽時間與場地資訊<span class="panel-count-badge" id="result-overview-count"></span></div>
+          </div>
+          <div class="preview-head-actions">
+            <button class="btn-setting" onclick="resultSaveOverviewResults()">💾 儲存</button>
           </div>
         </div>
         <div id="result-overview-body">
@@ -3125,6 +3129,16 @@ function resultTogglePublish(){
   resultPublished = !resultPublished;
   resultRenderPublishBtn();
   showToast(resultPublished ? '已於前台發布本組賽程圖與場次資訊（示意功能，尚未串接前台頁面）' : '已取消前台發布');
+}
+
+// 賽程圖／場次總覽 儲存（示意功能）：分別對應「隊伍名單」拖曳指派的籤位結果、以及「對戰結果」欄位標記的獲勝隊伍，
+// 尚未串接後端，僅提示已儲存
+function resultSaveChartAssignments(){
+  showToast('已儲存賽程圖籤位指派（示意稿，尚未串接後端）');
+}
+
+function resultSaveOverviewResults(){
+  showToast('已儲存對戰結果（示意稿，尚未串接後端）');
 }
 
 function resultRenderTable(sections){
