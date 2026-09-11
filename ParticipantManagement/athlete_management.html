@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RaceGo 競賽咖 — 會員專區 / 選手管理</title>
+<style>
+:root{
+  --green:#10b981;
+  --green-dark:#0b7e57;
+  --green-tint:#e7f7f1;
+  --orange:#f5883c;
+  --page:#f6f7f9;
+  --card:#ffffff;
+  --line:#e5e7eb;
+  --text:#1f2937;
+  --text-2:#6b7280;
+  --text-3:#9ca3af;
+  --danger:#dc2626;
+  --field:#f3f4f6;
+  --radius:8px;
+}
+*{box-sizing:border-box;}
+body{
+  margin:0;background:var(--page);color:var(--text);
+  font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei","Helvetica Neue",Arial,sans-serif;
+  font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased;
+}
+a{color:inherit;text-decoration:none;}
+button{font-family:inherit;cursor:pointer;}
+:focus-visible{outline:2px solid var(--green);outline-offset:2px;}
+
+/* ---------- header ---------- */
+.hd{background:#fff;border-bottom:1px solid var(--line);}
+.hd-in{max-width:1280px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;gap:32px;}
+.logo{font-size:22px;font-weight:700;letter-spacing:-.5px;white-space:nowrap;}
+.logo .o{color:var(--orange);}
+.nav{display:flex;gap:26px;font-size:15px;color:var(--text);}
+.hd-right{margin-left:auto;display:flex;align-items:center;gap:16px;}
+.btn-outline{
+  border:1.5px solid var(--green);color:var(--green);background:#fff;
+  border-radius:99px;padding:9px 22px;font-size:15px;font-weight:500;
+}
+.user{display:flex;align-items:center;gap:10px;background:var(--green-tint);border-radius:99px;padding:6px 16px 6px 6px;}
+.ava{width:32px;height:32px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:500;}
+.user-n{font-size:14px;font-weight:500;line-height:1.2;}
+.user-r{font-size:12px;color:var(--text-2);line-height:1.2;}
+
+/* ---------- layout ---------- */
+.wrap{max-width:1280px;margin:0 auto;padding:32px 24px 64px;display:flex;gap:24px;align-items:flex-start;}
+.side{width:250px;flex:none;background:var(--card);border-radius:12px;padding:28px 0 12px;}
+.side-top{text-align:center;padding:0 20px 22px;border-bottom:1px solid var(--line);}
+.ava-lg{width:84px;height:84px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 12px;}
+.side-name{font-size:17px;font-weight:500;}
+.side-mail{font-size:13px;color:var(--text-3);word-break:break-all;}
+.side nav{padding-top:8px;}
+.side nav a{display:flex;align-items:center;gap:12px;padding:14px 22px;font-size:15px;color:var(--text-2);border-left:4px solid transparent;}
+.side nav a:hover{background:#fafafa;}
+.side nav a.on{background:var(--green-tint);border-left-color:var(--green);color:var(--green-dark);font-weight:500;}
+.side nav a svg{width:18px;height:18px;flex:none;}
+
+.main{flex:1;min-width:0;}
+.h1{font-size:30px;font-weight:700;margin:0 0 4px;}
+.sub{font-size:14px;color:var(--text-2);margin:0 0 22px;}
+.panel{background:var(--card);border-radius:12px;padding:24px;}
+
+/* ---------- toolbar ---------- */
+.bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px;}
+.search{position:relative;flex:1;min-width:220px;}
+.search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:17px;height:17px;color:var(--text-3);}
+.search input{
+  width:100%;height:42px;border:1px solid var(--line);background:#fff;
+  border-radius:var(--radius);padding:0 12px 0 36px;font-size:14px;font-family:inherit;color:var(--text);
+}
+.search input::placeholder{color:var(--text-3);}
+.search input:hover{border-color:#cbd5e1;}
+.search input:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(16,185,129,.12);outline:none;}
+.dd{position:relative;}
+.btn-ghost{
+  height:42px;border:1px solid var(--line);background:#fff;border-radius:var(--radius);
+  padding:0 14px;font-size:14px;color:var(--text);display:flex;align-items:center;gap:8px;
+}
+.btn-ghost:hover{border-color:#cbd5e1;}
+.badge-n{background:var(--green);color:#fff;border-radius:99px;font-size:11px;padding:1px 7px;}
+.menu{
+  position:absolute;top:48px;left:0;z-index:20;width:210px;background:#fff;
+  border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 8px 24px rgba(0,0,0,.09);
+  padding:8px;display:none;
+}
+.menu.open{display:block;}
+.menu label{display:flex;align-items:center;gap:9px;padding:7px 8px;font-size:14px;border-radius:6px;cursor:pointer;}
+.menu label:hover{background:#f7f8fa;}
+.menu input{width:15px;height:15px;accent-color:var(--green);margin:0;}
+.menu-ft{display:flex;justify-content:space-between;border-top:1px solid var(--line);margin-top:6px;padding-top:8px;}
+.lnk{background:none;border:none;font-size:13px;color:var(--text-2);padding:4px 6px;}
+.lnk:hover{color:var(--green-dark);}
+.btn-primary{
+  height:42px;background:var(--green);color:#fff;border:1px solid var(--green);
+  border-radius:var(--radius);padding:0 18px;font-size:14px;font-weight:500;display:flex;align-items:center;gap:7px;
+}
+.btn-primary:hover{background:#0ea371;}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
+.chip{display:inline-flex;align-items:center;gap:6px;background:var(--green-tint);color:var(--green-dark);border-radius:99px;font-size:13px;padding:4px 6px 4px 12px;}
+.chip button{border:none;background:none;color:var(--green-dark);font-size:15px;line-height:1;padding:0 4px;}
+
+/* ---------- table ---------- */
+.tw{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;min-width:820px;}
+th{
+  text-align:left;font-size:13px;font-weight:500;color:var(--text-2);
+  padding:12px 10px;border-bottom:2px solid var(--line);white-space:nowrap;
+}
+td{padding:14px 10px;border-bottom:1px solid var(--line);font-size:14px;vertical-align:middle;}
+tbody tr:hover{background:#fafbfc;}
+.c-no{width:64px;color:var(--text-3);}
+.c-date{width:118px;color:var(--text-2);white-space:nowrap;}
+.c-birth{width:112px;color:var(--text-2);white-space:nowrap;}
+.c-act{width:158px;text-align:center;white-space:nowrap;}
+.nm{font-weight:500;}
+.tag{display:inline-block;background:var(--green-tint);color:var(--green-dark);border-radius:99px;font-size:12px;padding:2px 10px;margin:2px 4px 2px 0;}
+.act{
+  display:inline-flex;align-items:center;gap:5px;height:32px;padding:0 12px;
+  border-radius:6px;font-size:13px;font-weight:500;border:1px solid transparent;margin:0 3px;
+}
+.act svg{width:15px;height:15px;flex:none;}
+.act-edit{background:var(--green);color:#fff;border-color:var(--green);}
+.act-edit:hover{background:#0ea371;}
+.act-del{background:#e04444;color:#fff;border-color:#e04444;}
+.act-del:hover{background:#c93636;border-color:#c93636;}
+.ico{border:none;background:none;padding:6px;border-radius:6px;color:var(--text-2);}
+.ico:hover{background:var(--field);color:var(--text);}
+.ico svg{width:17px;height:17px;display:block;}
+.empty{text-align:center;padding:56px 16px;color:var(--text-3);font-size:14px;}
+
+/* ---------- pagination ---------- */
+.ft{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:18px;}
+.cnt{font-size:13px;color:var(--text-2);}
+.pg{display:flex;gap:5px;}
+.pg button{
+  min-width:34px;height:34px;border:1px solid var(--line);background:#fff;
+  border-radius:6px;font-size:13px;color:var(--text);padding:0 8px;
+}
+.pg button:hover:not(:disabled):not(.on){border-color:var(--green);color:var(--green-dark);}
+.pg button.on{background:var(--green);border-color:var(--green);color:#fff;}
+.pg button:disabled{color:var(--text-3);cursor:not-allowed;}
+
+/* ---------- modal ---------- */
+.mask{position:fixed;inset:0;background:rgba(17,24,39,.45);display:none;align-items:center;justify-content:center;padding:20px;z-index:50;}
+.mask.open{display:flex;}
+.modal{background:#fff;border-radius:12px;width:100%;max-width:600px;max-height:90vh;overflow:auto;}
+.modal-hd{padding:20px 24px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;}
+.modal-hd h2{margin:0;font-size:18px;font-weight:500;}
+.modal-bd{padding:22px 24px;}
+.modal-ft{padding:16px 24px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:10px;}
+.fg{margin-bottom:16px;}
+.fg label{display:block;font-size:13px;font-weight:500;margin-bottom:6px;}
+.req{color:var(--danger);}
+.fg input,.fg select,.fg textarea{
+  width:100%;height:42px;border:1px solid var(--line);background:#fff;border-radius:var(--radius);
+  padding:0 12px;font-size:14px;font-family:inherit;color:var(--text);
+}
+.fg textarea{height:auto;padding:10px 12px;resize:vertical;}
+.fg input:hover,.fg select:hover,.fg textarea:hover{border-color:#cbd5e1;}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(16,185,129,.12);outline:none;}
+.row2{display:flex;gap:14px;}
+.row2>*{flex:1;}
+.hint{font-size:12px;color:var(--text-3);margin-top:5px;}
+.err{font-size:12px;color:var(--danger);margin-top:5px;display:none;}
+.err.show{display:block;}
+.warn{background:#fffbeb;border:1px solid #fde68a;border-radius:var(--radius);padding:12px 14px;font-size:13px;color:#92400e;margin-bottom:18px;}
+.btn-cancel{height:40px;border:1px solid var(--line);background:#fff;border-radius:var(--radius);padding:0 18px;font-size:14px;}
+.btn-danger{height:40px;background:var(--danger);color:#fff;border:none;border-radius:var(--radius);padding:0 18px;font-size:14px;font-weight:500;}
+.sec-t{font-size:16px;font-weight:500;margin:0 0 16px;}
+.tabs{display:flex;gap:2px;padding:14px 24px 0;border-bottom:1px solid var(--line);}
+.tab{
+  background:none;border:none;padding:11px 22px;font-size:15px;color:var(--text-2);
+  border-radius:8px 8px 0 0;line-height:1.4;
+}
+.tab:hover{color:var(--text);background:#f5f6f8;}
+.tab.on{background:var(--green);color:#fff;font-weight:500;}
+.tab.on:hover{background:var(--green);color:#fff;}
+.pane{display:none;}
+.pane.on{display:block;}
+.htb{width:100%;border-collapse:collapse;min-width:0;}
+.htb th{font-size:13px;font-weight:500;color:var(--text-2);text-align:left;padding:10px 8px;border-bottom:1px solid var(--line);}
+.htb td{font-size:13px;padding:12px 8px;border-bottom:1px solid var(--line);vertical-align:top;}
+.htb tr:last-child td{border-bottom:none;}
+.htb .ev{font-weight:500;color:var(--text);}
+.hempty{text-align:center;padding:48px 16px;color:var(--text-3);font-size:14px;}
+.htb .ev-lnk{color:var(--green-dark);text-decoration:none;font-weight:500;}
+.htb .ev-lnk:hover{text-decoration:underline;}
+.htb .mt{font-size:12px;color:var(--text-3);margin-top:3px;}
+.st{display:inline-block;font-size:12px;border-radius:99px;padding:2px 10px;white-space:nowrap;}
+.st-y{background:var(--green-tint);color:var(--green-dark);}
+.st-n{background:#f1f3f5;color:var(--text-2);}
+.st-o{background:#e6f1fb;color:#0c447c;}
+.hnote{font-size:12px;color:var(--text-3);line-height:1.6;margin:14px 0 0;padding-top:12px;border-top:1px solid var(--line);}
+.sep{height:1px;background:var(--line);margin:24px 0;}
+.tsel{position:relative;}
+.tsel-btn{
+  width:100%;height:42px;border:1px solid var(--line);background:#fff;border-radius:var(--radius);
+  padding:0 12px;font-size:14px;color:var(--text-2);display:flex;align-items:center;justify-content:space-between;
+}
+.tsel-btn:hover{border-color:#cbd5e1;}
+.tsel-menu{
+  position:absolute;top:47px;left:0;right:0;z-index:30;background:#fff;border:1px solid var(--line);
+  border-radius:var(--radius);box-shadow:0 8px 24px rgba(0,0,0,.09);padding:8px;display:none;
+}
+.tsel-menu.open{display:block;}
+.tsel-q{width:100%;height:36px;border:1px solid var(--line);border-radius:6px;padding:0 10px;font-size:13px;font-family:inherit;margin-bottom:6px;}
+.tsel-q:focus{border-color:var(--green);outline:none;}
+.tsel-list{max-height:190px;overflow-y:auto;}
+.tsel-list label{display:flex;align-items:center;gap:9px;padding:7px 8px;font-size:14px;border-radius:6px;cursor:pointer;}
+.tsel-list label:hover{background:#f7f8fa;}
+.tsel-list input{width:15px;height:15px;accent-color:var(--green);margin:0;}
+.tsel-none{padding:14px 8px;font-size:13px;color:var(--text-3);text-align:center;}
+
+@media(max-width:900px){
+  .wrap{flex-direction:column;padding:20px 16px 48px;}
+  .side{width:100%;}
+  .side nav{display:flex;overflow-x:auto;}
+  .side nav a{border-left:none;border-bottom:3px solid transparent;white-space:nowrap;padding:12px 16px;}
+  .side nav a.on{border-left:none;border-bottom-color:var(--green);}
+  .nav,.hd-right .btn-outline{display:none;}
+  .h1{font-size:24px;}
+  .panel{padding:16px;}
+}
+</style>
+</head>
+<body>
+
+<header class="hd">
+  <div class="hd-in">
+    <div class="logo">Race<span class="o">Go</span> 競賽咖</div>
+    <nav class="nav"><a href="#">賽事列表</a><a href="#">資訊中心</a><a href="#">幫助中心</a></nav>
+    <div class="hd-right">
+      <button class="btn-outline">建立賽事</button>
+      <div class="user">
+        <div class="ava">運</div>
+        <div><div class="user-n">運動愛好者</div><div class="user-r">會員</div></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <aside class="side">
+    <div class="side-top">
+      <div class="ava-lg">運</div>
+      <div class="side-name">運動愛好者</div>
+      <div class="side-mail">yoi.lai.office@gmail.com</div>
+    </div>
+    <nav>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/></svg>個人資料</a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 9h6M9 13h6M9 17h3"/></svg>報名記錄</a>
+      <a href="#" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.4"/><path d="M2.5 20c0-3.3 2.9-5 6.5-5s6.5 1.7 6.5 5"/><path d="M17 11.2a3 3 0 100-6M18 20c0-2.2-.7-3.7-2-4.6"/></svg>選手管理</a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20s-7-4.4-7-9a4 4 0 017-2.6A4 4 0 0119 11c0 4.6-7 9-7 9z"/></svg>我的收藏</a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 15a3 3 0 01-3 3H8l-4 3V6a3 3 0 013-3h10a3 3 0 013 3z"/></svg>賽事諮詢</a>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <h1 class="h1">選手管理</h1>
+    <p class="sub">管理您曾經報名過的選手資料，報名賽事時可快速帶入</p>
+
+    <section class="panel">
+
+      <div class="bar">
+        <div class="search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <input id="kw" type="text" placeholder="搜尋選手姓名" aria-label="關鍵字搜尋">
+        </div>
+
+        <div class="dd">
+          <button class="btn-ghost" id="ddBtn" aria-expanded="false">
+            賽事項目
+            <span class="badge-n" id="ddN" style="display:none">0</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div class="menu" id="ddMenu"></div>
+        </div>
+
+        <button class="btn-primary" id="searchBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          搜尋
+        </button>
+
+        <button class="btn-ghost" id="resetBtn">清除條件</button>
+
+        <button class="btn-primary" id="addBtn" style="margin-left:auto;background:#fff;color:var(--green);border:1.5px solid var(--green)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="width:16px;height:16px"><path d="M12 5v14M5 12h14"/></svg>
+          新增選手
+        </button>
+      </div>
+
+      <div class="chips" id="chips"></div>
+
+      <div class="tw">
+        <table>
+          <thead>
+            <tr>
+              <th class="c-no">項次</th>
+              <th>姓名</th>
+              <th class="c-birth">出生日期</th>
+              <th>曾經參加過賽事項目</th>
+              <th class="c-date">更新日期</th>
+              <th class="c-act">功能</th>
+            </tr>
+          </thead>
+          <tbody id="tb"></tbody>
+        </table>
+      </div>
+
+      <div class="ft">
+        <span class="cnt" id="cnt"></span>
+        <div class="pg" id="pg"></div>
+      </div>
+
+    </section>
+  </main>
+</div>
+
+<div class="mask" id="formMask">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="fmTitle">
+    <div class="modal-hd">
+      <h2 id="fmTitle">新增選手</h2>
+      <button class="ico" id="fmX" aria-label="關閉">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="tabs" id="fmTabs">
+      <button class="tab on" data-pane="basic">基本資料</button>
+      <button class="tab" data-pane="hist">參與賽事歷程</button>
+    </div>
+
+    <div class="modal-bd pane on" id="paneBasic">
+
+      <div class="fg">
+        <label for="fName">姓名 <span class="req">*</span></label>
+        <input id="fName" type="text" placeholder="請輸入選手姓名">
+        <div class="err" id="eName">請輸入姓名</div>
+      </div>
+
+      <div class="row2">
+        <div class="fg">
+          <label for="fTel">聯絡電話</label>
+          <input id="fTel" type="tel" placeholder="0912345678">
+        </div>
+        <div class="fg">
+          <label for="fMail">電子郵件</label>
+          <input id="fMail" type="text" placeholder="name@example.com">
+        </div>
+      </div>
+
+      <div class="row2">
+        <div class="fg">
+          <label for="fId">身分證字號</label>
+          <input id="fId" type="text">
+        </div>
+        <div class="fg">
+          <label for="fBir">出生日期</label>
+          <input id="fBir" type="date">
+        </div>
+      </div>
+
+      <div class="row2">
+        <div class="fg">
+          <label for="fSex">性別</label>
+          <select id="fSex"><option value="">請選擇</option><option>男</option><option>女</option><option>其他</option></select>
+        </div>
+        <div class="fg">
+          <label for="fSize">衣服尺寸</label>
+          <select id="fSize"><option value="">請選擇</option><option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>2XL</option><option>3XL</option></select>
+        </div>
+      </div>
+
+      <div class="fg">
+        <label for="fAddr">地址</label>
+        <input id="fAddr" type="text">
+      </div>
+
+      <div class="row2">
+        <div class="fg">
+          <label for="fEmName">緊急聯絡人</label>
+          <input id="fEmName" type="text">
+        </div>
+        <div class="fg">
+          <label for="fEmTel">緊急聯絡電話</label>
+          <input id="fEmTel" type="tel">
+        </div>
+      </div>
+
+      <div class="fg" style="margin-bottom:0">
+        <label for="fDiet">飲食限制</label>
+        <textarea id="fDiet" rows="3" placeholder="例如：素食、不吃牛"></textarea>
+      </div>
+
+      <div class="sep"></div>
+
+      <h3 class="sec-t">賽事項目標籤</h3>
+      <div class="tsel">
+        <button class="tsel-btn" id="tgBtn" aria-expanded="false">
+          <span id="tgLabel">選擇賽事項目</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="tsel-menu" id="tgMenu">
+          <input class="tsel-q" id="tgQ" type="text" placeholder="輸入關鍵字查詢項目">
+          <div class="tsel-list" id="tgList"></div>
+        </div>
+      </div>
+      <div class="chips" id="tgChips" style="margin:10px 0 0"></div>
+
+      <div class="sep"></div>
+
+      <h3 class="sec-t">備註</h3>
+      <div class="fg" style="margin-bottom:0">
+        <textarea id="fNote" rows="5"></textarea>
+      </div>
+
+    </div>
+
+    <div class="modal-bd pane" id="paneHist">
+      <table class="htb">
+        <thead><tr><th>賽事名稱</th><th style="width:112px">組別</th><th style="width:92px">隊名</th><th style="width:100px">報名日期</th><th style="width:112px">回存狀態</th></tr></thead>
+        <tbody id="histBody"></tbody>
+      </table>
+      <p class="hnote">「建立來源」表示這位選手的資料是由該次報名第一次建立，每位選手最多一筆；若為手動新增則不會出現。「已回存」表示該次報名的資料曾寫入選手基本資料。兩者下方皆為寫入時間。報名紀錄本身不會因為您修改選手資料而變動。</p>
+    </div>
+    <div class="modal-ft">
+      <button class="btn-cancel" id="fmCancel">取消</button>
+      <button class="btn-primary" id="fmSave" style="height:40px">儲存</button>
+    </div>
+  </div>
+</div>
+
+<div class="mask" id="delMask">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="dlTitle" style="max-width:420px">
+    <div class="modal-hd"><h2 id="dlTitle">刪除選手</h2></div>
+    <div class="modal-bd">
+      <div class="warn">刪除後不影響已完成的報名紀錄，但下次報名將無法快速帶入這位選手的資料。</div>
+      <p style="margin:0;font-size:14px;">確定要刪除「<strong id="dlName"></strong>」嗎？</p>
+    </div>
+    <div class="modal-ft">
+      <button class="btn-cancel" id="dlCancel">取消</button>
+      <button class="btn-danger" id="dlOk">確認刪除</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+var CATS=["籃球","排球","路跑","羽球","桌球","自行車","游泳","足球","登山","三鐵"];
+var SUR=["王","陳","林","張","李","黃","吳","劉","蔡","楊","許","鄭","謝","郭","洪","曾","邱","廖"];
+var GIV=["小明","雅婷","宗翰","佩君","建宏","思妤","俊傑","怡君","家豪","詩涵","冠廷","欣怡","柏翰","于庭","承恩","雨潔"];
+var EV={
+  "籃球":{e:["2026 新莊盃三對三籃球賽","2025 城市盃籃球錦標賽","2025 企業聯誼籃球賽"],g:["男子公開組","女子社會組","U18 組"],t:["勇者隊","閃電隊","北區聯隊"]},
+  "排球":{e:["2026 全國排球錦標賽","2025 沙灘排球邀請賽","2025 春季排球聯賽"],g:["男子乙組","女子甲組","混合組"],t:["海風隊","飛鷹隊","浪花隊"]},
+  "路跑":{e:["2026 台北城市路跑","2025 河濱夜跑嘉年華","2025 大稻埕跨年路跑"],g:["10K 女子組","21K 男子組","5K 親子組"],t:["城市慢跑團","晨跑俱樂部","河濱跑者"]},
+  "羽球":{e:["2026 春季羽球公開賽","2025 全民羽球分齡賽","2025 縣長盃羽球賽"],g:["男子雙打","混合雙打","女子單打"],t:["羽你同行","雙殺組合","羽林高手"]},
+  "桌球":{e:["2026 校際桌球邀請賽","2025 社區桌球聯誼賽","2025 冬季桌球錦標賽"],g:["單打社會組","團體組","雙打公開組"],t:["桌上風雲","旋球隊","快攻小組"]},
+  "自行車":{e:["2026 北海岸自行車挑戰","2025 環花東自行車賽","2025 武嶺登高賽"],g:["公路車 60K","登山車組","挑戰組 100K"],t:["風速車隊","北騎聯盟","單車行者"]},
+  "游泳":{e:["2026 日月潭長泳挑戰","2025 澎湖跨海長泳","2025 分齡游泳錦標賽"],g:["公開水域 3K","分齡 1.5K","蛙式 200M"],t:["藍鯨泳隊","水都泳者","浪游隊"]},
+  "足球":{e:["2026 城市足球聯賽","2025 校園足球邀請賽","2025 社會人五人制足球"],g:["社會男子組","青年組","五人制公開組"],t:["綠地聯隊","雷霆 FC","南方之星"]},
+  "登山":{e:["2026 合歡山越野賽","2025 陽明山縱走挑戰","2025 谷關七雄越野"],g:["挑戰組 25K","體驗組 10K","菁英組 42K"],t:["山行者","越野狂人","登峰隊"]},
+  "三鐵":{e:["2026 東北角鐵人三項","2025 墾丁鐵人三項","2025 半程鐵人挑戰賽"],g:["標準距離","分齡組","接力組"],t:["鐵人三兄弟","鋼鐵之心","三鐵先鋒"]}
+};
+function makeHist(cat,k){
+  var d=EV[cat]||EV["路跑"];
+  var dt=new Date(2026,6,26-(k*11)%160);
+  var rg=new Date(dt.getTime()-(9+(k*13)%80)*86400000);
+  return {
+    ev:d.e[k%d.e.length],
+    gp:d.g[k%d.g.length],
+    tm:d.t[k%d.t.length],
+    no:"RG2609"+String(100000+k*7919).slice(0,6),
+    saved:k%3!==1,
+    reg:rg.getFullYear()+"/"+String(rg.getMonth()+1).padStart(2,"0")+"/"+String(rg.getDate()).padStart(2,"0"),
+    at:dt.getFullYear()+"/"+String(dt.getMonth()+1).padStart(2,"0")+"/"+String(dt.getDate()).padStart(2,"0")+" "+String(9+k%9).padStart(2,"0")+":"+String(10+k%49).padStart(2,"0")
+  };
+}
+function buildHist(cats,seed){
+  var out=[],round=0;
+  while(out.length<cats.length+3 && round<3){
+    for(var n=0;n<cats.length;n++){
+      out.push(makeHist(cats[n],seed+n*4+round*7));
+      if(out.length>=cats.length+3)break;
+    }
+    round++;
+  }
+  if(!out.some(function(x){return !x.saved;})) out[out.length-1].saved=false;
+  if(!out.some(function(x){return x.saved;})) out[0].saved=true;
+  // 每 4 位選手有 1 位為選手管理手動建立，沒有建立來源那一筆
+  if(seed%4!==3){
+    var oldest=out.slice().sort(function(a,b){return a.reg<b.reg?-1:1;})[0];
+    oldest.origin=true; oldest.saved=true;
+  }
+  return out;
+}
+var seq=1, rows=[];
+for(var i=0;i<42;i++){
+  var c=[],k=(i%3)+1;
+  for(var j=0;j<k;j++){var x=CATS[(i*3+j*2)%CATS.length];if(c.indexOf(x)<0)c.push(x);}
+  var d=new Date(2026,7,30-(i%75));
+  rows.push({
+    id:seq++,
+    name:SUR[i%SUR.length]+GIV[(i*5+3)%GIV.length],
+    birth:(function(){var b=new Date(1988+(i%22),(i*5)%12,1+(i*7)%28);
+      return b.getFullYear()+"/"+String(b.getMonth()+1).padStart(2,"0")+"/"+String(b.getDate()).padStart(2,"0");})(),
+    note:"",
+    cats:c,
+    hist:buildHist(c,i),
+    date:d.getFullYear()+"/"+String(d.getMonth()+1).padStart(2,"0")+"/"+String(d.getDate()).padStart(2,"0")
+  });
+}
+
+
+var PER=15, page=1, sel=[], applied={kw:"",cats:[]}, editId=null, delId=null;
+var $=function(id){return document.getElementById(id);};
+
+var menu=$("ddMenu");
+menu.innerHTML=CATS.map(function(c){
+  return '<label><input type="checkbox" value="'+c+'">'+c+'</label>';
+}).join("")+'<div class="menu-ft"><button class="lnk" data-a="clear">清除</button><button class="lnk" data-a="close">關閉</button></div>';
+
+$("ddBtn").addEventListener("click",function(e){
+  e.stopPropagation();
+  var open=menu.classList.toggle("open");
+  $("ddBtn").setAttribute("aria-expanded",open);
+});
+menu.addEventListener("click",function(e){e.stopPropagation();});
+document.addEventListener("click",function(){menu.classList.remove("open");$("ddBtn").setAttribute("aria-expanded","false");});
+menu.addEventListener("change",syncSel);
+menu.addEventListener("click",function(e){
+  var a=e.target.dataset.a;
+  if(a==="clear"){menu.querySelectorAll("input").forEach(function(i){i.checked=false;});syncSel();}
+  if(a==="close"){menu.classList.remove("open");}
+});
+function syncSel(){
+  sel=[].slice.call(menu.querySelectorAll("input:checked")).map(function(i){return i.value;});
+  renderConds();
+}
+$("kw").addEventListener("keydown",function(e){if(e.key==="Enter")doSearch();});
+
+$("searchBtn").addEventListener("click",doSearch);
+$("resetBtn").addEventListener("click",function(){
+  $("kw").value="";
+  menu.querySelectorAll("input").forEach(function(i){i.checked=false;});
+  sel=[];
+  doSearch();
+});
+function doSearch(){
+  applied={kw:$("kw").value.trim(),cats:sel.slice()};
+  page=1;
+  renderConds();render();
+}
+
+$("chips").addEventListener("click",function(e){
+  var v=e.target.dataset.rm;
+  if(!v)return;
+  menu.querySelectorAll("input").forEach(function(i){if(i.value===v)i.checked=false;});
+  syncSel();
+});
+
+function renderConds(){
+  $("ddN").style.display=sel.length?"inline-block":"none";
+  $("ddN").textContent=sel.length;
+  var dirty=$("kw").value.trim()!==applied.kw||sel.join()!==applied.cats.join();
+  $("chips").innerHTML=sel.map(function(s){
+    return '<span class="chip">'+s+'<button data-rm="'+s+'" aria-label="移除 '+s+'">&times;</button></span>';
+  }).join("")+(dirty?'<span style="font-size:12px;color:var(--text-3);align-self:center;margin-left:2px">條件已變更，點「搜尋」套用</span>':'');
+}
+$("kw").addEventListener("input",renderConds);
+
+function filtered(){
+  return rows.filter(function(r){
+    if(applied.kw && r.name.indexOf(applied.kw)<0) return false;
+    if(applied.cats.length && !applied.cats.some(function(s){return r.cats.indexOf(s)>=0;})) return false;
+    return true;
+  });
+}
+
+function render(){
+  var f=filtered();
+  var tp=Math.max(1,Math.ceil(f.length/PER));
+  if(page>tp)page=tp;
+  var slice=f.slice((page-1)*PER,page*PER);
+
+  $("tb").innerHTML = slice.length ? slice.map(function(r,i){
+    return '<tr>'+
+      '<td class="c-no">'+((page-1)*PER+i+1)+'</td>'+
+      '<td><div class="nm">'+r.name+'</div></td>'+
+      '<td class="c-birth">'+(r.birth||"－")+'</td>'+
+      '<td>'+r.cats.map(function(c){return '<span class="tag">'+c+'</span>';}).join("")+'</td>'+
+      '<td class="c-date">'+r.date+'</td>'+
+      '<td class="c-act">'+
+        '<button class="act act-edit" data-ed="'+r.id+'"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.6 12.4v6.1a2.6 2.6 0 0 1-2.6 2.6H5.5a2.6 2.6 0 0 1-2.6-2.6V6a2.6 2.6 0 0 1 2.6-2.6h6.1v2.1H5.5A.5.5 0 0 0 5 6v12.5c0 .3.2.5.5.5H18c.3 0 .5-.2.5-.5v-6.1h2.1z"/><path d="M20.9 2.9a2 2 0 0 0-2.8 0l-7.9 7.9-.8 3.3a.5.5 0 0 0 .6.6l3.3-.8 7.9-7.9a2 2 0 0 0 0-2.8l-.3-.3z"/></svg>編輯</button>'+
+        '<button class="act act-del" data-dl="'+r.id+'"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 2h4a1 1 0 0 1 1 1v1h4.2a.9.9 0 0 1 0 1.8H4.8a.9.9 0 0 1 0-1.8H9V3a1 1 0 0 1 1-1zm1 1.8v.2h2v-.2h-2z"/><path d="M6.4 7.4h11.2l-.83 12.05A2.2 2.2 0 0 1 14.58 21.5H9.42a2.2 2.2 0 0 1-2.19-2.05L6.4 7.4z"/></svg>刪除</button>'+
+      '</td></tr>';
+  }).join("") : '<tr><td colspan="6" class="empty">'+(rows.length?'沒有符合條件的選手，試試調整搜尋條件':'尚未建立任何選手，點選「新增選手」開始')+'</td></tr>';
+
+  $("cnt").textContent="共 "+f.length+" 筆，第 "+page+" / "+tp+" 頁";
+
+  var h='<button data-p="'+(page-1)+'"'+(page===1?' disabled':'')+' aria-label="上一頁">‹</button>';
+  var s=Math.max(1,Math.min(page-2,tp-4)), e=Math.min(tp,s+4);
+  if(s>1) h+='<button data-p="1">1</button>'+(s>2?'<button disabled>…</button>':'');
+  for(var p=s;p<=e;p++) h+='<button data-p="'+p+'"'+(p===page?' class="on"':'')+'>'+p+'</button>';
+  if(e<tp) h+=(e<tp-1?'<button disabled>…</button>':'')+'<button data-p="'+tp+'">'+tp+'</button>';
+  h+='<button data-p="'+(page+1)+'"'+(page===tp?' disabled':'')+' aria-label="下一頁">›</button>';
+  $("pg").innerHTML=h;
+}
+
+$("pg").addEventListener("click",function(e){
+  var b=e.target.closest("button"); if(!b||b.disabled)return;
+  var p=parseInt(b.dataset.p,10);
+  if(p>=1){page=p;render();window.scrollTo({top:0,behavior:"smooth"});}
+});
+
+$("tb").addEventListener("click",function(e){
+  var b=e.target.closest("button"); if(!b)return;
+  if(b.dataset.ed) openForm(parseInt(b.dataset.ed,10));
+  if(b.dataset.dl){
+    delId=parseInt(b.dataset.dl,10);
+    var r=rows.find(function(x){return x.id===delId;});
+    $("dlName").textContent=r.name;
+    $("delMask").classList.add("open");
+  }
+});
+
+var selTags=[];
+var tgMenu=$("tgMenu");
+
+$("tgBtn").addEventListener("click",function(e){
+  e.stopPropagation();
+  var open=tgMenu.classList.toggle("open");
+  $("tgBtn").setAttribute("aria-expanded",open);
+  if(open){$("tgQ").value="";renderTagList();$("tgQ").focus();}
+});
+tgMenu.addEventListener("click",function(e){e.stopPropagation();});
+$("formMask").addEventListener("click",function(e){
+  if(e.target===$("formMask"))closeForm();
+  tgMenu.classList.remove("open");
+});
+$("tgQ").addEventListener("input",renderTagList);
+
+function renderTagList(){
+  var q=$("tgQ").value.trim();
+  var list=CATS.filter(function(c){return !q||c.indexOf(q)>=0;});
+  $("tgList").innerHTML=list.length?list.map(function(c){
+    return '<label><input type="checkbox" value="'+c+'"'+(selTags.indexOf(c)>=0?' checked':'')+'>'+c+'</label>';
+  }).join(""):'<div class="tsel-none">查無符合的賽事項目</div>';
+}
+$("tgList").addEventListener("change",function(e){
+  var v=e.target.value;
+  if(e.target.checked){if(selTags.indexOf(v)<0)selTags.push(v);}
+  else{selTags=selTags.filter(function(x){return x!==v;});}
+  renderTagChips();
+});
+$("tgChips").addEventListener("click",function(e){
+  var v=e.target.dataset.rm; if(!v)return;
+  selTags=selTags.filter(function(x){return x!==v;});
+  renderTagChips();renderTagList();
+});
+function renderTagChips(){
+  $("tgLabel").textContent=selTags.length?"已選擇 "+selTags.length+" 個項目":"選擇賽事項目";
+  $("tgChips").innerHTML=selTags.map(function(s){
+    return '<span class="chip">'+s+'<button data-rm="'+s+'" aria-label="移除 '+s+'">&times;</button></span>';
+  }).join("");
+}
+
+$("histBody").addEventListener("click",function(e){
+  var a=e.target.closest(".ev-lnk"); if(!a)return;
+  e.preventDefault();
+  alert("開啟報名詳情（新分頁）\n訂單編號："+a.dataset.no);
+});
+$("fmTabs").addEventListener("click",function(e){
+  var b=e.target.closest(".tab"); if(!b)return;
+  switchPane(b.dataset.pane);
+});
+function switchPane(name){
+  [].slice.call(document.querySelectorAll(".tab")).forEach(function(t){t.classList.toggle("on",t.dataset.pane===name);});
+  $("paneBasic").classList.toggle("on",name==="basic");
+  $("paneHist").classList.toggle("on",name==="hist");
+}
+function renderHist(r){
+  var h=(r&&r.hist)||[];
+  h=h.slice().sort(function(a,b){return a.reg<b.reg?1:-1;});
+  $("histBody").innerHTML=h.length?h.map(function(x){
+    return '<tr>'+
+      '<td><a class="ev-lnk" href="#" data-no="'+x.no+'">'+x.ev+'</a></td>'+
+      '<td>'+x.gp+'</td>'+
+      '<td>'+x.tm+'</td>'+
+      '<td style="white-space:nowrap;color:var(--text-2)">'+x.reg+'</td>'+
+      '<td>'+(x.origin
+        ?'<span class="st st-o">建立來源</span><div class="mt">'+x.at+'</div>'
+        :(x.saved
+          ?'<span class="st st-y">已回存</span><div class="mt">'+x.at+'</div>'
+          :'<span class="st st-n">未回存</span>'))+'</td>'+
+    '</tr>';
+  }).join(""):'<tr><td colspan="5" class="hempty">尚無參與賽事紀錄</td></tr>';
+}
+
+function openForm(id){
+  editId=id;
+  var r=id?rows.find(function(x){return x.id===id;}):null;
+  $("fmTitle").textContent=r?"編輯選手":"新增選手";
+  $("fmTabs").style.display=r?"flex":"none";
+  switchPane("basic");
+  renderHist(r);
+  ["fName","fTel","fMail","fId","fBir","fAddr","fEmName","fEmTel","fDiet","fNote"].forEach(function(k){$(k).value="";});
+  $("fSex").value=""; $("fSize").value="";
+  if(r){$("fName").value=r.name;$("fNote").value=r.note||"";$("fBir").value=(r.birth||"").replace(/\//g,"-");}
+  selTags=r?r.cats.slice():[];
+  renderTagChips();
+  tgMenu.classList.remove("open");
+  $("eName").classList.remove("show");
+  $("formMask").classList.add("open");
+  $("fName").focus();
+}
+$("addBtn").addEventListener("click",function(){openForm(null);});
+$("fName").addEventListener("input",function(){$("eName").classList.remove("show");});
+
+function closeForm(){$("formMask").classList.remove("open");tgMenu.classList.remove("open");}
+$("fmX").addEventListener("click",closeForm);
+$("fmCancel").addEventListener("click",closeForm);
+
+$("fmSave").addEventListener("click",function(){
+  var n=$("fName").value.trim();
+  if(!n){$("eName").classList.add("show");$("fName").focus();return;}
+  var d=new Date(), ds=d.getFullYear()+"/"+String(d.getMonth()+1).padStart(2,"0")+"/"+String(d.getDate()).padStart(2,"0");
+  if(editId){
+    var r=rows.find(function(x){return x.id===editId;});
+    r.name=n; r.note=$("fNote").value.trim(); r.cats=selTags.slice(); r.birth=$("fBir").value.replace(/-/g,"/"); r.date=ds;
+  }else{
+    rows.unshift({id:seq++,name:n,birth:$("fBir").value.replace(/-/g,"/"),note:$("fNote").value.trim(),cats:selTags.slice(),hist:[],date:ds});
+    page=1;
+  }
+  closeForm();render();
+});
+
+$("dlCancel").addEventListener("click",function(){$("delMask").classList.remove("open");});
+$("dlOk").addEventListener("click",function(){
+  rows=rows.filter(function(x){return x.id!==delId;});
+  $("delMask").classList.remove("open");render();
+});
+document.addEventListener("keydown",function(e){
+  if(e.key==="Escape"){closeForm();$("delMask").classList.remove("open");menu.classList.remove("open");}
+});
+
+renderConds();render();
+})();
+</script>
+</body>
+</html>
