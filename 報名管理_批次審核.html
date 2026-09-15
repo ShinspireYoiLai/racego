@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RaceGo 報名管理｜批次審核</title>
+<style>
+  :root{
+    --green:#16C79A;
+    --green-dark:#0FB086;
+    --green-soft:#E7F8F3;
+    --ink:#2D3748;
+    --mid:#718096;
+    --line:#E5EAEA;
+    --bg:#F4F6F6;
+    --grey-btn:#5A6570;
+    --mark:#E8503A;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+  button{font:inherit;cursor:pointer}
+  svg{display:block}
+
+  /* ── 頂部列 ── */
+  .topbar{background:#fff;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:12px 26px;border-bottom:1px solid var(--line)}
+  .logo{font-size:24px;font-weight:800;letter-spacing:-.5px}
+  .logo .r{color:var(--green)}.logo .g{color:#F5A623}.logo .t{color:#1A2530}
+  .topbar .title{font-size:17px;font-weight:700}
+  .topbar .right{display:flex;align-items:center;gap:14px}
+  .bell{width:42px;height:42px;border-radius:10px;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;border:0}
+  .account{display:flex;align-items:center;gap:10px;background:var(--green-soft);border-radius:26px;padding:6px 14px 6px 6px}
+  .avatar{width:34px;height:34px;border-radius:50%;background:#C8EFE3;color:#0E7C63;display:flex;align-items:center;justify-content:center;font-weight:700}
+  .account .name{font-weight:700;font-size:14px;line-height:1.2}
+  .account .sub{font-size:12px;color:var(--mid)}
+
+  /* ── 版面 ── */
+  .layout{display:grid;grid-template-columns:250px 1fr;gap:22px;padding:22px 26px 60px;align-items:start}
+
+  /* ── 側欄 ── */
+  .side{background:#fff;border-radius:10px;overflow:hidden}
+  .side .grp{padding:16px 18px 6px;font-weight:700;font-size:15px}
+  .side .grp.fold{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-top:1px solid var(--line);color:var(--ink)}
+  .side ul{list-style:none;margin:0;padding:0 0 10px}
+  .side li{display:flex;align-items:center;gap:11px;padding:11px 18px;color:#4A5568;font-size:15px}
+  .side li.on{background:var(--green-soft);color:#0E9E7C;font-weight:700;box-shadow:inset 3px 0 0 var(--green)}
+  .side li svg{flex:none;opacity:.8}
+
+  /* ── 主內容 ── */
+  .main{min-width:0}
+  .head h1{margin:0;font-size:28px;font-weight:800}
+  .head p{margin:4px 0 20px;color:var(--mid);font-size:14px}
+
+  .filters{display:grid;grid-template-columns:repeat(3,190px) 1fr auto;gap:12px;margin-bottom:18px}
+  .sel,.search{height:48px;border:1px solid var(--line);background:#fff;border-radius:8px;padding:0 14px;display:flex;align-items:center;justify-content:space-between;color:var(--ink);font-size:15px;width:100%}
+  .search{color:#A0AEC0}
+  .btn-search{height:48px;border:0;border-radius:8px;background:var(--green);color:#fff;font-weight:700;padding:0 24px;display:flex;align-items:center;gap:8px}
+
+  .toolbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:16px}
+  .toolbar .label{color:var(--mid);font-size:14px}
+  .btn-out{height:48px;border:1px solid var(--green);background:#fff;color:#0E9E7C;font-weight:700;border-radius:8px;padding:0 20px;display:flex;align-items:center;gap:8px}
+  .btn-fill{height:48px;border:0;background:var(--green);color:#fff;font-weight:700;border-radius:8px;padding:0 20px;display:flex;align-items:center;gap:8px}
+  .btn-fill:disabled{background:#CBD5D2;cursor:not-allowed}
+  .spacer{flex:1}
+  .picked-count{font-size:14px;color:var(--mid)}
+  .picked-count b{color:#0E9E7C}
+
+  /* ── 表格 ── */
+  .card{background:#fff;border-radius:10px;overflow:hidden}
+  .scroll{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;min-width:820px}
+  th,td{text-align:left;padding:18px 20px;font-size:15px;white-space:nowrap}
+  thead th{background:#F7FAFA;color:var(--mid);font-weight:700;font-size:14px}
+  tbody tr{border-top:1px solid var(--line)}
+  tbody tr.picked{background:#F2FCF8}
+  .col-check{width:56px;padding-right:0}
+  input[type=checkbox]{width:18px;height:18px;accent-color:var(--green);cursor:pointer}
+  .ops{display:flex;gap:8px}
+  .op{width:52px;height:38px;border-radius:7px;display:flex;align-items:center;justify-content:center;border:1px solid var(--green);background:#fff;color:var(--green)}
+  .op.fill{background:var(--green);border-color:var(--green);color:#fff}
+  .op.grey{background:var(--grey-btn);border-color:var(--grey-btn);color:#fff}
+  .tag-ok{color:#0E9E7C;font-weight:600}
+
+  /* ── 分頁 ── */
+  .pager{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:16px 20px;border-top:1px solid var(--line)}
+  .pages{display:flex;gap:8px}
+  .pages button{width:38px;height:38px;border-radius:8px;border:1px solid var(--line);background:#fff;color:var(--mid)}
+  .pages button.on{background:var(--green);border-color:var(--green);color:#fff;font-weight:700}
+  .pager .info{color:var(--mid);font-size:14px}
+  .perpage{display:flex;align-items:center;gap:8px;color:var(--mid);font-size:14px}
+  .perpage select{height:38px;border:1px solid var(--line);border-radius:8px;padding:0 10px;background:#fff;color:var(--ink);font:inherit;font-size:14px}
+
+  /* ── 標註 ── */
+  .mark{position:relative;outline:2px dashed var(--mark);outline-offset:6px;border-radius:8px}
+  .mark::after{content:attr(data-n);position:absolute;top:-12px;left:-14px;width:22px;height:22px;border-radius:50%;background:var(--mark);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
+
+  /* ── 確認視窗 ── */
+  dialog{border:0;border-radius:12px;padding:0;width:min(420px,90vw);box-shadow:0 20px 50px rgba(0,0,0,.18)}
+  dialog::backdrop{background:rgba(20,30,28,.45)}
+  .dlg{padding:26px}
+  .dlg h3{margin:0 0 6px;font-size:18px}
+  .dlg p{margin:0 0 20px;color:var(--mid);font-size:14px}
+  .dlg .field{margin-bottom:16px}
+  .dlg label{display:block;font-size:14px;font-weight:600;margin-bottom:6px}
+  .dlg label .req{color:#E53E3E;margin-left:3px}
+  .dlg select{width:100%;height:46px;border:1px solid var(--line);border-radius:8px;padding:0 12px;background:#fff;color:var(--ink);font:inherit;font-size:15px}
+  .dlg .row{display:flex;justify-content:flex-end;gap:10px;margin-top:22px}
+
+  /* 發送通知詢問 */
+  #ask{width:min(380px,90vw)}
+  .ask{padding:30px 26px 26px;text-align:center}
+  .ask .icon{width:60px;height:60px;border-radius:50%;background:#6C63E0;color:#fff;font-size:32px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 18px}
+  .ask h3{margin:0 0 10px;font-size:20px;font-weight:700}
+  .ask p{margin:0 0 24px;color:var(--mid);font-size:15px}
+  .ask .row{display:flex;justify-content:center;gap:12px}
+  .btn-cancel{height:46px;min-width:110px;border:0;border-radius:8px;background:#F2F3F5;color:#4A5568;font-weight:600}
+  .btn-ok{height:46px;min-width:110px;border:0;border-radius:8px;background:var(--green);color:#fff;font-weight:700}
+
+  /* 通知會員 */
+  #notify{width:min(500px,92vw)}
+  .notify{padding:26px}
+  .notify .hd{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+  .notify h3{margin:0;font-size:22px;font-weight:800}
+  .notify .x{border:0;background:none;color:var(--mid);font-size:24px;line-height:1;padding:0 4px}
+  .notify .desc{margin:14px 0 20px;color:#4A5568;font-size:15px;line-height:1.7}
+  .notify label{display:block;font-weight:700;font-size:15px;margin-bottom:8px}
+  .notify textarea{width:100%;height:120px;border:1px solid #2D3748;border-radius:6px;padding:10px 12px;font:inherit;font-size:15px;resize:vertical}
+  .notify textarea::placeholder{color:#A0AEC0}
+  .notify .row{display:flex;justify-content:flex-end;gap:12px;margin-top:22px}
+  .btn-dark{height:48px;border:0;border-radius:8px;background:#5A6570;color:#fff;font-weight:700;padding:0 22px;display:flex;align-items:center;gap:8px}
+  .btn-send{height:48px;border:1px solid var(--green);border-radius:8px;background:#fff;color:#0E9E7C;font-weight:700;padding:0 22px;display:flex;align-items:center;gap:8px}
+  .btn-ghost{height:44px;border:1px solid var(--line);background:#fff;color:var(--mid);border-radius:8px;padding:0 20px}
+
+  /* ── 規格說明 ── */
+  .spec{background:#fff;border-radius:10px;padding:22px 24px;margin-top:22px}
+  .spec h3{margin:0 0 14px;font-size:16px}
+  .spec table{min-width:0}
+  .spec th,.spec td{white-space:normal;vertical-align:top;padding:11px 12px;font-size:14px;line-height:1.6}
+  .spec th{background:#F7FAFA}
+  .spec td:first-child,.spec th:first-child{width:48px}
+  .spec td:nth-child(2),.spec th:nth-child(2){width:22%;font-weight:600}
+  .spec .n{width:22px;height:22px;border-radius:50%;background:var(--mark);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
+  .spec .note{margin:14px 0 0;color:var(--mid);font-size:13px}
+
+  @media (max-width:980px){
+    .layout{grid-template-columns:1fr}
+    .filters{grid-template-columns:1fr 1fr}
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="logo"><span class="r">Race</span><span class="g">Go</span><span class="t">競賽咖</span></div>
+  <div class="title">8/11隊伍狀態確認</div>
+  <div class="right">
+    <button class="bell" aria-label="公告"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11v2a1 1 0 001 1h2l4 4V6L6 10H4a1 1 0 00-1 1z"/><path d="M15 8a5 5 0 010 8"/></svg></button>
+    <div class="account">
+      <div class="avatar">Y</div>
+      <div><div class="name">YOI</div><div class="sub">yoi測試</div></div>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#718096" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+
+  <aside class="side">
+    <div class="grp">主控台</div>
+    <ul>
+      <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10l9-7 9 7v10a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1z"/></svg>總覽</li>
+      <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>查看賽事頁面</li>
+    </ul>
+    <div class="grp fold">賽事管理 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#718096" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div>
+    <div class="grp fold">報名管理 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#718096" stroke-width="2"><path d="M18 15l-6-6-6 6"/></svg></div>
+    <ul>
+      <li class="on"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0112 0M17 11a3 3 0 100-6M18 20a6 6 0 00-3-5"/></svg>報名名單</li>
+      <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></svg>重複名單</li>
+    </ul>
+    <div class="grp fold">賽程管理 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#718096" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div>
+    <ul>
+      <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>賽事諮詢</li>
+    </ul>
+    <div class="grp fold">設定 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#718096" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div>
+  </aside>
+
+  <main class="main">
+    <div class="head">
+      <h1>報名管理</h1>
+      <p>管理賽事報名紀錄</p>
+    </div>
+
+    <div class="filters">
+      <div class="sel">全部組別 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#718096" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="sel">審核通過 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#718096" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="sel">全部付款狀態 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#718096" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="search">隊伍/選手/聯絡人</div>
+      <button class="btn-search"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>搜尋</button>
+    </div>
+
+    <div class="toolbar">
+      <span class="label">匯出當前列表資料：</span>
+      <button class="btn-out">訂單總表 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg></button>
+      <button class="btn-fill">選手明細 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg></button>
+      <span class="spacer"></span>
+      <span class="picked-count">已選取 <b id="count">0</b> 筆</span>
+      <span class="mark" data-n="2"><button class="btn-fill" id="approve" disabled>批次審核</button></span>
+    </div>
+
+    <div class="card">
+      <div class="scroll">
+        <table>
+          <thead>
+            <tr>
+              <th class="col-check"><span class="mark" data-n="1" style="display:inline-block"><input type="checkbox" id="all" aria-label="全選本頁"></span></th>
+              <th>組別</th><th>隊伍</th><th>報名狀態</th><th>付款狀態</th><th>報名日期</th><th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+      <div class="pager">
+        <div class="pages">
+          <button>‹</button><button class="on">1</button><button>2</button><button>3</button><button>4</button><button>5</button><button>›</button>
+        </div>
+        <div class="info" id="info">第 1 / 5 頁（共 46 筆）</div>
+        <span class="mark" data-n="3">
+          <span class="perpage">每頁顯示
+            <select id="size"><option value="10">10 筆</option><option value="50">50 筆</option><option value="100">100 筆</option></select>
+          </span>
+        </span>
+      </div>
+    </div>
+
+    <div class="spec">
+      <h3>本次新增項目</h3>
+      <table>
+        <thead><tr><th>編號</th><th>項目</th><th>行為說明</th></tr></thead>
+        <tbody>
+          <tr><td><span class="n">1</span></td><td>列表勾選框</td>
+              <td>表格最左側新增勾選欄，表頭為本頁全選。已勾選的列以淡綠底標示。</td></tr>
+          <tr><td><span class="n">2</span></td><td>批次審核</td>
+              <td>置於匯出工具列右側。未勾選時為停用（灰底）；有勾選時啟用。點擊後開啟「批次審核」視窗，內含兩個下拉選單：<br>
+              ・報名狀態（必填）：審核通過／待處理／審核不通過／候補／隱藏<br>
+              ・付款狀態：無須付款／待付款／已填匯款資料／已付款／已退款<br>
+              使用者調整後點「確認」即一次寫入所有選取資料，列表更新並清空勾選，接著進入通知流程。</td></tr>
+          <tr><td><span class="n">4</span></td><td>通知流程</td>
+              <td>沿用現行單筆編輯的兩段式視窗：<br>
+              ・確認儲存後跳出「發送通知：報名狀態已更新！是否通知會員？」→ 點「取消」結束流程（狀態已儲存）；點「確定」進入下一步。<br>
+              ・「通知會員」視窗以郵件通知會員最新報名狀態，可附加自訂訊息（選填），點「發送通知」寄出。</td></tr>
+          <tr><td><span class="n">3</span></td><td>每頁筆數切換</td>
+              <td>置於分頁列右側，提供 10 / 50 / 100 筆。切換後重算總頁數並回到第 1 頁，已勾選項目清空。</td></tr>
+        </tbody>
+      </table>
+      <p class="note">待確認：①「不變更」選項是否保留（目前預設兩個欄位都可只改其中一項；若比照單筆編輯的必填規則，報名狀態需強制選取）②跨頁勾選是否保留 ③批次通知的信件內容：多筆會員是否各自寄送、自訂訊息是否共用同一段文字 ④是否需保留變更紀錄至「操作」的歷程按鈕。</p>
+    </div>
+  </main>
+</div>
+
+<dialog id="dlg">
+  <div class="dlg">
+    <h3>批次審核</h3>
+    <p>將套用至已選取的 <b id="dlgN">0</b> 筆報名資料。</p>
+    <div class="field">
+      <label>報名狀態<span class="req">*</span></label>
+      <select id="fReg">
+        <option value="">不變更</option>
+        <option>審核通過</option>
+        <option>待處理</option>
+        <option>審核不通過</option>
+        <option>候補</option>
+        <option>隱藏</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>付款狀態</label>
+      <select id="fPay">
+        <option value="">不變更</option>
+        <option>無須付款</option>
+        <option>待付款</option>
+        <option>已填匯款資料</option>
+        <option>已付款</option>
+        <option>已退款</option>
+      </select>
+    </div>
+    <div class="row">
+      <button class="btn-ghost" id="cancel">取消</button>
+      <button class="btn-fill" id="ok">確認</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="ask">
+  <div class="ask">
+    <div class="icon">?</div>
+    <h3>發送通知</h3>
+    <p>報名狀態已更新！是否通知會員？</p>
+    <div class="row">
+      <button class="btn-cancel" id="askNo">取消</button>
+      <button class="btn-ok" id="askYes">確定</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="notify">
+  <div class="notify">
+    <div class="hd">
+      <h3>通知會員</h3>
+      <button class="x" id="notifyX" aria-label="關閉">×</button>
+    </div>
+    <p class="desc">系統將以郵件通知會員最新的報名狀態，您可以附加自訂訊息：</p>
+    <label for="msg">自訂訊息（選填）</label>
+    <textarea id="msg" placeholder="輸入要傳達給會員的訊息..."></textarea>
+    <div class="row">
+      <button class="btn-dark" id="notifyCancel">✕ 取消</button>
+      <button class="btn-send" id="notifySend">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg>
+        發送通知
+      </button>
+    </div>
+  </div>
+</dialog>
+
+<script>
+(function(){
+  const base=[
+    ["測試報名上限組","測試隊2","審核通過","無須付款","2026/08/26"],
+    ["測試報名上限組","測試隊1","審核通過","無須付款","2026/08/26"],
+    ["第二組","4月","待處理","待付款","2026/08/11"],
+    ["名字很長長長長長的組","隊伍名稱第二長隊","待處理","待付款","2026/08/11"],
+    ["名字很長長長長長的組","隊伍名稱第一長隊","待處理","待付款","2026/08/11"],
+    ["第一組","晨跑隊","待處理","已付款","2026/08/11"],
+    ["第一組","夜跑隊","待處理","已付款","2026/08/11"],
+    ["第二組","5月","待處理","待付款","2026/08/10"],
+    ["第二組","6月","待處理","待付款","2026/08/10"],
+    ["第一組","週末隊","待處理","待付款","2026/08/09"]
+  ];
+  const TOTAL=46, rows=document.getElementById('rows'), all=document.getElementById('all'),
+        approve=document.getElementById('approve'), count=document.getElementById('count'),
+        info=document.getElementById('info'), dlg=document.getElementById('dlg'), dlgN=document.getElementById('dlgN');
+  let size=10;
+
+  const eye='<svg width="18" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>';
+  const pen='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20h4l11-11-4-4L4 16z"/></svg>';
+  const his='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 109-9 9 9 0 00-7 3.5M3 4v4h4"/><path d="M12 8v4l3 2"/></svg>';
+
+  function render(){
+    rows.innerHTML='';
+    const n=Math.min(size,TOTAL);
+    for(let i=0;i<n;i++){
+      const d=base[i%base.length], done=d[2]==='審核通過';
+      const tr=document.createElement('tr');
+      tr.innerHTML='<td class="col-check"><input type="checkbox" class="pick" aria-label="選取報名資料"></td>'+
+        '<td>'+d[0]+'</td><td>'+d[1]+'</td>'+
+        '<td class="st'+(done?' tag-ok':'')+'">'+d[2]+'</td><td class="pay">'+d[3]+'</td><td>'+d[4]+'</td>'+
+        '<td><div class="ops"><span class="op">'+eye+'</span><span class="op fill">'+pen+'</span><span class="op grey">'+his+'</span></div></td>';
+      rows.appendChild(tr);
+    }
+    all.checked=false;
+    info.textContent='第 1 / '+Math.ceil(TOTAL/size)+' 頁（共 '+TOTAL+' 筆）';
+    sync();
+  }
+  function sync(){
+    const picks=[...rows.querySelectorAll('.pick:not(:disabled)')], on=picks.filter(c=>c.checked);
+    picks.forEach(c=>c.closest('tr').classList.toggle('picked',c.checked));
+    count.textContent=on.length;
+    approve.disabled=on.length===0;
+    all.checked=picks.length>0&&on.length===picks.length;
+  }
+  rows.addEventListener('change',e=>{if(e.target.classList.contains('pick'))sync();});
+  all.addEventListener('change',()=>{rows.querySelectorAll('.pick:not(:disabled)').forEach(c=>c.checked=all.checked);sync();});
+  approve.addEventListener('click',()=>{
+    dlgN.textContent=count.textContent;
+    document.getElementById('fReg').value='';
+    document.getElementById('fPay').value='';
+    dlg.showModal();
+  });
+  document.getElementById('cancel').addEventListener('click',()=>dlg.close());
+  document.getElementById('ok').addEventListener('click',()=>{
+    const reg=document.getElementById('fReg').value, pay=document.getElementById('fPay').value;
+    rows.querySelectorAll('.pick:checked').forEach(c=>{
+      const tr=c.closest('tr');
+      if(reg){const st=tr.querySelector('.st');st.textContent=reg;st.classList.toggle('tag-ok',reg==='審核通過');}
+      if(pay){tr.querySelector('.pay').textContent=pay;}
+      c.checked=false;
+    });
+    dlg.close(); sync();
+    document.getElementById('ask').showModal();
+  });
+  const ask=document.getElementById('ask'), notify=document.getElementById('notify');
+  document.getElementById('askNo').addEventListener('click',()=>ask.close());
+  document.getElementById('askYes').addEventListener('click',()=>{
+    ask.close();
+    document.getElementById('msg').value='';
+    notify.showModal();
+  });
+  document.getElementById('notifyX').addEventListener('click',()=>notify.close());
+  document.getElementById('notifyCancel').addEventListener('click',()=>notify.close());
+  document.getElementById('notifySend').addEventListener('click',()=>notify.close());
+  document.getElementById('size').addEventListener('change',e=>{size=Number(e.target.value);render();});
+  render();
+})();
+</script>
+</body>
+</html>
