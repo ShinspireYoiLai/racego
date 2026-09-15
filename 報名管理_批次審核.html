@@ -74,7 +74,17 @@
   tbody tr{border-top:1px solid var(--line)}
   tbody tr.picked{background:#F2FCF8}
   .col-check{width:56px;padding-right:0}
-  input[type=checkbox]{width:18px;height:18px;accent-color:var(--green);cursor:pointer}
+  input[type=checkbox]{
+    appearance:none;-webkit-appearance:none;
+    width:18px;height:18px;margin:0;border:1px solid #C3CDCB;border-radius:4px;
+    background:#fff;cursor:pointer;position:relative;flex:none;vertical-align:middle;
+  }
+  input[type=checkbox]:checked{background:var(--green);border-color:var(--green)}
+  input[type=checkbox]:checked::after{
+    content:"";position:absolute;left:5px;top:1px;width:5px;height:10px;
+    border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg);
+  }
+  input[type=checkbox]:focus-visible{outline:2px solid var(--green);outline-offset:2px}
   .ops{display:flex;gap:8px}
   .op{width:52px;height:38px;border-radius:7px;display:flex;align-items:center;justify-content:center;border:1px solid var(--green);background:#fff;color:var(--green)}
   .op.fill{background:var(--green);border-color:var(--green);color:#fff}
