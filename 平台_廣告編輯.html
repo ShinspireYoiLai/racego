@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>競賽咖｜編輯廣告 Wireframe</title>
+<style>
+  :root{
+    --line:#c9c9c9;
+    --line-strong:#8d8d8d;
+    --text:#333333;
+    --muted:#6f6f6f;
+    --bg:#f2f2f2;
+    --panel:#fafafa;
+    --fill:#e8e8e8;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;padding:32px;background:var(--bg);color:var(--text);
+    font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+    font-size:14px;line-height:1.5;
+  }
+  .wrap{display:flex;gap:32px;align-items:flex-start;flex-wrap:wrap}
+  .modal{
+    width:760px;max-width:100%;background:#fff;border:1px solid var(--line-strong);
+    border-radius:4px;padding:24px;
+  }
+  .modal-head{display:flex;align-items:center;justify-content:space-between;
+    padding-bottom:16px;border-bottom:1px solid var(--line);margin-bottom:20px}
+  .modal-head h1{margin:0;font-size:20px;font-weight:700}
+  .icon-btn{width:32px;height:32px;border:1px solid var(--line);background:#fff;
+    border-radius:4px;cursor:pointer;font-size:16px;color:var(--muted);line-height:1}
+
+  /* 區塊 */
+  .section{border:1px solid var(--line);border-radius:4px;background:var(--panel);
+    padding:16px;margin-bottom:16px}
+  .section-head{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+  .section-no{width:20px;height:20px;border:1px solid var(--line-strong);border-radius:3px;
+    display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+  .section-head h2{margin:0;font-size:15px;font-weight:700}
+  .section-head .rule{flex:1;height:1px;background:var(--line)}
+
+  /* 欄位 */
+  .field{margin-bottom:14px}
+  .field:last-child{margin-bottom:0}
+  .row{display:flex;gap:14px}
+  .row > *{flex:1;min-width:0}
+  label.lbl,span.lbl{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+  .req{color:#000;font-weight:700}
+  input[type=text],input[type=number],input[type=date],select{
+    width:100%;height:40px;padding:0 10px;border:1px solid var(--line);
+    border-radius:3px;background:#fff;font:inherit;font-size:14px;color:var(--text);
+  }
+  input::placeholder{color:#8a8a8a}
+  .btn{height:40px;padding:0 16px;border:1px solid var(--line-strong);background:#fff;
+    border-radius:3px;font:inherit;font-size:14px;cursor:pointer}
+  .btn-primary{background:var(--fill);font-weight:700}
+  .inline{display:flex;gap:10px;align-items:center}
+  .note{font-size:12px;color:var(--muted)}
+
+  /* 圖片預覽 */
+  .thumb{margin-top:10px;border:1px dashed var(--line-strong);border-radius:3px;
+    background:#fff;padding:10px;display:flex;align-items:center;gap:12px}
+  .thumb .box{width:140px;height:70px;border:1px solid var(--line);background:var(--fill);
+    display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--muted)}
+
+  /* 複選下拉 */
+  .ms-trigger{width:100%;height:40px;padding:0 10px;border:1px solid var(--line);
+    border-radius:3px;background:#fff;font:inherit;font-size:14px;color:var(--text);
+    display:flex;align-items:center;justify-content:space-between;cursor:pointer;text-align:left}
+  .ms-trigger[aria-expanded=true]{border-color:var(--line-strong)}
+  .ms-panel{border:1px solid var(--line-strong);border-top:none;border-radius:0 0 3px 3px;background:#fff}
+  .ms-panel[hidden]{display:none}
+  .ms-search{padding:8px;border-bottom:1px solid var(--line)}
+  .ms-list{max-height:200px;overflow-y:auto}
+  .ms-list label{display:flex;align-items:center;gap:10px;min-height:40px;padding:0 10px;cursor:pointer}
+  .ms-list label:hover{background:#f4f4f4}
+  .ms-empty{padding:14px 10px;color:var(--muted);font-size:13px}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .chip{display:inline-flex;align-items:center;gap:4px;height:28px;padding:0 4px 0 10px;
+    border:1px solid var(--line-strong);border-radius:3px;background:var(--fill);font-size:13px}
+  .chip button{width:20px;height:20px;border:none;background:transparent;cursor:pointer;
+    color:var(--muted);font-size:13px;line-height:1}
+
+  .check{display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer}
+
+  .modal-foot{display:flex;justify-content:flex-end;gap:10px;
+    padding-top:16px;border-top:1px solid var(--line);margin-top:4px}
+
+  /* 說明欄 */
+  .spec{width:300px;font-size:13px;color:var(--muted);background:#fff;
+    border:1px dashed var(--line-strong);border-radius:4px;padding:16px}
+  .spec h3{margin:0 0 8px;font-size:13px;color:var(--text)}
+  .spec ul{margin:0 0 16px;padding-left:18px}
+  .spec li{margin-bottom:4px}
+  .spec ul:last-child{margin-bottom:0}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="modal">
+    <div class="modal-head">
+      <h1>編輯廣告</h1>
+      <button type="button" class="icon-btn" aria-label="關閉">×</button>
+    </div>
+
+    <!-- ① 廣告內容 -->
+    <section class="section">
+      <div class="section-head">
+        <span class="section-no">1</span>
+        <h2>廣告內容</h2>
+        <span class="rule"></span>
+      </div>
+
+      <div class="field row">
+        <div>
+          <label class="lbl" for="slot">版位 <span class="req">*</span></label>
+          <select id="slot">
+            <option>home_hero</option>
+            <option>home_sidebar_a</option>
+            <option>home_sidebar_b</option>
+          </select>
+        </div>
+        <div>
+          <label class="lbl" for="sort">排序</label>
+          <input id="sort" type="number" value="1">
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="lbl" for="title">標題</label>
+        <input id="title" type="text" value="首頁橫幅 A">
+      </div>
+
+      <div class="field">
+        <span class="lbl">廣告圖片 <span class="req">*</span></span>
+        <div class="inline">
+          <button type="button" class="btn">選擇圖片</button>
+          <label class="note" for="imgurl">或貼上圖片 URL</label>
+          <input id="imgurl" type="text" value="/assets/images/ads/home_hero_a.jpg">
+        </div>
+        <div class="thumb">
+          <div class="box">圖片預覽</div>
+          <span class="note">建議尺寸：[依版位規格]</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="lbl" for="linkurl">連結 URL</label>
+        <input id="linkurl" type="text" placeholder="點擊後前往的網址">
+      </div>
+    </section>
+
+    <!-- ② 進階設定 -->
+    <section class="section">
+      <div class="section-head">
+        <span class="section-no">2</span>
+        <h2>進階設定</h2>
+        <span class="rule"></span>
+      </div>
+
+      <div class="field">
+        <span class="lbl">賽事（可搜尋、可複選）</span>
+        <div data-ms data-search="true" data-unit="項目"
+             data-options="籃球,排球,路跑,羽球,桌球,網球,游泳,自行車,鐵人三項,馬拉松,足球,棒球"
+             data-selected="排球,路跑,羽球,桌球"></div>
+      </div>
+
+      <div class="field">
+        <span class="lbl">地區（可複選）</span>
+        <div data-ms data-search="false" data-unit="地區"
+             data-options="北區,中區,南區,東區,外島"
+             data-selected="北區,中區"></div>
+      </div>
+    </section>
+
+    <!-- ③ 廠商資訊 -->
+    <section class="section">
+      <div class="section-head">
+        <span class="section-no">3</span>
+        <h2>廠商資訊</h2>
+        <span class="rule"></span>
+      </div>
+
+      <div class="field">
+        <label class="lbl" for="vendor">廠商名稱</label>
+        <input id="vendor" type="text" placeholder="例如：競賽咖 RaceGo">
+      </div>
+
+      <div class="field row">
+        <div>
+          <label class="lbl" for="start">開始日期</label>
+          <input id="start" type="date" value="2026-01-01">
+        </div>
+        <div>
+          <label class="lbl" for="end">結束日期</label>
+          <input id="end" type="date" value="2030-12-31">
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="check"><input type="checkbox" checked> 啟用</label>
+      </div>
+    </section>
+
+    <div class="modal-foot">
+      <button type="button" class="btn">取消</button>
+      <button type="button" class="btn btn-primary">儲存</button>
+    </div>
+  </div>
+
+  <aside class="spec">
+    <h3>區塊對應欄位</h3>
+    <ul>
+      <li>① 廣告內容：版位＊、排序、標題、廣告圖片＊、連結 URL</li>
+      <li>② 進階設定：賽事、地區</li>
+      <li>③ 廠商資訊：廠商名稱、開始日期、結束日期、啟用</li>
+    </ul>
+    <h3>複選元件行為</h3>
+    <ul>
+      <li>點觸發列展開／收合，顯示「已選擇 N 個項目」</li>
+      <li>賽事有關鍵字搜尋框；地區無</li>
+      <li>勾選後以標籤列於元件下方，可單獨移除</li>
+      <li>送出值為 ID 陣列（此處以名稱示意）</li>
+    </ul>
+    <h3>待確認</h3>
+    <ul>
+      <li>開始／結束是否需到時分（date vs datetime）</li>
+      <li>各版位圖片建議尺寸</li>
+      <li>賽事、地區是否必填</li>
+    </ul>
+  </aside>
+
+</div>
+
+<script>
+(function () {
+  document.querySelectorAll('[data-ms]').forEach(function (root) {
+    var options = (root.dataset.options || '').split(',').filter(Boolean);
+    var selected = (root.dataset.selected || '').split(',').filter(Boolean);
+    var unit = root.dataset.unit || '項目';
+    var useSearch = root.dataset.search === 'true';
+    var query = '';
+    var open = false;
+
+    function render() {
+      var visible = options.filter(function (o) { return !query || o.indexOf(query) !== -1; });
+
+      root.innerHTML =
+        '<button type="button" class="ms-trigger" aria-expanded="' + open + '">' +
+          '<span>已選擇 ' + selected.length + ' 個' + unit + '</span><span>' + (open ? '▲' : '▼') + '</span>' +
+        '</button>' +
+        '<div class="ms-panel"' + (open ? '' : ' hidden') + '>' +
+          (useSearch
+            ? '<div class="ms-search"><input type="text" class="ms-q" placeholder="輸入關鍵字查詢項目" value="' + query + '"></div>'
+            : '') +
+          '<div class="ms-list">' +
+            (visible.length
+              ? visible.map(function (o) {
+                  return '<label><input type="checkbox" data-opt="' + o + '"' +
+                    (selected.indexOf(o) !== -1 ? ' checked' : '') + '> ' + o + '</label>';
+                }).join('')
+              : '<div class="ms-empty">查無符合的項目</div>') +
+          '</div>' +
+        '</div>' +
+        '<div class="chips">' +
+          selected.map(function (o) {
+            return '<span class="chip">' + o +
+              '<button type="button" data-rm="' + o + '" aria-label="移除 ' + o + '">×</button></span>';
+          }).join('') +
+        '</div>';
+
+      root.querySelector('.ms-trigger').addEventListener('click', function () {
+        open = !open; render();
+      });
+
+      var q = root.querySelector('.ms-q');
+      if (q) {
+        q.addEventListener('input', function (e) { query = e.target.value; render(); q2focus(); });
+      }
+
+      root.querySelectorAll('[data-opt]').forEach(function (cb) {
+        cb.addEventListener('change', function () {
+          var v = cb.dataset.opt;
+          selected = cb.checked
+            ? selected.concat([v])
+            : selected.filter(function (x) { return x !== v; });
+          render();
+        });
+      });
+
+      root.querySelectorAll('[data-rm]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var v = btn.dataset.rm;
+          selected = selected.filter(function (x) { return x !== v; });
+          render();
+        });
+      });
+    }
+
+    function q2focus() {
+      var q = root.querySelector('.ms-q');
+      if (q) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); }
+    }
+
+    render();
+  });
+})();
+</script>
+
+</body>
+</html>
