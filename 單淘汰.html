@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RaceGo 賽程圖｜參照樣式優化</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --brand:#16b88a; --brand-ink:#0e8f6a; --brand-soft:#e7f7f1;
+  --ink:#2b2f33; --muted:#6b7177; --line:#8a929a; --bg:#f4f5f7;
+  --third-bg:#fff7e6; --third-line:#d9a441; --third-ink:#9a6b12;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;line-height:1.5}
+header{max-width:1120px;margin:0 auto;padding:32px 24px 0}
+h1{font-size:22px;margin:0 0 6px}
+.lead{color:var(--muted);margin:0;font-size:14px;max-width:76ch}
+.legend{display:flex;flex-wrap:wrap;gap:18px;margin:14px 0 0;font-size:13px;color:var(--muted);align-items:center}
+.legend svg{vertical-align:-3px;margin-right:6px}
+.wrap{max-width:1120px;margin:20px auto 32px;padding:0 24px}
+.card{background:#fff;border:1px solid #eceef0;border-radius:14px;padding:20px 24px}
+.scroll{overflow:hidden}
+svg.bracket{display:block;height:auto}
+
+/* 線條 */
+.seg{fill:none;stroke:var(--line);stroke-width:2;transition:stroke .15s,stroke-width .15s}
+.seg.third{stroke:var(--third-line);stroke-dasharray:5 5}
+.seg.on{stroke:var(--brand);stroke-width:3.5}
+
+/* 場次框 */
+.mbox rect{fill:#fff;stroke:var(--ink);stroke-width:1.5;transition:stroke .15s,fill .15s}
+.mbox .no{font-size:22px;font-weight:700;fill:var(--ink)}
+.mbox .lb{font-size:11px;fill:var(--muted)}
+.mbox.final rect{fill:var(--brand);stroke:var(--brand)}
+.mbox.final .no,.mbox.final .lb{fill:#fff}
+.mbox.third rect{fill:var(--third-bg);stroke:var(--third-line);stroke-dasharray:4 3}
+.mbox.third .lb{fill:var(--third-ink)}
+.mbox.on rect{stroke:var(--brand);stroke-width:3}
+.mbox.final.on rect{stroke:var(--brand-ink)}
+
+/* 隊伍 */
+.team{cursor:pointer}
+.team rect{fill:#fff;stroke:#c9ced3;stroke-width:1.2}
+.team text{font-size:15px;font-weight:700;fill:var(--ink)}
+.team:hover rect,.team.on rect{fill:var(--brand-soft);stroke:var(--brand)}
+.team:focus{outline:none}
+.team:focus-visible rect{stroke:var(--brand);stroke-width:2.5}
+
+.place rect{stroke-width:1.2}
+.place.champ rect{fill:var(--brand-soft);stroke:var(--brand)}
+.place.champ .t{fill:var(--brand-ink)}
+.place .t{font-size:13px;font-weight:700}
+.place .v{font-size:13px;fill:var(--muted)}
+
+.rl{font-size:13px;font-weight:700;fill:var(--muted)}
+.note{font-size:11px;fill:var(--muted)}
+
+.path{margin:14px 0 0;font-size:14px;color:var(--muted);min-height:1.5em}
+.path b{color:var(--brand-ink)}
+.toolbar{display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:16px;margin-bottom:12px}
+.num{display:inline-flex;align-items:center;gap:8px;font-size:14px;margin-right:auto}
+.num input{font:inherit;width:72px;padding:5px 8px;border:1px solid #c9ced3;border-radius:8px;text-align:center}
+.num input:focus{outline:2px solid var(--brand);border-color:var(--brand)}
+.num .hint{font-size:12px;color:var(--muted)}
+.num .hint.err{color:#c0392b}
+.chk.disabled{opacity:.45;cursor:not-allowed}
+.chk{display:inline-flex;align-items:center;gap:8px;font-size:14px;cursor:pointer}
+.chk input{accent-color:var(--brand);width:16px;height:16px;margin:0}
+.seg-ctl{display:inline-flex;background:#f1f2f4;border-radius:10px;padding:3px}
+.seg-ctl button{font:inherit;font-size:14px;border:0;background:none;padding:6px 16px;border-radius:8px;cursor:pointer;color:var(--muted);display:inline-flex;align-items:center;gap:6px}
+.seg-ctl button[aria-pressed="true"]{background:#fff;color:var(--brand-ink);font-weight:700;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.seg-ctl button:focus-visible{outline:2px solid var(--brand)}
+.seg-ctl svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <h1>賽程圖優化・參照樣式（<span id="titleN">7</span> 隊單淘汰）</h1>
+  <p class="lead">沿用參照圖的結構：隊伍在起點，線條往決賽方向匯合，場次編號放在匯合點；季殿軍賽以虛線連接兩場準決賽，表示由兩場敗方對戰。可輸入隊伍數自動產生賽程，並選擇是否顯示季殿軍賽、切換直式／橫式；滑過或點選隊伍，可查看該隊的晉級路徑。</p>
+  <div class="legend">
+    <span><svg width="28" height="10"><line x1="0" y1="5" x2="28" y2="5" stroke="#8a929a" stroke-width="2"/></svg>勝方晉級</span>
+    <span id="legendThird"><svg width="28" height="10"><line x1="0" y1="5" x2="28" y2="5" stroke="#d9a441" stroke-width="2" stroke-dasharray="5 5"/></svg>敗方晉級（季殿軍賽）</span>
+    <span><svg width="28" height="10"><line x1="0" y1="5" x2="28" y2="5" stroke="#16b88a" stroke-width="3.5"/></svg>選取隊伍的晉級路徑</span>
+  </div>
+</header>
+
+<div class="wrap"><div class="card">
+  <div class="toolbar"><label class="num">隊伍數<input type="number" id="teamN" value="7" min="2" max="64" step="1" inputmode="numeric"><span class="hint" id="nHint">2–64 隊</span></label><label class="chk" id="thirdLbl"><input type="checkbox" id="thirdChk" checked>季殿軍賽</label><div class="seg-ctl" role="group" aria-label="切換賽程圖方向">
+    <button type="button" data-mode="v" aria-pressed="true"><svg viewBox="0 0 16 16"><path d="M3 13V9h10v4M8 9V3"/></svg>直式</button>
+    <button type="button" data-mode="h" aria-pressed="false"><svg viewBox="0 0 16 16"><path d="M3 3h4v10H3M7 8h6"/></svg>橫式</button>
+  </div></div>
+  <div class="scroll"><svg class="bracket" id="bk" viewBox="0 0 1040 500" role="img" aria-label="7 隊單淘汰賽程圖"></svg></div>
+  <p class="path" id="path">點選隊伍查看晉級路徑</p>
+</div></div>
+
+<script>
+const NS = 'http://www.w3.org/2000/svg';
+const svg = document.getElementById('bk');
+const pathEl = document.getElementById('path');
+const BOX_W = 72, BOX_H = 52, TEAM_W = 80, TEAM_H = 36;
+const MIN_N = 2, MAX_N = 64;
+
+// 兩種方向的尺寸設定：a = 隊伍排列軸，d = 晉級深度軸
+const CFG = {
+  v:{ pairGap:110, gap:140, team:430, first:355, step:-100, finalStep:-100, finalStepThird:-130, P:(a,d)=>[a,d] },
+  h:{ pairGap:65,  gap:80,  team:150, first:290, step:140,  finalStep:140,  finalStepThird:220,  P:(a,d)=>[d,a] }
+};
+
+let mode = 'v', withThird = true, N = 7, locked = null;
+let T = null; // 目前的賽程結構
+
+// 中文數字（1–999）
+function zh(n){
+  const d = '零一二三四五六七八九';
+  if (n < 10) return d[n];
+  if (n < 20) return '十' + (n % 10 ? d[n % 10] : '');
+  if (n < 100) return d[Math.floor(n/10)] + '十' + (n % 10 ? d[n % 10] : '');
+  const h = Math.floor(n/100), r = n % 100;
+  return d[h] + '百' + (r === 0 ? '' : r < 10 ? '零' + d[r] : (r < 20 ? '一' : '') + zh(r));
+}
+
+// 依隊伍數建立樹（對齊現有系統規則）
+// 1. 補成 2 的次方 S，第二輪固定為 H = S/2 個位置
+// 2. 首輪只打 P = N − H 場，其餘隊伍輪空直接進第二輪
+// 3. 首輪比賽放在「最低種子」的位置，種子位置順序如 8 格：[1,8,5,4,3,6,7,2]
+function seedOrder(H){
+  let arr = [1];
+  while (arr.length < H){
+    const n = arr.length * 2 + 1;
+    arr = arr.flatMap((s, i) => i % 2 === 0 ? [s, n - s] : [n - s, s]);
+  }
+  return arr;
+}
+function build(n){
+  let S = 1; while (S < n) S *= 2;
+  const H = S / 2, P = n - H;
+  const order = seedOrder(H);
+  const playInSeeds = new Set(Array.from({length:P}, (_, i) => H - i));   // 最低的 P 個種子
+
+  const leaves = [];
+  let tNo = 1;
+  const team = () => { const t = {type:'team', id:'T' + tNo++, h:0}; leaves.push(t); return t; };
+  let level = order.map(seed => {
+    if (playInSeeds.has(seed)){ const a = team(), b = team(); return {type:'match', kids:[a, b], h:1}; }
+    return team();
+  });
+  let h = 2;
+  while (level.length > 1){
+    const next = [];
+    for (let i = 0; i < level.length; i += 2) next.push({type:'match', kids:[level[i], level[i + 1]], h});
+    level = next; h++;
+  }
+  const root = level[0];
+
+  const matches = [];
+  (function walk(x){ if (x.type === 'match'){ x.kids.forEach(walk); matches.push(x); } })(root);
+  (function tag(x){ if (x.type === 'team') return [x.id]; x.teams = x.kids.flatMap(tag); return x.teams; })(root);
+
+  const hasThird = root.type === 'match' && root.kids.every(k => k.type === 'match');
+  // 編號：依輪次、由左到右；季殿軍賽排在決賽前，決賽最後
+  const others = matches.filter(m => m !== root)
+    .sort((x, y) => x.h - y.h || leaves.indexOf(firstLeaf(x)) - leaves.indexOf(firstLeaf(y)));
+  let no = 1;
+  others.forEach(m => { m.no = no; m.lb = '第' + zh(no) + '場'; no++; });
+  const third = hasThird ? {no:0, lb:'季殿軍賽', kids:root.kids, teams:root.teams, isThird:true} : null;
+  return {root, leaves, matches, others, hasThird, third, nextNo:no};
+}
+function firstLeaf(x){ return x.type === 'team' ? x : firstLeaf(x.kids[0]); }
+
+function el(tag, attrs, parent = svg){
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  parent.appendChild(e); return e;
+}
+function text(str, attrs, parent){ const t = el('text', attrs, parent); t.textContent = str; return t; }
+
+function render(){
+  const C = CFG[mode];
+  const third = withThird && T.hasThird;
+  const root = T.root;
+
+  // 編號：季殿軍賽在決賽前
+  let no = T.nextNo;
+  if (third){ T.third.no = no++; }
+  if (root.type === 'match'){ root.no = no; root.lb = '決賽'; root.cls = 'final'; }
+
+  // 排列軸座標
+  let a = 0;
+  T.leaves.forEach((t, i) => {
+    if (i > 0){
+      const prev = T.leaves[i - 1];
+      const sib = T.matches.some(m => m.h === 1 && m.kids[0] === prev && m.kids[1] === t);
+      a += sib ? C.pairGap : C.gap;
+    }
+    t.a = a;
+  });
+  const setA = x => { if (x.type === 'match'){ x.kids.forEach(setA); x.a = (x.kids[0].a + x.kids[1].a) / 2; } };
+  setA(root);
+
+  // 深度軸座標
+  const levelD = h => h === 0 ? C.team : C.first + (h - 1) * C.step;
+  const preFinal = levelD(root.h - 1);
+  const finalD = preFinal + (third ? C.finalStepThird : C.finalStep);
+  const thirdD = (preFinal + finalD) / 2;
+  const dOf = x => x === root ? finalD : levelD(x.h);
+
+  // 畫布範圍
+  const as = T.leaves.map(t => t.a), aMin = Math.min(...as), aMax = Math.max(...as);
+  const OFF = 60;
+  if (mode === 'v'){
+    const x0 = aMin - 50 - OFF, w = aMax - aMin + 100 + OFF * 2;
+    const y0 = finalD - BOX_H / 2 - 20, h = C.team + TEAM_H + 20 - y0;
+    svg.setAttribute('viewBox', `${x0} ${y0} ${w} ${h}`);
+    svg.style.width = '100%'; svg.style.maxWidth = w + 'px';
+  } else {
+    const x0 = C.team - TEAM_W - 20, w = finalD + BOX_W / 2 + 20 - x0;
+    const y0 = aMin - TEAM_H / 2 - 20, h = aMax - aMin + TEAM_H + 40;
+    svg.setAttribute('viewBox', `${x0} ${y0} ${w} ${h}`);
+    svg.style.width = '100%'; svg.style.maxWidth = w + 'px';
+  }
+  svg.style.margin = '0 auto';
+  svg.innerHTML = '';
+
+  const pt = (a, d) => C.P(a, d).join(' ');
+  const seg = (pts, tags, cls = '') =>
+    el('path', {d:'M' + pts.map(p => pt(...p)).join(' L'), class:'seg ' + cls, 'data-t':tags.join(',')});
+  const tagsOf = x => x.type === 'team' ? [x.id] : x.teams;
+
+  // 連線
+  T.matches.forEach(m => {
+    const dn = dOf(m);
+    m.kids.forEach(k => seg([[k.a, dOf(k)], [k.a, dn], [m.a, dn]], tagsOf(k)));
+  });
+  if (third) seg([[root.kids[0].a, thirdD], [root.kids[1].a, thirdD]], root.teams, 'third');
+
+  // 場次框
+  function box(n, aa, d, cls, tags){
+    const [x, y] = C.P(aa, d);
+    const g = el('g', {class:'mbox ' + (cls || ''), 'data-t':tags.join(',')});
+    el('rect', {x:x - BOX_W/2, y:y - BOX_H/2, width:BOX_W, height:BOX_H, rx:8}, g);
+    text(n.no, {x, y:y + 2, 'text-anchor':'middle', class:'no'}, g);
+    text(n.lb, {x, y:y + 19, 'text-anchor':'middle', class:'lb'}, g);
+  }
+  T.matches.forEach(m => box(m, m.a, dOf(m), m.cls, m.teams));
+  if (third) box(T.third, root.a, thirdD, 'third', root.teams);
+
+  // 隊伍
+  T.leaves.forEach(t => {
+    const g = el('g', {class:'team', tabindex:0, 'data-team':t.id, role:'button', 'aria-label':`查看 ${t.id} 晉級路徑`});
+    const [rx, ry] = mode === 'v' ? [t.a - TEAM_W/2, C.team] : [C.team - TEAM_W, t.a - TEAM_H/2];
+    el('rect', {x:rx, y:ry, width:TEAM_W, height:TEAM_H, rx:8}, g);
+    text(t.id, {x:rx + TEAM_W/2, y:ry + 24, 'text-anchor':'middle'}, g);
+    g.addEventListener('mouseenter', () => !locked && show(t.id));
+    g.addEventListener('mouseleave', () => !locked && show(null));
+    const toggle = () => { locked = locked === t.id ? null : t.id; show(locked); };
+    g.addEventListener('click', toggle);
+    g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); toggle(); } });
+  });
+
+  show(locked);
+}
+
+function show(team){
+  svg.querySelectorAll('[data-t]').forEach(e => {
+    e.classList.toggle('on', !!team && e.dataset.t.split(',').includes(team) && !e.classList.contains('third'));
+  });
+  svg.querySelectorAll('.team').forEach(t => t.classList.toggle('on', t.dataset.team === team));
+  if (!team){ pathEl.textContent = '點選隊伍查看晉級路徑'; return; }
+  const route = T.matches.filter(m => m.teams.includes(team)).sort((x, y) => x.h - y.h)
+    .map(m => m === T.root ? `第${zh(m.no)}場（決賽）` : m.lb);
+  let extra = '';
+  if (withThird && T.hasThird){
+    const semi = T.root.kids.find(k => k.teams.includes(team));
+    extra = `；若在${semi.lb}落敗，進入第${zh(T.third.no)}場季殿軍賽`;
+  }
+  pathEl.innerHTML = `<b>${team}</b> 的晉級路徑：${route.join(' → ')}${extra}`;
+}
+
+// 控制項
+const nInput = document.getElementById('teamN'), nHint = document.getElementById('nHint');
+const chk = document.getElementById('thirdChk'), chkLbl = document.getElementById('thirdLbl');
+
+function syncThirdCtl(){
+  chk.disabled = !T.hasThird;
+  chkLbl.classList.toggle('disabled', !T.hasThird);
+  chkLbl.title = T.hasThird ? '' : '需 4 隊以上才有季殿軍賽';
+  document.getElementById('legendThird').hidden = !(withThird && T.hasThird);
+}
+
+function setN(v){
+  N = v;
+  T = build(N);
+  if (locked && +locked.slice(1) > N) locked = null;
+  document.getElementById('titleN').textContent = N;
+  syncThirdCtl();
+  render();
+}
+
+nInput.addEventListener('input', () => {
+  const v = Number(nInput.value);
+  if (!Number.isInteger(v) || v < MIN_N || v > MAX_N){
+    nHint.textContent = `請輸入 ${MIN_N}–${MAX_N} 的整數`; nHint.classList.add('err'); return;
+  }
+  nHint.textContent = `${MIN_N}–${MAX_N} 隊`; nHint.classList.remove('err');
+  setN(v);
+});
+nInput.addEventListener('blur', () => { if (nHint.classList.contains('err')){ nInput.value = N; nHint.textContent = `${MIN_N}–${MAX_N} 隊`; nHint.classList.remove('err'); } });
+
+chk.addEventListener('change', e => { withThird = e.target.checked; syncThirdCtl(); render(); });
+
+document.querySelectorAll('.seg-ctl button').forEach(b => b.addEventListener('click', () => {
+  mode = b.dataset.mode;
+  document.querySelectorAll('.seg-ctl button').forEach(x => x.setAttribute('aria-pressed', x === b));
+  render();
+}));
+
+setN(7);
+</script>
+</body>
+</html>
