@@ -1073,6 +1073,10 @@
 
   .member-btn .avatar { font-size: 16px; }   /* 網站最小字級 14px */
 
+  /* 頁籤列移出左欄、橫跨整頁，捲到任何位置都固定在版頭下方；側欄停靠位置讓出頁籤列高度 */
+  .pj-body { margin-top: 28px !important; }
+  .pj-aside { top: calc(176px + env(safe-area-inset-top, 0px)) !important; max-height: calc(100vh - 196px) !important; }
+
   .toast { position: fixed; left: 50%; bottom: calc(32px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 20; background: #333; color: #fff; font-size: 16px; padding: 10px 20px; border-radius: 20px; opacity: 0; pointer-events: none; transition: opacity .2s; }
   .toast.show { opacity: 1; }
 
@@ -1609,12 +1613,12 @@
         <p class="pj-rule">${icx.info}<span><strong>募資規則</strong>　${RULE}</span></p>
       </section>
 
-      <div class="pj-body"><div class="pj-main">
       <nav class="pj-tabs" role="tablist" aria-label="專案內容">
         ${[["intro", "專案介紹"], ["updates", "專案進度", UPDATES.length], ["qa", "問與答", QUESTIONS.length], ["backers", "支持者", d.backers], ["owner", "提案方資訊"]].map(([k, t, n]) =>
           `<button role="tab" data-pjtab="${k}" aria-selected="${pj.tab === k}">${t}${n ? `<span class="tab-n">${n}</span>` : ""}</button>`).join("")}
         ${ended ? "" : `<button class="jump" data-jump="checkout">${projMode(d.id) === "donation" ? "立即贊助" : "選擇贊助方案"}</button>`}
       </nav>
+      <div class="pj-body"><div class="pj-main">
       <section class="pj-panel" id="pjPanel" role="tabpanel"></section>
       </div>${asideHTML(d, ended)}</div>
 
