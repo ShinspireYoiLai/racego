@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>競賽咖｜群募信件模板</title>
+<style>
+  /* ===== 預覽頁外框（非信件內容） ===== */
+  :root { --bg: #eef0f2; --text: #222; --sub: #666; --card: #fff; --line: #dcdfe3; --brand: #17b897; --note: #f5a623; color-scheme: light; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --bg: #161819; --text: #eee; --sub: #aaa; --card: #222527; --line: #333; color-scheme: dark; }
+  }
+  :root[data-theme="dark"] { --bg: #161819; --text: #eee; --sub: #aaa; --card: #222527; --line: #333; color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif; }
+  .bar { position: sticky; top: 0; z-index: 5; background: var(--card); border-bottom: 1px solid var(--line); padding: 14px 24px; padding-top: calc(14px + env(safe-area-inset-top, 0px)); display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; }
+  .bar h1 { font-size: 18px; margin: 0; }
+  .tabs { display: inline-flex; background: var(--bg); border-radius: 22px; padding: 4px; }
+  .tabs button { border: 0; background: none; color: var(--sub); padding: 7px 18px; border-radius: 18px; font: inherit; font-size: 16px; cursor: pointer; }
+  .tabs button[aria-pressed="true"] { background: var(--card); color: var(--text); font-weight: 700; box-shadow: 0 1px 4px rgba(0,0,0,.12); }
+  .toggle { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; color: var(--sub); cursor: pointer; margin-left: auto; }
+  .toggle input { accent-color: var(--brand); width: 16px; height: 16px; }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 24px 16px 60px; display: grid; grid-template-columns: minmax(0, 640px) 1fr; gap: 24px; align-items: start; }
+  .meta { background: var(--card); border-radius: 12px; padding: 20px 22px; font-size: 14px; line-height: 1.7; position: sticky; top: 90px; }
+  .meta h2 { font-size: 16px; margin: 0 0 8px; }
+  .meta dl { margin: 0 0 14px; display: grid; grid-template-columns: 80px 1fr; gap: 6px 10px; }
+  .meta dt { color: var(--sub); }
+  .meta dd { margin: 0; }
+  .meta ul { margin: 0; padding-left: 18px; color: var(--sub); }
+  .meta code { background: var(--bg); padding: 1px 6px; border-radius: 4px; font-size: 14px; }
+  /* 勾選框：統一自訂樣式，勾選時綠底白勾 */
+  input[type="checkbox"] {
+    -webkit-appearance: none; appearance: none; margin: 0; flex-shrink: 0;
+    width: 18px; height: 18px; border: 2px solid #b8bfc6; border-radius: 4px;
+    background: var(--card, #fff) no-repeat center / 14px 14px; cursor: pointer; vertical-align: middle;
+  }
+  input[type="checkbox"]:hover { border-color: var(--brand); }
+  input[type="checkbox"]:checked {
+    background-color: var(--brand); border-color: var(--brand);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12.5 4.5 4.5L19 7.5'/%3E%3C/svg%3E");
+  }
+  input[type="checkbox"]:focus-visible { outline: 3px solid var(--accent, #f5a623); outline-offset: 2px; }
+
+  .mail { display: none; }
+  .mail.show { display: block; }
+  .note { display: inline-block; background: var(--note); color: #222; font-size: 14px; font-weight: 700; padding: 1px 8px; border-radius: 4px; margin: 0 0 6px; font-family: sans-serif; }
+  body.hide-notes .note { display: none; }
+  .v { background: #fff4d6; color: #8a5a00; border-radius: 3px; padding: 0 3px; }
+  body.hide-notes .v { background: none; color: inherit; padding: 0; }
+  @media (max-width: 900px) { .wrap { grid-template-columns: 1fr; } .meta { position: static; } .toggle { margin-left: 0; } }
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <h1>群募信件模板</h1>
+  <div class="tabs" role="group" aria-label="信件">
+    <button data-mail="confirm" aria-pressed="true">① 訂單確認信</button>
+    <button data-mail="ship" aria-pressed="false">② 出貨通知信</button>
+  </div>
+  <label class="toggle"><input type="checkbox" id="showNotes" checked>顯示變數與條件標註</label>
+</div>
+
+<div class="wrap">
+  <div>
+    <!-- ================================================================
+         ① 訂單確認信（付款成功時寄出）
+         信件本體：表格排版＋行內樣式，相容主流信箱
+         {{ }} 為變數；橘色標籤為條件顯示說明，正式模板請移除
+    ================================================================= -->
+    <div class="mail show" id="mail-confirm">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f5f6f7;">
+  <tr><td align="center" style="padding:24px 12px;">
+    <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;background:#ffffff;border-radius:12px;overflow:hidden;font-family:'PingFang TC','Microsoft JhengHei',Arial,sans-serif;color:#222222;">
+      <!-- Logo -->
+      <tr><td style="padding:24px 32px;border-bottom:3px solid #17b897;">
+        <span style="font-size:26px;font-weight:900;color:#17b897;">Race</span><span style="font-size:26px;font-weight:900;color:#f5a623;">Go</span><span style="font-size:26px;font-weight:900;color:#222222;">競賽咖</span>
+      </td></tr>
+      <!-- 標題 -->
+      <tr><td style="padding:32px 32px 8px;">
+        <p style="margin:0 0 8px;font-size:24px;font-weight:700;">感謝您的贊助！</p>
+        <p style="margin:0;font-size:16px;line-height:1.8;color:#444444;">親愛的 <span class="v">{{會員姓名}}</span> 您好，<br>您已成功贊助「<span class="v">{{專案名稱}}</span>」，付款已完成。以下是您的訂單資訊，請妥善保存。</p>
+      </td></tr>
+      <!-- 訂單資訊 -->
+      <tr><td style="padding:24px 32px 0;">
+        <p style="margin:0 0 10px;font-size:16px;font-weight:700;border-left:4px solid #17b897;padding-left:8px;">訂單資訊</p>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="font-size:14px;line-height:1.6;">
+          <tr><td width="110" style="padding:4px 0;color:#666666;">訂單編號</td><td style="padding:4px 0;font-weight:700;"><span class="v">{{訂單編號}}</span></td></tr>
+          <tr><td style="padding:4px 0;color:#666666;">下單時間</td><td style="padding:4px 0;"><span class="v">{{下單時間}}</span></td></tr>
+          <tr><td style="padding:4px 0;color:#666666;">付款方式</td><td style="padding:4px 0;">信用卡</td></tr>
+          <tr><td style="padding:4px 0;color:#666666;">付款狀態</td><td style="padding:4px 0;color:#0f9a7d;font-weight:700;">已付款</td></tr>
+        </table>
+      </td></tr>
+      <!-- 贊助明細 -->
+      <tr><td style="padding:24px 32px 0;">
+        <p style="margin:0 0 10px;font-size:16px;font-weight:700;border-left:4px solid #17b897;padding-left:8px;">贊助明細</p>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="font-size:14px;line-height:1.6;border-top:1px solid #e6e6e6;">
+          <!-- 方案（逐筆重複） -->
+          <tr><td style="padding:12px 0;border-bottom:1px solid #e6e6e6;">
+            <span class="note">逐筆重複：每個方案一列</span><br>
+            <strong>方案 <span class="v">{{方案代號}}</span>｜<span class="v">{{方案名稱}}</span></strong> × <span class="v">{{數量}}</span><br>
+            <span style="color:#666666;font-size:14px;"><span class="v">{{回饋內容}}</span></span><br>
+            <span style="color:#0f9a7d;font-size:14px;">寄送時間：<span class="v">{{寄送時間}}</span></span>
+          </td><td align="right" valign="top" style="padding:12px 0;border-bottom:1px solid #e6e6e6;white-space:nowrap;"><span class="v">{{小計}}</span></td></tr>
+          <!-- 自由贊助 -->
+          <tr><td style="padding:12px 0;border-bottom:1px solid #e6e6e6;">
+            <span class="note">有自由贊助時顯示</span><br>
+            <strong>自由贊助</strong><br><span style="color:#666666;font-size:14px;">無回饋品</span>
+          </td><td align="right" valign="top" style="padding:12px 0;border-bottom:1px solid #e6e6e6;"><span class="v">{{自由贊助金額}}</span></td></tr>
+          <!-- 加總 -->
+          <tr><td style="padding:10px 0 2px;color:#666666;">方案小計</td><td align="right" style="padding:10px 0 2px;color:#666666;"><span class="v">{{方案小計}}</span></td></tr>
+          <tr><td style="padding:2px 0;color:#666666;">自由贊助</td><td align="right" style="padding:2px 0;color:#666666;"><span class="v">{{自由贊助金額}}</span></td></tr>
+          <tr><td style="padding:2px 0;color:#666666;">運費（<span class="v">{{寄送方式}}</span>）</td><td align="right" style="padding:2px 0;color:#666666;"><span class="v">{{運費}}</span></td></tr>
+          <tr><td style="padding:10px 0;font-weight:700;border-top:1px solid #e6e6e6;">訂單金額</td><td align="right" style="padding:10px 0;font-size:22px;font-weight:900;color:#f08a24;border-top:1px solid #e6e6e6;"><span class="v">{{訂單金額}}</span></td></tr>
+        </table>
+      </td></tr>
+      <!-- 寄送資訊 -->
+      <tr><td style="padding:24px 32px 0;">
+        <span class="note">含實體回饋時顯示</span>
+        <p style="margin:0 0 10px;font-size:16px;font-weight:700;border-left:4px solid #17b897;padding-left:8px;">寄送資訊</p>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="font-size:14px;line-height:1.6;">
+          <tr><td width="110" style="padding:4px 0;color:#666666;">寄送方式</td><td style="padding:4px 0;"><span class="v">{{寄送方式}}</span></td></tr>
+          <tr><td style="padding:4px 0;color:#666666;">收件人</td><td style="padding:4px 0;"><span class="v">{{收件人姓名}}</span>　<span class="v">{{收件人手機}}</span></td></tr>
+          <tr><td style="padding:4px 0;color:#666666;" valign="top">取貨門市／地址</td><td style="padding:4px 0;"><span class="note">超商顯示門市，宅配顯示地址</span><br><span class="v">{{取貨門市或寄送地址}}</span></td></tr>
+        </table>
+      </td></tr>
+      <!-- 發票與收據 -->
+      <tr><td style="padding:24px 32px 0;">
+        <span class="note">純自由贊助時標題為「收據」，並隱藏發票兩列</span>
+        <p style="margin:0 0 10px;font-size:16px;font-weight:700;border-left:4px solid #17b897;padding-left:8px;">發票與收據</p>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="font-size:14px;line-height:1.6;">
+          <tr><td width="110" style="padding:4px 0;color:#666666;">發票類型</td><td style="padding:4px 0;"><span class="v">{{發票類型}}</span></td></tr>
+          <tr><td style="padding:4px 0;color:#666666;" valign="top">發票資訊</td><td style="padding:4px 0;"><span class="note">依類型：手機條碼／寄送地址／抬頭＋統編／愛心碼</span><br><span class="v">{{發票資訊}}</span></td></tr>
+          <tr><td style="padding:4px 0;color:#666666;" valign="top">收據</td><td style="padding:4px 0;"><span class="v">{{需要／不需要}}</span><br><span class="note">需要時顯示</span> 抬頭：<span class="v">{{收據抬頭}}</span></td></tr>
+        </table>
+      </td></tr>
+      <!-- CTA -->
+      <tr><td align="center" style="padding:32px 32px 8px;">
+        <a href="{{訂單明細連結}}" style="display:inline-block;background:#17b897;color:#ffffff;text-decoration:none;font-size:16px;font-weight:700;padding:14px 40px;border-radius:26px;">查看訂單明細</a>
+        <p style="margin:12px 0 0;font-size:14px;color:#666666;">也可至「會員中心 › 群募紀錄」查詢</p>
+      </td></tr>
+      <!-- Footer -->
+      <tr><td style="padding:24px 32px;border-top:1px solid #e6e6e6;font-size:14px;line-height:1.7;color:#888888;">
+        此信件由系統自動發送，請勿直接回覆。<br>
+        回饋品或專案相關問題，請聯絡提案方：<span class="v">{{提案方Email}}</span><br>
+        平台相關問題，請聯絡競賽咖客服：<span class="v">{{客服聯絡方式}}</span><br>
+        © RaceGo 競賽咖
+      </td></tr>
+    </table>
+  </td></tr>
+</table>
+    </div>
+
+    <!-- ================================================================
+         ② 出貨通知信（後台將訂單改為「已出貨」時寄出）
+    ================================================================= -->
+    <div class="mail" id="mail-ship">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f5f6f7;">
+  <tr><td align="center" style="padding:24px 12px;">
+    <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;background:#ffffff;border-radius:12px;overflow:hidden;font-family:'PingFang TC','Microsoft JhengHei',Arial,sans-serif;color:#222222;">
+      <tr><td style="padding:24px 32px;border-bottom:3px solid #17b897;">
+        <span style="font-size:26px;font-weight:900;color:#17b897;">Race</span><span style="font-size:26px;font-weight:900;color:#f5a623;">Go</span><span style="font-size:26px;font-weight:900;color:#222222;">競賽咖</span>
+      </td></tr>
+      <tr><td style="padding:32px 32px 8px;">
+        <p style="margin:0 0 8px;font-size:24px;font-weight:700;">您的回饋品已出貨</p>
+        <p style="margin:0;font-size:16px;line-height:1.8;color:#444444;">親愛的 <span class="v">{{會員姓名}}</span> 您好，<br>您贊助的「<span class="v">{{專案名稱}}</span>」回饋品已經寄出，以下是出貨資訊。</p>
+      </td></tr>
+      <!-- 出貨資訊 -->
+      <tr><td style="padding:24px 32px 0;">
+        <p style="margin:0 0 10px;font-size:16px;font-weight:700;border-left:4px solid #17b897;padding-left:8px;">出貨資訊</p>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="font-size:14px;line-height:1.6;background:#e9f8f3;border-radius:8px;">
+          <tr><td style="padding:14px 16px 4px;" width="110"><span style="color:#666666;">訂單編號</span></td><td style="padding:14px 16px 4px;font-weight:700;"><span class="v">{{訂單編號}}</span></td></tr>
+          <tr><td style="padding:4px 16px;color:#666666;">出貨狀態</td><td style="padding:4px 16px;color:#0f9a7d;font-weight:700;">已出貨</td></tr>
+          <tr><td style="padding:4px 16px;color:#666666;" valign="top">出貨日期</td><td style="padding:4px 16px;"><span class="note">後台有填才顯示</span><br><span class="v">{{出貨日期}}</span></td></tr>
+          <tr><td style="padding:4px 16px;color:#666666;" valign="top">物流業者</td><td style="padding:4px 16px;"><span class="note">超商自動帶出；宅配後台有填才顯示</span><br><span class="v">{{物流業者}}</span></td></tr>
+          <tr><td style="padding:4px 16px 14px;color:#666666;" valign="top">物流單號</td><td style="padding:4px 16px 14px;"><span class="note">後台有填才顯示</span><br><strong><span class="v">{{物流單號}}</span></strong><br><span style="font-size:14px;color:#666666;">可至 <span class="v">{{物流業者}}</span> 官網查詢配送進度</span></td></tr>
+        </table>
+      </td></tr>
+      <!-- 寄送資訊 -->
+      <tr><td style="padding:24px 32px 0;">
+        <p style="margin:0 0 10px;font-size:16px;font-weight:700;border-left:4px solid #17b897;padding-left:8px;">寄送資訊</p>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="font-size:14px;line-height:1.6;">
+          <tr><td width="110" style="padding:4px 0;color:#666666;">寄送方式</td><td style="padding:4px 0;"><span class="v">{{寄送方式}}</span></td></tr>
+          <tr><td style="padding:4px 0;color:#666666;">收件人</td><td style="padding:4px 0;"><span class="v">{{收件人姓名}}</span>　<span class="v">{{收件人手機}}</span></td></tr>
+          <tr><td style="padding:4px 0;color:#666666;" valign="top">取貨門市／地址</td><td style="padding:4px 0;"><span class="note">超商顯示門市，宅配顯示地址</span><br><span class="v">{{取貨門市或寄送地址}}</span></td></tr>
+        </table>
+      </td></tr>
+      <!-- 出貨品項 -->
+      <tr><td style="padding:24px 32px 0;">
+        <p style="margin:0 0 10px;font-size:16px;font-weight:700;border-left:4px solid #17b897;padding-left:8px;">出貨品項</p>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="font-size:14px;line-height:1.6;border-top:1px solid #e6e6e6;">
+          <tr><td style="padding:12px 0;border-bottom:1px solid #e6e6e6;">
+            <span class="note">逐筆重複：含實體回饋的方案</span><br>
+            <strong>方案 <span class="v">{{方案代號}}</span>｜<span class="v">{{方案名稱}}</span></strong><br>
+            <span style="color:#666666;font-size:14px;"><span class="v">{{回饋內容}}</span></span>
+          </td><td align="right" valign="top" style="padding:12px 0;border-bottom:1px solid #e6e6e6;">× <span class="v">{{數量}}</span></td></tr>
+        </table>
+        <p style="margin:12px 0 0;font-size:14px;color:#666666;line-height:1.7;">超商取貨請留意取貨通知簡訊，並於期限內完成取貨。</p>
+      </td></tr>
+      <tr><td align="center" style="padding:32px 32px 8px;">
+        <a href="{{訂單明細連結}}" style="display:inline-block;background:#17b897;color:#ffffff;text-decoration:none;font-size:16px;font-weight:700;padding:14px 40px;border-radius:26px;">查看訂單明細</a>
+      </td></tr>
+      <tr><td style="padding:24px 32px;border-top:1px solid #e6e6e6;font-size:14px;line-height:1.7;color:#888888;">
+        此信件由系統自動發送，請勿直接回覆。<br>
+        回饋品相關問題，請聯絡提案方：<span class="v">{{提案方Email}}</span><br>
+        平台相關問題，請聯絡競賽咖客服：<span class="v">{{客服聯絡方式}}</span><br>
+        © RaceGo 競賽咖
+      </td></tr>
+    </table>
+  </td></tr>
+</table>
+    </div>
+  </div>
+
+  <aside class="meta" id="meta"></aside>
+</div>
+
+<script>
+  const META = {
+    confirm: {
+      title: "① 訂單確認信",
+      trigger: "信用卡付款成功時",
+      to: "下單會員（聯絡人 Email）",
+      subject: "【競賽咖】感謝您的贊助｜訂單 {{訂單編號}}",
+      rules: [
+        "贊助明細：每個方案一列；有自由贊助時加一列",
+        "方案小計：購物車有方案時顯示",
+        "運費與寄送資訊：含實體回饋時顯示，否則運費顯示「無需寄送」並隱藏寄送資訊",
+        "發票：購物車有方案時顯示類型與對應欄位；純自由贊助不開發票。收據：一律顯示，選「需要」時顯示抬頭"
+      ]
+    },
+    ship: {
+      title: "② 出貨通知信",
+      trigger: "後台將訂單出貨狀態改為「已出貨」時",
+      to: "下單會員（聯絡人 Email）",
+      subject: "【競賽咖】您的回饋品已出貨｜訂單 {{訂單編號}}",
+      rules: [
+        "出貨日期、物流單號：後台有填才顯示，與訂單明細頁一致",
+        "物流業者：超商取貨依門市自動帶出；宅配由後台填寫，有填才顯示",
+        "出貨品項只列含實體回饋的方案，不列自由贊助",
+        "超商取貨提醒文字僅在寄送方式為超商時顯示"
+      ]
+    }
+  };
+  function showMeta(k) {
+    const m = META[k];
+    document.getElementById("meta").innerHTML = `<h2>${m.title}</h2>
+      <dl><dt>寄送時機</dt><dd>${m.trigger}</dd><dt>收件人</dt><dd>${m.to}</dd><dt>信件主旨</dt><dd><code>${m.subject}</code></dd></dl>
+      <h2>顯示規則</h2><ul>${m.rules.map(r => `<li>${r}</li>`).join("")}</ul>`;
+  }
+  document.querySelectorAll("[data-mail]").forEach(b => b.addEventListener("click", () => {
+    document.querySelectorAll("[data-mail]").forEach(x => x.setAttribute("aria-pressed", x === b));
+    document.querySelectorAll(".mail").forEach(m => m.classList.toggle("show", m.id === "mail-" + b.dataset.mail));
+    showMeta(b.dataset.mail);
+  }));
+  document.getElementById("showNotes").addEventListener("change", e => document.body.classList.toggle("hide-notes", !e.target.checked));
+  showMeta("confirm");
+</script>
+</body>
+</html>
