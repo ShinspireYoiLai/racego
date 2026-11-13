@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>金流設定｜申請引導（Mockup）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f4f6f7; --surface:#ffffff; --surface-2:#f2f4f5; --text:#1d2329; --muted:#5f6b76;
+  --line:#e3e7ea; --brand:#12b394; --brand-strong:#0b8f76; --brand-soft:#e7f7f3;
+  --warn-bg:#fff7ed; --warn-line:#f2a33a; --warn-text:#8a4b06; --danger:#d93636;
+  --on-brand:#ffffff; --shadow:0 1px 2px rgba(16,24,32,.04),0 4px 16px rgba(16,24,32,.05);
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;font-size:16px;line-height:1.75}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+a{color:var(--brand-strong)}
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;padding:14px 28px}
+.logo{font-weight:700;font-size:24px;letter-spacing:.5px}
+.logo b{color:var(--brand)}
+.user{display:flex;align-items:center;gap:10px;background:var(--surface-2);padding:6px 16px 6px 6px;border-radius:999px;font-weight:500;font-size:16px}
+.avatar{width:34px;height:34px;border-radius:50%;background:var(--brand);color:var(--on-brand);display:grid;place-items:center;font-weight:700}
+main{max-width:1040px;margin:0 auto;padding:40px 24px 96px}
+h1{font-size:32px;line-height:1.3;margin:0 0 8px}
+.flow{color:var(--muted);margin:0 0 24px;font-size:16px}
+.tabs{display:inline-flex;gap:4px;margin:20px 0 24px;padding:4px;background:var(--surface);border:1px solid var(--line);border-radius:12px;flex-wrap:wrap}
+.tab{border:none;background:transparent;color:var(--muted);padding:10px 24px;border-radius:9px;font:inherit;font-size:16px;font-weight:700;cursor:pointer}
+.tab.on{background:var(--brand);color:var(--on-brand)}
+.notice{background:var(--warn-bg);border:1px solid #fbe1bd;border-left:4px solid var(--warn-line);border-radius:10px;padding:16px 20px;margin-bottom:24px;color:var(--warn-text);font-size:16px}
+.notice strong{display:block;margin-bottom:4px;font-size:17px}
+.notice-link{color:var(--warn-text);font-weight:700;text-decoration:underline;text-underline-offset:3px}
+.notice-link:hover{color:#5e3304}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:28px 32px;margin-bottom:24px;box-shadow:var(--shadow)}
+.panel h2{font-size:22px;line-height:1.4;margin:0 0 6px}
+.panel .sub{color:var(--muted);margin:0 0 22px;font-size:16px}
+.panel h2.ruled{padding-bottom:16px;border-bottom:1px solid var(--line);margin-bottom:16px}
+/* stepper */
+.steps{display:grid;gap:0;list-style:none;margin:0;padding:4px 0 0}
+.steps.s5{grid-template-columns:repeat(5,1fr)}
+.steps.s4{grid-template-columns:repeat(4,1fr)}
+.steps li{text-align:center;position:relative;font-size:16px;color:var(--muted);padding:0 6px}
+.steps li::before{content:"";position:absolute;top:20px;left:-50%;width:100%;height:3px;border-radius:2px;background:var(--line);z-index:0}
+.steps li:first-child::before{display:none}
+.steps .dot{position:relative;z-index:1;width:42px;height:42px;border-radius:50%;background:var(--surface-2);display:grid;place-items:center;margin:0 auto 8px;font-weight:700;font-size:16px;color:var(--muted);border:3px solid var(--surface);box-shadow:0 0 0 1px var(--line)}
+.steps li.done .dot,.steps li.now .dot{background:var(--brand);color:var(--on-brand);box-shadow:none}
+.steps li.now .dot{box-shadow:0 0 0 5px var(--brand-soft)}
+.steps li.done::before,.steps li.now::before{background:var(--brand)}
+.steps li.now{color:var(--text);font-weight:700}
+.steps small{display:block;font-size:16px;font-weight:400;color:var(--muted);line-height:1.5}
+/* chooser */
+.q{margin-bottom:22px}
+.q-label{font-weight:700;margin-bottom:10px;font-size:17px}
+.opts{display:flex;gap:12px;flex-wrap:wrap}
+.opt{border:1.5px solid var(--line);background:var(--surface);color:var(--text);border-radius:12px;padding:14px 20px;font:inherit;font-size:17px;font-weight:700;cursor:pointer;text-align:left;min-width:200px}
+.opt span{display:block;font-size:16px;font-weight:400;color:var(--muted)}
+.opt[aria-pressed="true"]{border-color:var(--brand);background:var(--brand-soft)}
+.opt:focus-visible,.tab:focus-visible,.btn:focus-visible,.copy:focus-visible,.linkbtn:focus-visible,.demo:focus-visible{outline:3px solid var(--brand-strong);outline-offset:2px}
+.hidden{display:none!important}
+.gap-note{font-size:16px;color:var(--danger);margin-top:10px}
+/* plan */
+.plan{border:1.5px solid var(--brand);border-radius:16px;padding:26px 28px;background:var(--surface);box-shadow:var(--shadow)}
+.plan-head{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:flex-start;margin-bottom:16px}
+.plan h3{margin:8px 0 0;font-size:21px}
+.badge{display:inline-block;background:var(--brand-soft);color:var(--brand-strong);border-radius:999px;padding:2px 12px;font-size:16px;font-weight:500;margin-right:6px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin:0 0 18px}
+.fact{background:var(--surface-2);border-radius:12px;padding:12px 16px}
+.fact dt{font-size:16px;color:var(--muted)}
+.fact dd{margin:2px 0 0;font-weight:700;font-size:17px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.copy{border:1px solid var(--line);background:var(--surface);color:var(--brand-strong);border-radius:8px;font:inherit;font-size:16px;font-weight:500;padding:4px 12px;cursor:pointer;line-height:1.4}
+.copy:hover{border-color:var(--brand)}
+.alert{color:var(--danger);font-weight:500;margin:0 0 16px}
+.actions{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.actions.end{justify-content:flex-end}
+.btn{display:inline-block;border:none;border-radius:10px;padding:13px 26px;font:inherit;font-size:16px;font-weight:700;cursor:pointer;text-decoration:none;line-height:1.4}
+.btn.primary{background:var(--brand);color:var(--on-brand)}
+.btn.primary:hover{background:var(--brand-strong)}
+.btn.ghost{background:var(--surface);color:var(--brand-strong);border:1.5px solid var(--brand);transition:background-color .15s ease,border-color .15s ease,box-shadow .15s ease,transform .15s ease}
+.btn.ghost:hover{background:var(--brand-soft);border-color:var(--brand-strong);box-shadow:0 4px 12px rgba(18,179,148,.18);transform:translateY(-1px)}
+.btn.ghost:active{transform:none;box-shadow:none}
+.qr{display:flex;gap:18px;align-items:center;background:var(--surface-2);border-radius:12px;padding:16px}
+.qr-box{width:104px;height:104px;flex:none;border-radius:8px;background:
+  repeating-linear-gradient(0deg,var(--text) 0 6px,transparent 6px 12px),
+  repeating-linear-gradient(90deg,var(--surface) 0 6px,transparent 6px 12px);opacity:.85}
+.mobile-only{display:none}
+.qr-img{width:140px;height:140px;flex:none;border-radius:8px;background:#fff;image-rendering:pixelated;border:1px solid var(--line)}
+/* payuni */
+.forms{display:grid;grid-template-columns:1fr;gap:16px;margin-bottom:24px}
+.formcard{border:1px solid var(--line);border-radius:14px;padding:24px;display:flex;flex-direction:column;gap:12px;background:var(--surface)}
+.formcard:first-child{border:1.5px solid var(--brand);background:linear-gradient(180deg,var(--brand-soft),var(--surface) 70%)}
+.formcard h3{margin:0;font-size:20px}
+.formcard p{margin:0;color:var(--muted);font-size:16px;flex:1}
+.linkbtn{display:inline-block;align-self:flex-start;background:var(--brand);color:var(--on-brand);border-radius:10px;padding:12px 24px;font-size:16px;font-weight:700;text-decoration:none}
+.linkbtn:hover{background:var(--brand-strong)}
+#pu-go{display:inline-flex;align-items:center;gap:8px}
+.plan .agree{margin-top:16px}
+.plan .agree + .qr,.plan .agree + .btn{margin-top:16px}
+.btn.primary.is-disabled{background:var(--line);color:var(--muted);cursor:not-allowed}
+.qr .qr-off{display:none}
+body.locked .qr .qr-on{display:none}
+body.locked .qr .qr-off{display:inline}
+.linkbtn.is-disabled{background:var(--line);color:var(--muted);cursor:not-allowed}
+.agree{display:flex;align-items:flex-start;gap:10px;font-size:16px;color:var(--text);cursor:pointer;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.agree input{-webkit-appearance:none;appearance:none;width:22px;height:22px;flex:none;margin:2px 0 0;padding:0;border:2px solid var(--brand);border-radius:6px;background:transparent;cursor:pointer;transition:background-color .15s ease}
+.agree input:checked{background:var(--brand) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12.5 4.5 4.5L19 7.5'/%3E%3C/svg%3E") center/16px no-repeat}
+.agree input:focus-visible{outline:3px solid var(--brand-strong);outline-offset:2px}
+.url{font-size:16px;color:var(--muted);word-break:break-all}
+ol.after{margin:14px 0 0;padding-left:22px;font-size:16px;color:var(--text)}
+.body-text{margin:0 0 18px;color:var(--text)}
+.tips{list-style:none;margin:14px 0 20px;padding:0;display:grid;gap:6px}
+.tips li{position:relative;padding-left:18px;color:var(--text)}
+.tips li::before{content:"";position:absolute;left:2px;top:.72em;width:6px;height:6px;border-radius:50%;background:var(--brand)}
+.tips svg{display:none}
+.tips b{font-weight:inherit}
+ol.after li{margin-bottom:6px}
+.guide{background:var(--surface-2);border-radius:12px;padding:16px 20px;margin-bottom:24px}
+.guide summary{font-weight:700;font-size:17px;cursor:pointer;color:var(--brand-strong)}
+.guide p{margin:8px 0 14px;font-size:16px;color:var(--muted)}
+.shot{border:2px dashed #cdd4d9;border-radius:10px;background:var(--surface);aspect-ratio:16/7;display:grid;place-items:center;color:var(--muted);font-size:16px}
+.mailbox{border:1.5px solid var(--brand);border-radius:16px;padding:22px 24px;margin-bottom:24px}
+.mail-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px;font-size:18px}
+.mail-row span{color:var(--muted);font-size:16px}
+.mail-sample{background:var(--surface-2);border-radius:12px;padding:18px 20px;font-size:16px}
+.ms-sub{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-bottom:14px;margin-bottom:14px;border-bottom:1px solid var(--line)}
+.ms-sub span,.ms-body-head span{font-weight:400;color:var(--muted)}
+.ms-body-head{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.mail-sample pre{margin:0;white-space:pre-wrap;font-family:inherit;font-size:16px;line-height:1.8}
+.confirm-row{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:22px}
+.confirm-row span{color:var(--muted);font-size:16px;flex:1;min-width:260px}
+.status{text-align:center;padding:44px 28px}
+.status .big{width:72px;height:72px;border-radius:50%;margin:0 auto 16px;display:grid;place-items:center;font-size:32px;background:var(--brand-soft);color:var(--brand-strong)}
+.status h2{margin-bottom:8px}
+.status p{color:var(--muted);margin:0 auto 22px;max-width:620px}
+.s3-info{max-width:620px;margin:0 auto 24px;text-align:left}
+#jk-s3 .s3-info{max-width:900px;grid-template-columns:repeat(3,1fr)}
+@media (max-width:760px){#jk-s3 .s3-info{grid-template-columns:1fr}}
+.mail-link{display:inline-flex;align-items:center;gap:8px;color:var(--brand-strong);text-decoration:none;font-weight:700}
+.mail-link:hover{text-decoration:underline}
+.limit-note{display:flex;align-items:center;gap:10px;margin:0;padding:12px 16px;background:var(--surface-2);border-radius:10px;color:var(--muted);font-size:16px}
+.limit-note svg{flex:none;color:var(--brand-strong)}
+.plan-top{display:flex;justify-content:space-between;align-items:center;gap:16px 24px;flex-wrap:wrap;padding-bottom:20px;margin-bottom:20px;border-bottom:1px solid var(--line)}
+.plan-top h3{margin:8px 0 0}
+.facts-2{grid-template-columns:repeat(2,1fr);margin-bottom:16px}
+.facts-2 .fact{display:flex;flex-direction:column;justify-content:center;min-height:88px}
+@media (max-width:760px){.facts-2{grid-template-columns:1fr}.plan-top .btn{width:100%;text-align:center}}
+.limit-note a{color:var(--brand-strong);font-weight:700;text-decoration:none}
+.limit-note a:hover{text-decoration:underline}
+.more{margin:0 0 24px;display:flex;justify-content:center;gap:12px;flex-wrap:wrap}
+.btn.orange{background:#f28a1f;color:#fff;transition:background-color .15s ease,box-shadow .15s ease,transform .15s ease}
+.btn.orange:hover{background:#dd7409;box-shadow:0 4px 12px rgba(242,138,31,.25);transform:translateY(-1px)}
+.btn.orange:active{transform:none;box-shadow:none}
+.demo{font-size:16px;color:var(--muted);background:none;border:1px dashed #cdd4d9;border-radius:8px;padding:8px 14px;cursor:pointer;font-family:inherit}
+ul.check{margin:0;padding-left:22px}
+ul.check li{margin-bottom:6px}
+.code{font-family:ui-monospace,Consolas,monospace;font-size:16px;background:var(--surface-2);padding:2px 10px;border-radius:6px}
+.tbd{color:var(--muted);font-style:italic}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+label{display:block;font-weight:500;margin-bottom:6px}
+label i{color:var(--danger);font-style:normal}
+input{width:100%;border:1px solid transparent;background:var(--surface-2);color:var(--text);border-radius:10px;padding:12px 14px;font:inherit;font-size:16px}
+input:focus-visible{outline:none;border-color:var(--brand);background:var(--surface)}
+.hint{font-size:16px;color:var(--muted);margin-top:6px}
+.toast{margin-top:16px;background:var(--brand-soft);color:var(--brand-strong);border-radius:10px;padding:12px 16px;font-weight:500}
+.doc-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+#plan-wrap{margin-bottom:24px}
+.plan-cta{display:flex;align-items:center;gap:12px 18px;flex-wrap:wrap;margin-top:20px}
+.cta-hint{color:var(--muted);font-size:16px}
+.cta-hint b{color:var(--text);font-family:ui-monospace,Consolas,monospace}
+.btn.ext{display:inline-flex;align-items:center;gap:8px}
+.btn.ext.mobile-only{display:none}
+@media (max-width:640px){.btn.ext.mobile-only{display:inline-flex}}
+.step-title{display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:22px;margin:0 0 6px}
+#plan-wrap .plan{border:none;box-shadow:none;background:none;padding:0;border-radius:0}
+#plan-wrap>.step-title{margin-bottom:20px}
+.step-title .badge{font-size:16px;margin:0}
+.step-no{display:inline-block;background:var(--brand);color:var(--on-brand);border-radius:999px;padding:2px 14px;font-size:16px;font-weight:700}
+.mail-tip{margin:14px 0 0;color:var(--muted);font-size:16px}
+.mail-sample + .btn{margin-top:18px}
+.mail-tip + .btn{margin-top:14px}
+#docs .mailbox{margin:4px 0 0}
+.docs-confirm{justify-content:flex-end;margin-top:24px;border-top:none;padding-top:0}
+.doc-tab{border:1.5px solid var(--line);background:var(--surface);color:var(--muted);border-radius:999px;padding:8px 18px;font:inherit;font-size:16px;font-weight:700;cursor:pointer}
+.doc-tab.on{border-color:var(--brand);background:var(--brand-soft);color:var(--brand-strong)}
+.doc-tab:focus-visible{outline:3px solid var(--brand-strong);outline-offset:2px}
+.doc-group{background:var(--surface-2);border-radius:12px;padding:20px 24px;margin-bottom:20px}
+.doc-group h3,.doc-extra h3{margin:0 0 12px;font-size:18px}
+.doc-list{margin:0;padding-left:24px}
+.doc-list li{margin-bottom:8px;padding-left:4px}
+.doc-list .line{display:block}
+.red{color:var(--danger)}
+.doc-extra a{color:var(--brand-strong);font-weight:700}
+/* consent */
+.consent h2{margin-bottom:6px}
+.consent-list{display:grid;gap:10px}
+.agree .doc-link{color:var(--brand-strong);font-weight:700;text-decoration:none}
+.agree .doc-link:hover{text-decoration:underline}
+.consent-done{display:flex;align-items:center;gap:10px 14px;flex-wrap:wrap}
+.consent.is-done{padding:16px 24px}
+.ok-ico{width:28px;height:28px;border-radius:50%;background:var(--brand);color:#fff;display:grid;place-items:center;flex:none}
+.cd-text{flex:1;min-width:240px;color:var(--text)}
+.cd-title{color:var(--brand-strong);font-weight:700;text-decoration:none;margin-right:16px}
+.cd-title:hover{text-decoration:underline}
+.cd-note{color:var(--muted)}
+.cd-links a{color:var(--brand-strong);font-weight:700;text-decoration:none}
+.cd-links a:hover{text-decoration:underline}
+body.locked .needs-consent{background:var(--line)!important;color:var(--muted)!important;border-color:var(--line)!important;pointer-events:none;cursor:not-allowed;box-shadow:none!important}
+body.locked .qr-img{filter:blur(6px);opacity:.45}
+.doc-modal{background:var(--surface);border-radius:20px;padding:32px 36px;max-width:1100px;width:100%;box-shadow:0 12px 40px rgba(0,0,0,.2);display:flex;flex-direction:column;max-height:85vh}
+.doc-modal h3{margin:0 0 14px;font-size:21px}
+.doc-body{overflow:auto;border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:20px;color:var(--text)}
+.doc-body p{margin:0 0 10px}
+.doc-body .tbd{display:block;margin-bottom:12px}
+.doc-body{line-height:1.85}
+.doc-body h4{margin:22px 0 8px;font-size:17px}
+.doc-body ol{margin:0 0 10px;padding-left:24px}
+.doc-body li{margin-bottom:6px}
+.doc-body .doc-meta{color:var(--muted)}
+/* modal */
+.modal-bg{position:fixed;inset:0;background:rgba(15,20,25,.45);display:grid;place-items:center;z-index:50;padding:20px}
+.modal{background:var(--surface);border-radius:20px;padding:34px 30px 30px;max-width:420px;width:100%;box-shadow:0 12px 40px rgba(0,0,0,.2);text-align:center}
+.m-icon{width:62px;height:54px;display:block;margin:0 auto 14px}
+.modal h3{margin:0 0 10px;font-size:21px}
+.modal p{margin:0 0 26px;color:var(--muted);font-size:16px;line-height:1.8}
+.m-actions{justify-content:center}
+.m-actions .btn{min-width:124px}
+.mock-tag{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--text);color:var(--surface);font-size:16px;padding:6px 12px;border-radius:8px;opacity:.75}
+@media (max-width:640px){
+  header.top{padding:12px 16px}
+  main{padding:28px 16px 80px}
+  .panel{padding:22px 18px}
+  .desktop-only{display:none}
+  .mobile-only{display:inline-block}
+  .steps.s5,.steps.s4{grid-template-columns:1fr;gap:12px;text-align:left}
+  .steps li{display:flex;align-items:center;gap:12px;text-align:left}
+  .steps li::before{display:none}
+  .steps .dot{margin:0;flex:none;width:36px;height:36px}
+  .forms{grid-template-columns:1fr}
+  h1{font-size:26px}
+  .tabs{display:flex}
+  .tab{flex:1}
+}
+@media (prefers-reduced-motion:no-preference){.plan,.stage{animation:show .2s ease-out}@keyframes show{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="logo">Race<b>Go</b> 競賽咖</div>
+  <div class="user"><span class="avatar">Y</span>YOI</div>
+</header>
+
+<main>
+  <h1>金流設定</h1>
+
+  <div class="tabs" role="tablist">
+    <button class="tab on" role="tab" aria-selected="true" data-tab="payuni">PayUni 統一金流</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="jko">街口支付</button>
+  </div>
+
+  <!-- ================= PayUni ================= -->
+  <div id="tab-payuni">
+
+    <div class="notice">
+      <strong>本平台只提供系統介接</strong>
+      請先填寫商店申請表單，完成統一金流註冊後將 PayUni 特店憑證寄送至競賽咖客服，平台確認後即可開通。<br>金流相關疑問（手續費、撥款、對帳、商店審核等）請直接聯繫統一金流：<a class="notice-link" href="mailto:service@payuni.com.tw" target="_blank" rel="noopener">service@payuni.com.tw</a>
+    </div>
+
+    <section class="panel" aria-label="申請進度">
+      <ol class="steps s4" id="pu-steps">
+        <li class="now"><span class="dot">1</span><div>填寫申請表單</div></li>
+        <li><span class="dot">2</span><div>寄送特店憑證</div></li>
+        <li><span class="dot">3</span><div>平台確認中<small>約 3–5 個工作天</small></div></li>
+        <li><span class="dot">4</span><div>開通完成</div></li>
+      </ol>
+    </section>
+
+    <section class="panel consent">
+      <div class="consent-open">
+        <h2>申請前確認</h2>
+        <p class="sub">開始申請前，請閱讀並確認以下事項。</p>
+        <div class="consent-list">
+          <label class="agree"><input type="checkbox" class="cs-input" data-k="terms"><span>我已閱讀並同意<a href="#" class="doc-link" data-doc="terms">《RaceGo 金流服務條款》</a></span></label>
+          <label class="agree"><input type="checkbox" class="cs-input" data-k="auth"><span>本人確認具有代表主辦單位申請金流服務之權限，並保證所提供之申請資料均正確且屬實。</span></label>
+        </div>
+        <div class="actions end" style="margin-top:20px"><button class="btn primary cs-ok" disabled>確認並開始申請</button></div>
+      </div>
+      <div class="consent-done hidden">
+        <span class="ok-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span>
+        <span class="cd-text"><a href="#" class="doc-link cd-title" data-doc="terms">RaceGo 金流服務條款</a><span class="cd-note">已於 <span class="cs-date"></span> 完成確認。</span></span>
+      </div>
+    </section>
+
+
+    <!-- Stage 1 -->
+    <div class="stage" id="pu-s1">
+      <section class="panel">
+        <h2>商店申請表單</h2>
+        <ul class="tips">
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>表單填寫約需 <b>5 分鐘</b>，無須上傳任何附件。</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h5v18H6a2 2 0 0 1-2-2z"/><path d="M20 5a2 2 0 0 0-2-2h-5v18h5a2 2 0 0 0 2-2z"/></svg><span>填寫前請先詳閱表單中的<b>「填表前必讀」</b>說明，以利順利完成申請。</span></li>
+          <li class="warn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.3 3.9 2.4 17.5A2 2 0 0 0 4.1 20.5h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg><span>若資料缺漏而需退回補件，通常會額外增加 <b>1～2 週</b>的作業時間。</span></li>
+        </ul>
+        <div class="actions" style="margin-top:20px">
+          <a class="linkbtn" id="pu-go" href="https://core.newpay.com.tw/apply/racego" target="_blank" rel="noopener">前往填寫商店申請表<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg></a>
+        </div>
+      </section>
+      <section class="panel">
+        <h2>申請送出後的流程</h2>
+        <ol class="after">
+          <li>新競雲智能股份有限公司檢查資料</li>
+          <li>代為送件至統一金流線上註冊</li>
+          <li>統一金流線上寄送信箱驗證通知信至聯絡人信箱</li>
+          <li>完成信箱驗證後，至統一金流線上官網登錄</li>
+        </ol>
+        <div class="confirm-row docs-confirm">
+          <button class="btn primary" id="pu-done-forms">我已完成表單填寫申請</button>
+        </div>
+      </section>
+    </div>
+
+    <!-- Stage 2 -->
+    <section class="panel stage hidden" id="pu-s2">
+      <h2 class="ruled">寄送 PayUni 特店憑證</h2>
+      <p class="sub">完成信箱驗證並登入統一金流線上官網後，請查詢以下三組資訊，並寄送至競賽咖客服信箱。平台核對無誤後，將協助設定 KEY 值並開通金流功能。</p>
+      <details class="guide" open>
+        <summary>如何找到這三組資訊？</summary>
+        <p>登入統一金流線上官網後台後，依下圖標示位置查看 MerchantID、HashKey、HashIV。</p>
+        <div class="shot">後台查詢位置截圖（待提供）</div>
+      </details>
+      <div class="mailbox">
+        <div class="mail-row"><span>寄送至</span><b class="code">service@racego.app</b><button class="copy" data-copy="service@racego.app">複製</button></div>
+        <div class="q-label">信件範例（請依格式填寫）</div>
+        <div class="mail-sample">
+          <div class="ms-sub"><span>主旨</span><b id="ms-subject">【統一金流特店憑證】主辦單位名稱</b><button class="copy" data-target="ms-subject">複製</button></div>
+          <div class="ms-body-head"><span>內文</span><button class="copy" data-target="ms-body">複製</button></div>
+          <pre id="ms-body">競賽咖客服您好：
+
+以下為本單位的統一金流特店憑證，請協助確認開通。
+
+主辦單位名稱：
+聯絡人：
+聯絡電話：
+
+MerchantID（特店代號）：
+HashKey：
+HashIV：
+
+謝謝！</pre>
+        </div>
+        <a class="btn ghost" href="mailto:service@racego.app" target="_blank" rel="noopener">開啟郵件寄送</a>
+      </div>
+      <div class="actions end">
+        <button class="btn primary" id="pu-submit">我已寄出憑證</button>
+      </div>
+    </section>
+
+    <!-- Stage 3 -->
+    <section class="panel stage status hidden" id="pu-s3">
+      <div class="big"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+      <h2>平台確認中</h2>
+      <p>平台將核對你寄送的特店憑證，確認無誤後協助設定 KEY 值並開通金流功能，完成後將通知你。</p>
+      <dl class="facts s3-info">
+        <div class="fact"><dt>預計確認時間</dt><dd>約 3–5 個工作天</dd></div>
+        <div class="fact"><dt>有疑問請聯繫競賽咖客服</dt><dd><a class="mail-link" href="mailto:service@racego.app" target="_blank" rel="noopener"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>service@racego.app</a></dd></div>
+      </dl>
+      <button class="demo" id="pu-approve">（示意）模擬平台確認通過</button>
+    </section>
+
+    <!-- Stage 4 -->
+    <section class="panel stage status hidden" id="pu-s4">
+      <div class="big"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v5c0 4.5-3 8.3-7 9.5-4-1.2-7-5-7-9.5V6z"/><path d="m8.8 12 2.2 2.2 4.2-4.4"/></svg></div>
+      <h2>開通完成</h2>
+      <p>統一金流已開通，現在可以在活動中使用統一金流收款。</p>
+      <div class="more"><a class="btn ghost" href="https://organizer.racego.app/announcements/9?from=list" target="_blank" rel="noopener">金流 Q&amp;A</a><a class="btn orange" href="#" onclick="return false">回到賽事列表</a></div>
+      <button class="demo" id="pu-reset">（示意）重新開始</button>
+    </section>
+  </div>
+
+  <!-- ================= 街口支付 ================= -->
+  <div id="tab-jko" class="hidden">
+
+    <div class="notice">
+      <strong>本平台只提供系統介接</strong>
+      街口支付的申請與審核由街口支付辦理。審核通過後，由平台協助完成串接。<br>金流相關疑問（手續費、撥款、對帳、商店審核等）請直接聯繫街口支付：<a class="notice-link" href="mailto:service@jkopay.com" target="_blank" rel="noopener">service@jkopay.com</a>
+    </div>
+
+    <section class="panel" aria-label="申請進度">
+      <ol class="steps s4" id="steps">
+        <li class="now"><span class="dot">1</span><div>選擇申請方式</div></li>
+        <li><span class="dot">2</span><div>線上申請・寄送文件</div></li>
+        <li><span class="dot">3</span><div>審核中<small>街口審核與平台串接</small></div></li>
+        <li><span class="dot">4</span><div>開通完成</div></li>
+      </ol>
+    </section>
+
+    <section class="panel consent">
+      <div class="consent-open">
+        <h2>申請前確認</h2>
+        <p class="sub">開始申請前，請閱讀並確認以下事項。</p>
+        <div class="consent-list">
+          <label class="agree"><input type="checkbox" class="cs-input" data-k="terms"><span>我已閱讀並同意<a href="#" class="doc-link" data-doc="terms">《RaceGo 金流服務條款》</a></span></label>
+          <label class="agree"><input type="checkbox" class="cs-input" data-k="auth"><span>本人確認具有代表主辦單位申請金流服務之權限，並保證所提供之申請資料均正確且屬實。</span></label>
+        </div>
+        <div class="actions end" style="margin-top:20px"><button class="btn primary cs-ok" disabled>確認並開始申請</button></div>
+      </div>
+      <div class="consent-done hidden">
+        <span class="ok-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span>
+        <span class="cd-text"><a href="#" class="doc-link cd-title" data-doc="terms">RaceGo 金流服務條款</a><span class="cd-note">已於 <span class="cs-date"></span> 完成確認。</span></span>
+      </div>
+    </section>
+
+
+    <section class="panel" id="jk-choose">
+      <h2>選擇申請方式</h2>
+      <p class="sub">選擇申請身分，下方會顯示適合你的申請方式與準備事項。</p>
+      <div class="q">
+        <div class="q-label">申請身分</div>
+        <div class="opts" data-group="who">
+          <button class="opt" aria-pressed="false" data-val="company">公司／商行<span>有統一編號</span></button>
+          <button class="opt" aria-pressed="false" data-val="personal">個人<span>以個人名義收款</span></button>
+        </div>
+      </div>
+    </section>
+
+    <section id="plan-wrap" class="panel hidden" aria-live="polite">
+      <h2 class="step-title"><span class="step-no">步驟一</span>至街口完成線上申請<span class="badge" id="who-badge"></span></h2>
+      <div class="plan" id="plan-company-online" hidden>
+        <dl class="facts facts-2">
+          <div class="fact"><dt>收款額度</dt><dd>30 萬／月</dd></div>
+          <div class="fact"><dt>業務代碼（申請時填寫）</dt><dd><span class="code">SP0001</span><button class="copy" data-copy="SP0001">複製</button></dd></div>
+        </dl>
+        <div class="limit-note">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 8h.01"/></svg>
+          <span>額度需求超過 30 萬／月，請<a href="mailto:service@racego.app" target="_blank" rel="noopener" title="service@racego.app">聯繫客服</a>。</span>
+        </div>
+        <div class="plan-cta">
+          <a class="btn primary ext jk-go" href="https://www.jkopay.com/apply/identity?code=SP0001" target="_blank" rel="noopener">前往填寫街口店家申請表<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg></a>
+        </div>
+      </div>
+      <div class="plan" id="plan-personal" hidden>
+        <dl class="facts">
+          <div class="fact"><dt>收款額度</dt><dd>30 萬／月</dd></div>
+          <div class="fact"><dt>業務代碼（申請時填寫）</dt><dd><span class="code">SP0001</span><button class="copy" data-copy="SP0001">複製</button></dd></div>
+        </dl>
+        <p class="alert">僅限使用手機開啟申請連結。</p>
+        <div class="qr desktop-only">
+          <img class="qr-img" src="data:image/png;base64,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" alt="街口支付個人戶線上申請 QR Code">
+          <div><span class="qr-on">請用手機掃描 QR Code 開啟申請頁面。</span><span class="qr-off">完成上方「申請前確認」後，即可顯示申請 QR Code。</span></div>
+        </div>
+        <a class="btn primary mobile-only ext jk-go" href="https://www.jkos.com/apply/individual/" target="_blank" rel="noopener">前往填寫街口店家申請表<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg></a>
+      </div>
+    </section>
+
+    <section class="panel hidden" id="docs">
+      <h2 class="step-title"><span class="step-no">步驟二</span>寄送檢附文件至競賽咖客服</h2>
+      <p class="sub">請依申請類型準備以下資料，<b class="red">缺件將無法送審</b>。</p>
+      <div class="doc-tabs" id="doc-tabs" role="tablist">
+        <button class="doc-tab on" data-doc="corp">法人公司戶</button>
+        <button class="doc-tab" data-doc="org">社團法人／財團法人</button>
+        <button class="doc-tab" data-doc="shop">商行／商號</button>
+      </div>
+      <div class="doc-group" data-doc="corp" hidden>
+        <h3>「法人」公司戶檢附資料</h3>
+        <ol class="doc-list">
+            <li>變更事項登記表完整頁面（商工網站截圖）</li>
+            <li>負責人身分證正、反面（清晰可辨識）</li>
+            <li>公司戶存摺（<b class="red">不收數位帳戶、籌備處存摺</b>）</li>
+            <li><span class="line"><b>線上</b>：官網截圖（頁首、商品頁、頁尾）</span></li>
+            <li>商品價目表</li>
+        </ol>
+      </div>
+      <div class="doc-group" data-doc="org" hidden>
+        <h3>「社團法人／財團法人」檢附資料</h3>
+        <ol class="doc-list">
+            <li>法人登記證書，或人民團體立案證書＋人民團體職員當選證明書</li>
+            <li>統一編配書</li>
+            <li>負責人身分證正、反面（清晰可辨識）</li>
+            <li>公司戶存摺（<b class="red">不收數位帳戶、籌備處存摺</b>）</li>
+            <li><span class="line"><b>線上</b>：官網截圖（頁首、商品頁、頁尾）</span></li>
+            <li>商品價目表</li>
+        </ol>
+      </div>
+      <div class="doc-group" data-doc="shop" hidden>
+        <h3>「商行／商號」檢附資料</h3>
+        <ol class="doc-list">
+            <li>商業登記抄本（商工網站截圖），或國稅局函文（稅籍網站截圖）</li>
+            <li>負責人身分證正、反面（清晰可辨識）</li>
+            <li>公司戶存摺（<b class="red">不收數位帳戶、籌備處存摺</b>）</li>
+            <li><span class="line"><b>線上</b>：官網截圖（頁首、商品頁、頁尾）</span></li>
+            <li>商品價目表</li>
+        </ol>
+      </div>
+      <div class="doc-group" data-doc="personal" hidden>
+        <h3>「個人」檢附資料</h3>
+        <ol class="doc-list">
+            <li>負責人身分證正、反面（清晰可辨識）</li>
+            <li>負責人存摺（<b class="red">不收數位帳戶</b>）</li>
+            <li><span class="line"><b>線上</b>：官網截圖（頁首、商品頁、頁尾）</span></li>
+            <li>商品價目表</li>
+        </ol>
+      </div>
+      <div class="mailbox">
+        <div class="mail-row"><span>寄送至</span><b class="code">service@racego.app</b><button class="copy" data-copy="service@racego.app">複製</button></div>
+        <div class="q-label">信件範例（請依格式填寫，並附上上方所有檔案）</div>
+        <div class="mail-sample">
+          <div class="ms-sub"><span>主旨</span><b id="jk-subject">【街口支付申請文件】店鋪名_商行/公司名</b><button class="copy" data-target="jk-subject">複製</button></div>
+          <div class="ms-body-head"><span>內文</span><button class="copy" data-target="jk-body">複製</button></div>
+          <pre id="jk-body">競賽咖客服您好：
+
+以下為本單位的街口支付申請檢附文件，請協助確認。
+
+申請類型：
+店鋪名稱：
+公司／商行名稱：
+聯絡人：
+聯絡電話：
+
+謝謝！</pre>
+        </div>
+        <p class="mail-tip">單封信件附件上限約 20MB，檔案較大時請分次寄送，並於主旨註明（1/2）、（2/2）。</p>
+        <a class="btn ghost" href="mailto:service@racego.app" target="_blank" rel="noopener">開啟郵件寄送</a>
+      </div>
+      <div class="confirm-row docs-confirm">
+        <button class="btn primary" id="sent">我已完成申請並寄出文件</button>
+      </div>
+    </section>
+
+    <section class="panel stage status hidden" id="jk-s3">
+      <div class="big"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+      <h2>審核中</h2>
+      <p>街口將審核你的申請資料與檢附文件，審核通過後由平台協助串接，完成後將通知你。</p>
+      <dl class="facts s3-info">
+        <div class="fact"><dt>街口審核</dt><dd>約 7–14 個工作天</dd></div>
+        <div class="fact"><dt>平台串接（審核通過後）</dt><dd>約 3–5 個工作天</dd></div>
+        <div class="fact"><dt>有疑問請聯繫競賽咖客服</dt><dd><a class="mail-link" href="mailto:service@racego.app" target="_blank" rel="noopener"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>service@racego.app</a></dd></div>
+      </dl>
+      <button class="demo" id="jk-approve">（示意）模擬審核與串接完成</button>
+    </section>
+
+    <section class="panel stage status hidden" id="jk-s4">
+      <div class="big"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v5c0 4.5-3 8.3-7 9.5-4-1.2-7-5-7-9.5V6z"/><path d="m8.8 12 2.2 2.2 4.2-4.4"/></svg></div>
+      <h2>開通完成</h2>
+      <p>街口支付已開通，現在可以在活動中使用街口支付收款。</p>
+      <div class="more"><a class="btn ghost" href="https://organizer.racego.app/announcements/9?from=list" target="_blank" rel="noopener">金流 Q&amp;A</a><a class="btn orange" href="#" onclick="return false">回到賽事列表</a></div>
+      <button class="demo" id="jk-reset">（示意）重新開始</button>
+    </section>
+  </div>
+</main>
+<div class="modal-bg hidden" id="doc-modal" role="dialog" aria-modal="true" aria-labelledby="doc-title">
+  <div class="doc-modal">
+    <h3 id="doc-title"></h3>
+    <div class="doc-body" id="doc-body"></div>
+    <div class="actions m-actions"><button class="btn primary" id="doc-close">關閉</button></div>
+  </div>
+</div>
+<div class="modal-bg hidden" id="modal" role="dialog" aria-modal="true" aria-labelledby="m-title">
+  <div class="modal">
+    <svg class="m-icon" viewBox="0 0 64 56" aria-hidden="true"><path d="M27.7 4.5a5 5 0 0 1 8.6 0l25 43a5 5 0 0 1-4.3 7.5H7a5 5 0 0 1-4.3-7.5z" fill="#f5a00f"/><rect x="29" y="16" width="6" height="20" rx="3" fill="#fff"/><circle cx="32" cy="44" r="3.5" fill="#fff"/></svg>
+    <h3 id="m-title"></h3>
+    <p id="m-msg"></p>
+    <div class="actions m-actions">
+      <button class="btn ghost" id="m-cancel">取消</button>
+      <button class="btn primary" id="m-ok">確認送出</button>
+    </div>
+  </div>
+</div>
+<div class="mock-tag">Mockup 示意</div>
+
+<script>
+/* tabs */
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+  document.querySelectorAll('.tab').forEach(x=>{x.classList.toggle('on',x===t);x.setAttribute('aria-selected',x===t)});
+  document.getElementById('tab-payuni').classList.toggle('hidden',t.dataset.tab!=='payuni');
+  document.getElementById('tab-jko').classList.toggle('hidden',t.dataset.tab!=='jko');
+}));
+
+/* PayUni */
+function puStage(n){
+  [1,2,3,4].forEach(i=>document.getElementById('pu-s'+i).classList.toggle('hidden',i!==n));
+  document.querySelectorAll('#pu-steps li').forEach((li,i)=>{
+    li.className = (n===4 || i+1<n)?'done':(i+1===n?'now':'');
+  });
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+let mOk=null;
+function ask(t,m,ok){document.getElementById('m-title').textContent=t;document.getElementById('m-msg').innerHTML=m.split('。').filter(Boolean).map(s=>s+'。').join('<br>');mOk=ok;document.getElementById('modal').classList.remove('hidden');document.getElementById('m-ok').focus();}
+function closeM(){document.getElementById('modal').classList.add('hidden');}
+document.getElementById('m-cancel').onclick=closeM;
+document.getElementById('m-ok').onclick=()=>{closeM();if(mOk)mOk();};
+document.getElementById('modal').addEventListener('click',e=>{if(e.target.id==='modal')closeM();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeM();});
+document.getElementById('pu-done-forms').onclick=()=>ask('確認已送出商店申請表單？','送出後將通知平台管理員，且無法返回此步驟。請確認已完成商店申請表單填寫。',()=>puStage(2));
+document.getElementById('pu-approve').onclick=()=>puStage(4);
+document.getElementById('pu-reset').onclick=()=>puStage(1);
+document.getElementById('pu-submit').onclick=()=>ask('確認已寄出特店憑證？','送出後將通知平台進行核對，且無法返回此步驟。請確認已將 MerchantID、HashKey、HashIV 寄送至 service@racego.app。',()=>puStage(3));
+
+/* 街口 */
+const state={who:null,amount:null};
+document.querySelectorAll('.opts').forEach(g=>{
+  g.addEventListener('click',e=>{
+    const b=e.target.closest('.opt'); if(!b) return;
+    g.querySelectorAll('.opt').forEach(x=>x.setAttribute('aria-pressed','false'));
+    b.setAttribute('aria-pressed','true');
+    state[g.dataset.group]=b.dataset.val;
+    if(g.dataset.group==='who' && b.dataset.val==='personal'){state.amount=null;
+      document.querySelectorAll('[data-group="amount"] .opt').forEach(x=>x.setAttribute('aria-pressed','false'));}
+    render();
+  });
+});
+function showDoc(k){
+  document.querySelectorAll('.doc-group').forEach(g=>g.hidden=g.dataset.doc!==k);
+  document.querySelectorAll('.doc-tab').forEach(t=>{t.classList.toggle('on',t.dataset.doc===k);t.setAttribute('aria-selected',t.dataset.doc===k)});
+}
+document.querySelectorAll('.doc-tab').forEach(t=>t.addEventListener('click',()=>showDoc(t.dataset.doc)));
+function render(){
+  let id=null;
+  if(state.who==='personal') id='plan-personal';
+  else if(state.who==='company') id='plan-company-online';
+  document.getElementById('who-badge').textContent=state.who==='personal'?'個人':'公司／商行';
+  document.querySelectorAll('.plan').forEach(p=>p.hidden=p.id!==id);
+  const show=!!id;
+  ['plan-wrap','docs'].forEach(x=>document.getElementById(x).classList.toggle('hidden',!show));
+  document.getElementById('doc-tabs').classList.toggle('hidden',state.who!=='company');
+  showDoc(state.who==='personal'?'personal':(document.querySelector('.doc-tab.on')||{}).dataset?.doc||'corp');
+  setStep(show?2:1);
+}
+function setStep(n){
+  document.querySelectorAll('#steps li').forEach((li,i)=>{li.className=(n===4||i+1<n)?'done':(i+1===n?'now':'')});
+}
+document.querySelectorAll('.copy').forEach(b=>b.addEventListener('click',async()=>{
+  try{await navigator.clipboard.writeText(b.dataset.target?document.getElementById(b.dataset.target).textContent:b.dataset.copy);}catch(e){}
+  b.textContent='已複製'; setTimeout(()=>b.textContent='複製',1500);
+}));
+document.getElementById('sent').addEventListener('click',()=>ask('確認已完成申請並寄出文件？','送出後將通知平台管理員，且無法返回此步驟。請確認已完成街口線上申請，並將檢附文件寄送至 service@racego.app。',()=>jkStage(3)));
+function jkStage(n){
+  const flow=n>=3;
+  ['jk-choose','plan-wrap','docs'].forEach(id=>document.getElementById(id).classList.toggle('hidden',flow||(id!=='jk-choose'&&!state.who)));
+  [3,4].forEach(i=>document.getElementById('jk-s'+i).classList.toggle('hidden',i!==n));
+  setStep(flow?n:(state.who?2:1));
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+document.getElementById('jk-approve').onclick=()=>jkStage(4);
+document.getElementById('jk-reset').onclick=()=>{
+  state.who=null;document.querySelectorAll('#jk-choose .opt').forEach(x=>x.setAttribute('aria-pressed','false'));
+  jkStage(1);render();
+};
+const DOCS={terms:'RaceGo 金流服務條款'};
+const DOC_HTML={terms:"<p class=\"doc-meta\">適用對象：使用 RaceGo 線上金流服務之主辦方。於主辦方啟用金流服務時顯示並同意。</p><p>本條款由【新競雲智能股份有限公司】（以下簡稱「本公司」）訂定，規範主辦方於 RaceGo（以下簡稱「本平台」）使用線上金流服務之權利義務。主辦方啟用金流服務，即表示已閱讀並同意本條款。</p><h4>一、服務內容</h4><p>本平台提供線上金流串接及交易紀錄查詢功能，使參賽者於報名時可透過合作金流服務業者線上付款。目前合作之金流服務業者為統一金流（PayUni）及街口支付，主辦方可於同一場賽事同時啟用。</p><p>實際付款、收款及款項撥付作業，由合作金流服務業者依其服務規範及與主辦方之契約辦理。</p><h4>二、金流服務申請</h4><ol><li>主辦方應依本平台金流設定頁面之指引申請金流服務。申請資格、審核結果及所需文件，由金流服務業者依其規範決定。</li><li>統一金流（PayUni）：主辦方填寫本平台提供之商店申請表單後，由本公司檢查資料並代為送件至統一金流註冊。主辦方完成信箱驗證後，應將特店憑證（MerchantID、HashKey、HashIV）寄送至本公司客服信箱，由本公司核對後代為完成金流設定。</li><li>街口支付：主辦方自行至街口支付完成線上申請，並依申請身分將檢附文件寄送至本公司客服信箱，由本公司轉交街口支付審核。審核通過後，街口支付將特店代號等資訊提供本公司，由本公司代為完成金流設定。</li><li>本公司僅負責申請資料之檢查、送件、轉交及金流設定，不代為審核，亦不保證申請結果。</li><li>金流設定完成並經本公司通知後，主辦方始可啟用線上收款。</li></ol><h4>三、款項撥付</h4><ol><li>參賽者透過線上金流支付之報名款項，由金流服務業者直接撥付予主辦方，不經過本平台。本平台不代為收取或保管任何報名款項。</li><li>撥付時程、帳戶設定及相關手續，依金流服務業者之規範及其與主辦方之契約辦理。</li></ol><h4>四、退款</h4><ol><li>本平台無法執行退款作業。參賽者申請退款時，由主辦方自行至金流服務業者之後台辦理。</li><li>退款條件、退款金額及辦理期限，由主辦方依其賽事規定自行決定，並自行向參賽者說明。</li><li>主辦方與參賽者間之退款爭議，由雙方自行處理；本平台得視個案情況協助溝通，但不負退款責任。</li></ol><h4>五、資訊處理費</h4><ol><li>主辦方使用本平台線上金流服務，本公司按每筆交易收取資訊處理費新臺幣 10 元（是否僅計付款成功之交易：【請確認】）。</li><li>收費方式及結算週期：【請填寫，例如每月結算開立發票】。</li><li>已退款交易是否退還處理費：【請確認】。</li><li>本公司調整收費標準時，將於生效日【30】日前公告於本平台並以電子郵件通知主辦方。</li></ol><h4>六、主辦方責任</h4><ol><li>主辦方申請金流服務時，應確認具有代表主辦單位申請之權限，並保證所提供之申請資料、檢附文件及特店憑證均正確且屬實。</li><li>主辦方應遵守金流服務業者之服務規範及相關法令。</li><li>因主辦方提供之資料或特店憑證錯誤，致款項無法撥付或撥付錯誤者，由主辦方自行負責；因本公司設定錯誤所致者，本公司將協助更正。</li><li>主辦方應依法自行處理報名款項之稅務及發票或收據開立事宜。</li></ol><h4>七、責任限制</h4><ol><li>賽事資訊、報名費用及退費規定等內容，由主辦方自行提供並負責，本公司不負審查義務。如有不實或侵害他人權益之情事，由主辦方自負其責。</li><li>報名契約關係存在於參賽者與主辦方之間。雙方就報名款項、退費或賽事舉辦等事項發生爭議時，由雙方自行處理；本公司得視個案情況協助溝通，但不負保證責任。</li><li>因金流服務業者之系統異常、審核延誤、撥付延遲或其他非可歸責於本公司之事由，致主辦方或參賽者受有損害者，本公司不負賠償責任。本公司將於知悉後協助主辦方聯繫金流服務業者。</li><li>本公司將以合理方式維護平台正常運作，但不保證服務不中斷或無任何錯誤。因系統維護、不可抗力或第三方服務異常致服務暫停時，本公司將盡力於合理期間內恢復。</li><li>前四項約定，不排除本公司因故意或重大過失所應負之責任。</li></ol><h4>八、金流服務相關個人資料告知</h4><p>本點依個資法第 8 條，向使用金流服務之主辦方說明本公司蒐集之金流相關個人資料。</p><ol><li>蒐集目的：協助金流服務申請之資料檢查、送件及轉交，提供金流設定、交易紀錄查詢及處理費結算（069 契約、類似契約或其他法律關係事務、090 消費者、客戶管理與服務）。</li><li>蒐集類別：（1）統一金流商店申請表單所填資料；（2）街口支付申請檢附文件，依申請身分包含登記證明文件、負責人身分證正反面影本、存摺影本、官網截圖及商品價目表；（3）特店憑證及金流設定資訊，如 MerchantID、HashKey、HashIV、特店代號；（4）交易金額、付款狀態、退款狀態及交易識別資訊（C001 辨識個人者、C002 辨識財務者、C003 政府資料中之辨識者）。</li><li>利用期間、地區：街口支付申請檢附文件，於街口支付審核通過後一週內刪除；審核未通過時，本公司將通知主辦方補齊文件，協助完成申請；主辦方通知放棄申請者，於收到通知後一週內刪除。其餘資料於金流服務使用期間及依法令或處理爭議所必要之保存期間內利用，目的消失後即刪除或停止利用。利用地區以中華民國境內為原則。</li><li>利用對象：統一金流及街口支付（為完成申請送件、轉交、金流設定、交易串接及查詢）、系統及技術服務業者、依法有權機關。</li><li>第三方蒐集：主辦方直接於金流服務業者網站填寫之申請資料，例如街口支付線上申請表，由金流服務業者直接蒐集，依其個人資料保護政策處理，不適用本點。</li><li>負責人資料來源：檢附文件中之負責人身分證明等資料，如由管理員或聯絡人代為寄送，資料來源為該主辦方。代為寄送者應確認已將本點內容告知負責人，並取得其同意。</li><li>當事人權利及安全維護，依《RaceGo 隱私權政策》辦理。</li><li>不提供之影響：未提供申請資料、檢附文件或特店憑證者，無法完成金流申請及設定，亦無法啟用線上收款。</li></ol><h4>九、條款修訂</h4><p>本公司得因法令變更、金流服務業者規範調整或營運需求修訂本條款，修訂內容將公告於本平台，並以電子郵件通知主辦方。主辦方於修訂生效後繼續使用金流服務者，視為同意修訂內容。</p><p class=\"doc-meta\">最後更新日期：【YYYY 年 MM 月 DD 日】</p>"};
+function openDoc(k){
+  document.getElementById('doc-title').textContent=DOCS[k];
+  document.getElementById('doc-body').innerHTML=DOC_HTML[k]||'<span class="tbd">（示意）內容待提供</span>';
+  document.getElementById('doc-modal').classList.remove('hidden');
+  document.getElementById('doc-close').focus();
+}
+document.querySelectorAll('.doc-link').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();openDoc(a.dataset.doc);}));
+document.getElementById('doc-close').onclick=()=>document.getElementById('doc-modal').classList.add('hidden');
+document.getElementById('doc-modal').addEventListener('click',e=>{if(e.target.id==='doc-modal')e.currentTarget.classList.add('hidden');});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.getElementById('doc-modal').classList.add('hidden');});
+const csInputs=document.querySelectorAll('.cs-input');
+function csAll(){return ['terms','auth'].every(k=>document.querySelector('.cs-input[data-k="'+k+'"]').checked);}
+csInputs.forEach(c=>c.addEventListener('change',()=>{
+  document.querySelectorAll('.cs-input[data-k="'+c.dataset.k+'"]').forEach(x=>x.checked=c.checked);
+  document.querySelectorAll('.cs-ok').forEach(b=>b.disabled=!csAll());
+}));
+document.querySelectorAll('#pu-go,.jk-go,#pu-done-forms,#pu-submit,#sent').forEach(el=>el.classList.add('needs-consent'));
+document.body.classList.add('locked');
+document.querySelectorAll('.cs-ok').forEach(b=>b.onclick=()=>{
+  const d=new Date(),t=d.getFullYear()+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+String(d.getDate()).padStart(2,'0');
+  document.querySelectorAll('.cs-date').forEach(x=>x.textContent=t);
+  document.querySelectorAll('.consent-open').forEach(x=>x.classList.add('hidden'));
+  document.querySelectorAll('.consent-done').forEach(x=>x.classList.remove('hidden'));
+  document.querySelectorAll('.consent').forEach(x=>x.classList.add('is-done'));
+  document.body.classList.remove('locked');
+});
+</script>
+</body>
+</html>
